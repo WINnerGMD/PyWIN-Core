@@ -10,6 +10,10 @@ colorama.init()
 #Не советую что либо тут изменять. Тут также летят запросы на сервер,
 #по этому со сломаным модулем, ошибки могут не регаться,
 #и вы не сможете расширенно управлять ядром
+
+
+
+
 class PyWIN:
     class command_sys:
         ZeroArgs = []
@@ -55,9 +59,7 @@ class PyWIN:
                     command = spliter[0].replace(prefix,"")
                     args = int(len(spliter) - 1)
                     spliter.pop(0)
-                    print(spliter)
                     if args == 0:
-                        print("zeroargs")
                         for i in self.command_start.ZeroArgs:
                             if i["func_name"] == command:
                                 i["func"]()
@@ -74,15 +76,12 @@ class PyWIN:
                 
     # def __console(self):
     #     asyncio.run(self.__console_async())
-    def command(self , func):
-        def wrapper(*args):
+    def command(self):
+        def wrapper(func):
             arguments = tuple(inspect.getfullargspec(func))[0]
-            print(f"Command {func.__name__}")
             if int(len(arguments)) == 0:
-                print(0)
                 self.command_start.ZeroArgs.append({"func_name": func.__name__, "func": func})
             elif int(len(arguments)) == 1:
-                print(1)
                 self.command_start.OneArgs.append({"func_name": func.__name__, "func": func,"args": arguments})
             elif int(len(arguments)) == 2:
                 self.command_start.TwoArgs.append({"func_name": func.__name__, "func": func,"args": arguments})
@@ -90,9 +89,7 @@ class PyWIN:
                 self.command_start.ThreeArgsArgs.append({"func_name": func.__name__, "func": func,"args": arguments})
             else:
                 raise ValueError("Number of arguments is very big")
-            print(f"sector {self.name}")
             # self.doit.append({"func_name": func.__name__, "func": func,"args": arguments})
-            func(*args)
         return wrapper
     def alert(self, message):
         print(colorama.Fore.RED + f"{self.name}: {message}" + colorama.Fore.WHITE)
@@ -119,13 +116,12 @@ class PyWIN:
 # app.rebuild({'database': {'host': 'localhoedededest', 'port': 3306, 'name': '', 'password': '', 'database': ''}})
 app = PyWIN("origins","originses")
 
-@app.command
+@app.command()
 def refresh():
+    
     app.alert("Refreshing database")
 
 
-@app.command
-def commands_list():
-    app.list_commands()
-
-refresh()
+# @app.command()
+# def commands_list():
+#     app.list_commands()
