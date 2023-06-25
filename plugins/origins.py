@@ -1,20 +1,19 @@
 import requests
 import json
-import colorama
 import threading
 from rich.console import Console
 import inspect
-from dataclasses import dataclass
-colorama.init()
+import os
 # Main plugin parser file
 #Не советую что либо тут изменять. Тут также летят запросы на сервер,
 #по этому со сломаным модулем, ошибки могут не регаться,
 #и вы не сможете расширенно управлять ядром
 
 
-
+console = Console()
 
 class PyWIN:
+
     class command_sys:
         ZeroArgs = []
         OneArgs = []
@@ -61,16 +60,38 @@ class PyWIN:
                     spliter.pop(0)
                     if args == 0:
                         for i in self.command_start.ZeroArgs:
+                            run = True
                             if i["func_name"] == command:
-                                i["func"]()
+                                try:
+                                    i["func"]()
+                                    run = False
+                                except:
+                                    pass
+                        if run == True:
+                            print("Команда не найдена")
                     elif args == 1:
                         for i in self.command_start.OneArgs:
+                            run = True
                             if i["func_name"] == command:
-                                i["func"](spliter[0])
+                                try:
+                                    i["func"](spliter[0])
+                                    run = False
+                                except:
+                                    pass
+                        if run == True:
+                            print("Команда не найдена")
+
                     elif args == 2:
                         for i in self.command_start.TwoArgs:
+                            run = True
                             if i["func_name"] == command:
-                                i["func"]
+                                try:
+                                    i["func"](spliter[0])
+                                    run = False
+                                except:
+                                    pass
+                        if run == True:
+                            print("Команда не найдена")
                 else:
                     print("неизвестный запрос")
                 
@@ -92,7 +113,7 @@ class PyWIN:
             # self.doit.append({"func_name": func.__name__, "func": func,"args": arguments})
         return wrapper
     def alert(self, message):
-        print(colorama.Fore.RED + f"{self.name}: {message}" + colorama.Fore.WHITE)
+        console.print(f"[red]{self.name}: {message}[/red]")
 
     def config_opener(self):
         if self.verify_status == 1:
@@ -114,14 +135,25 @@ class PyWIN:
         print(self.command_start.OneArgs)
 # print(app.opener())
 # app.rebuild({'database': {'host': 'localhoedededest', 'port': 3306, 'name': '', 'password': '', 'database': ''}})
-app = PyWIN("origins","originses")
+app = PyWIN("origins","origins")
 
 @app.command()
 def refresh():
     
-    app.alert("Refreshing database")
+    app.alert("Server closed")
+    exit()
 
 
-# @app.command()
-# def commands_list():
-#     app.list_commands()
+@app.command()
+def server_start():
+    def open_server():
+        app.alert("Server started!")
+        os.system("uvicorn core:app --reload")
+    console_th = threading.Thread(target=open_server, name="server")
+    console_th.start()
+
+
+if __name__ == "__main__":
+    app.start()
+else:
+    app.start()

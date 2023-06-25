@@ -6,5 +6,5 @@ router = APIRouter(
 )
 
 @router.post("/winnertests/getGJLevels21.php", response_class=PlainTextResponse)
-async def get():    
-    return "shprot"
+async def get_level():    
+    return ":1:2:2:"

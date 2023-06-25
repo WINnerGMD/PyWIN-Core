@@ -14,7 +14,7 @@ def Memhouse_loh():
     run = 0
     while run <= 2:
         time.sleep(1)
-        app.alert("MEMHAUSE LOH EBANIY")
+        app.alert("MEMHAUSE LOH")
         run += 1
 
 @app.command()
@@ -22,6 +22,6 @@ def config_get():
     app.alert(app.config_opener())
 
 
-    
+
 if __name__ == "__main__":
     app.start()
