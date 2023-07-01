@@ -1,27 +1,23 @@
-import pymysql
+import sys, json, mysql.connector, colorama
+
+colorama.init()
 
 try:
-    connection = pymysql.connect(
-        host="localhost",
-        port=3306,
-        user="root",
-        password="root",
-        database="pywinbd",
-        cursorclass=pymysql.cursors.DictCursor
-        )   
-    print("successfully connected...")
-    print("#" * 20)
-except Exception as ex:
-    print("Connection refused...")
-    print(ex)
-    
+    db_config = json.loads(open("config.json", "r").read())["database"]
+except:
+    print(colorama.Fore.RED + "\nERROR:" + colorama.Fore.WHITE + "    Не удалось открыть и/или взять данные с \"config.json\"\n")
+    sys.exit()
 
-def req(request):    
+def db(execute):
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(request)
-            rows = cursor.fetchall()
-            connection.commit()
-            return rows
-    except:
-         rows = -1
+        mysql_connect = mysql.connector.connect(user = db_config["user"], password = db_config["password"], host = db_config["host"], port = db_config["port"], database = db_config["database"])
+        db = mysql_connect.cursor(dictionary=True)
+        db.execute(execute)
+        result = db.fetchall()
+        db.close()
+        mysql_connect.close()
+        return result
+    except Exception as err:
+        print(f"\n{colorama.Fore.RED}ERROR:     {colorama.Fore.WHITE}Не удалось подключиться к серверу MySQL\n{colorama.Fore.YELLOW}REASON:    {colorama.Fore.WHITE}{err}\n")
+        sys.exit()
+

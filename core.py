@@ -4,17 +4,19 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 from gd.levels import router as router_levels
 from gd.accounts.accounts import router as router_accounts
 
-from plugins.origins import app
-app = FastAPI()
+#from database import db
+#from plugins.origins import app
+fastapi = FastAPI()
 
-app.include_router(router_levels)
-app.include_router(router_accounts)
+fastapi.include_router(router_levels)
+fastapi.include_router(router_accounts)
 
 
 
-@app.get("/", response_class=HTMLResponse)
+@fastapi.get("/", response_class=HTMLResponse)
 async def message():
-    answer = """<!DOCTYPE html>
+    return """
+    <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -30,4 +32,3 @@ async def message():
     </body>
     </html>
     """
-    return answer

@@ -4,7 +4,7 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 import sys
 sys.path.append("...")
 from helpers.security import bcrypt_hash
-from database import req
+# from database import req
 router = APIRouter(prefix="", tags=["account"])
 
 @router.post("/winnertests/accounts/registerGJAccount.php" , response_class=PlainTextResponse)

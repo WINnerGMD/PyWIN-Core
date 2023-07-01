@@ -1,0 +1,1 @@
+uvicorn core:fastapi --reload
