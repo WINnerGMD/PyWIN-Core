@@ -22,6 +22,11 @@ def config_get():
     app.alert(app.config_opener())
 
 
+@app.command()
+def robot():
+    app.alert("Бип-Боп запускаю сервер🐬")
+    app.alert("Сервер работает в штатном режиме!")
 
+app.test()
 if __name__ == "__main__":
     app.start()

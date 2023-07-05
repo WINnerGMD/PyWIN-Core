@@ -3,15 +3,16 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 
 from gd.levels import router as router_levels
 from gd.accounts.accounts import router as router_accounts
-
+from gd.accounts.page import router as router_acc_page
+from gd.rate.rate_levels import router as rate_router
 #from database import db
-#from plugins.origins import app
+from plugins.origins import app
 fastapi = FastAPI()
 
 fastapi.include_router(router_levels)
 fastapi.include_router(router_accounts)
-
-
+fastapi.include_router(router_acc_page)
+fastapi.include_router(rate_router)
 
 @fastapi.get("/", response_class=HTMLResponse)
 async def message():

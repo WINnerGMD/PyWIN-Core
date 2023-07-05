@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, Form, HTTPException,Request
 from fastapi.responses import PlainTextResponse, HTMLResponse
-
-import sys
-sys.path.append("...")
 from helpers.security import bcrypt_hash
 # from database import req
+from database import db
 router = APIRouter(prefix="", tags=["account"])
 
 @router.post("/winnertests/accounts/registerGJAccount.php" , response_class=PlainTextResponse)
@@ -17,8 +15,8 @@ def register_account(userName: str = Form(),
         raise HTTPException(status_code=400, detail="Павел шампанов уже выехал за тобой \n Данные на сервера уже отправленны, беги👊")
     else:
         print(userName)
-        if req(f"SELECT * FROM `users` WHERE userName = '{userName}'") == ():
-            req(f"INSERT INTO `users` (`userName`, `mail`, `passhash`,`verifed`) VALUES ('{userName}', '{email}', '{bcrypt_hash(password)}', '0');")
+        if db(f"SELECT * FROM `users` WHERE userName = '{userName}'") == ():
+            db(f"INSERT INTO `users` (`userName`, `mail`, `passhash`,`verifed`) VALUES ('{userName}', '{email}', '{bcrypt_hash(password)}', '0');")
             return "1"
         else:
             return "-2"
@@ -27,7 +25,7 @@ def register_account(userName: str = Form(),
 @router.post("/winnertests/accounts/loginGJAccount.php" , response_class=PlainTextResponse)
 def login(userName: str = Form(),
           password: str = Form()):
-    answer = req(f"SELECT * FROM `users` WHERE userName = '{userName}'")
+    answer = db(f"SELECT * FROM `users` WHERE userName = '{userName}'")
     if answer != ():
         for user in answer:
             pass
@@ -44,11 +42,18 @@ def login(userName: str = Form(),
     
 
 @router.post("/winnertests/getAccountURL.php")
-def get_url(accountID: int = Form()):
-    return "http://127.0.0.1:8000"
+async def get_url(req: Request):
+    print(await req.body())
+    return "https://gdpshelper.xyz"
 
 
-
+@router.post('/winnertests/requestUserAccess.php')
+def requestUserAccess(accountID: str = Form()):
+    answer = db(f"SELECT * FROM `users` WHERE `id` = {accountID} and `role` > 0;")
+    if answer != []:
+        return 1
+    else:
+        return -1
 @router.get("/winnertests/accounts/accountManagement.php", response_class=HTMLResponse)
 def accountManagement():
     return """<!DOCTYPE html>

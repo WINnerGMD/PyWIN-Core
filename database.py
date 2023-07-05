@@ -21,3 +21,5 @@ def db(execute):
         print(f"\n{colorama.Fore.RED}ERROR:     {colorama.Fore.WHITE}Не удалось подключиться к серверу MySQL\n{colorama.Fore.YELLOW}REASON:    {colorama.Fore.WHITE}{err}\n")
         sys.exit()
 
+
+

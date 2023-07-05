@@ -39,7 +39,7 @@ class PyWIN:
             if answer == 'originsOMG':
                 self.verify_status = 1
         except Exception as e:
-            print(f"что то пошло не так ...")
+            print(f"{self.name}  что то пошло не так ...")
 
         console_th = threading.Thread(target=self.__console, name="console")
         console_th.start()
@@ -62,13 +62,13 @@ class PyWIN:
                         for i in self.command_start.ZeroArgs:
                             run = True
                             if i["func_name"] == command:
+                                run = False
                                 try:
                                     i["func"]()
-                                    run = False
                                 except:
                                     pass
                         if run == True:
-                            print("Команда не найдена")
+                            print(f"{self.name} Команда не найдена")
                     elif args == 1:
                         for i in self.command_start.OneArgs:
                             run = True
@@ -152,8 +152,6 @@ def server_start():
     console_th = threading.Thread(target=open_server, name="server")
     console_th.start()
 
-
-if __name__ == "__main__":
-    app.start()
-else:
-    app.start()
+@app.command()
+def test():
+    app.alert("test started!")

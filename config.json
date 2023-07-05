@@ -1,17 +1,15 @@
 {
     "database": {
         "host": "localhost",
-        "port": 3310,
+        "port": 3306,
         "user": "root",
-        "password": "",
-        "database": "pywin-database"
+        "password": "root",
+        "database": "pywinbd"
     },
     "pywin": {
+        "endpoint": "winnertests",
         "username": "",
-        "password": ""
-    },
-    "better_win": {
-        "name": "",
-        "password": ""
+        "password": "",
+        "path": "/databasewin"
     }
 }
