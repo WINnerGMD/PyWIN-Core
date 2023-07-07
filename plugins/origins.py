@@ -4,6 +4,7 @@ import threading
 from rich.console import Console
 import inspect
 import os
+import sys
 # Main plugin parser file
 #Не советую что либо тут изменять. Тут также летят запросы на сервер,
 #по этому со сломаным модулем, ошибки могут не регаться,
@@ -40,7 +41,7 @@ class PyWIN:
                 self.verify_status = 1
         except Exception as e:
             print(f"{self.name}  что то пошло не так ...")
-
+    def main_start(self):
         console_th = threading.Thread(target=self.__console, name="console")
         console_th.start()
     def reset_method(self , func):
@@ -141,7 +142,7 @@ app = PyWIN("origins","origins")
 def refresh():
     
     app.alert("Server closed")
-    exit()
+    sys.exit()
 
 
 @app.command()

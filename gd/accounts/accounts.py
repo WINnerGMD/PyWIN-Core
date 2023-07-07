@@ -3,9 +3,10 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 from helpers.security import bcrypt_hash
 # from database import req
 from database import db
+from config import path
 router = APIRouter(prefix="", tags=["account"])
 
-@router.post("/winnertests/accounts/registerGJAccount.php" , response_class=PlainTextResponse)
+@router.post(f"{path}/accounts/registerGJAccount.php" , response_class=PlainTextResponse)
 def register_account(userName: str = Form(),
                      password: str = Form(),
                      email: str = Form(),
@@ -22,7 +23,7 @@ def register_account(userName: str = Form(),
             return "-2"
 
 
-@router.post("/winnertests/accounts/loginGJAccount.php" , response_class=PlainTextResponse)
+@router.post(f"{path}/accounts/loginGJAccount.php" , response_class=PlainTextResponse)
 def login(userName: str = Form(),
           password: str = Form()):
     answer = db(f"SELECT * FROM `users` WHERE userName = '{userName}'")
@@ -41,20 +42,20 @@ def login(userName: str = Form(),
         return "-11"
     
 
-@router.post("/winnertests/getAccountURL.php")
+@router.post(f"{path}/getAccountURL.php")
 async def get_url(req: Request):
     print(await req.body())
     return "https://gdpshelper.xyz"
 
 
-@router.post('/winnertests/requestUserAccess.php')
+@router.post(f'{path}/requestUserAccess.php')
 def requestUserAccess(accountID: str = Form()):
     answer = db(f"SELECT * FROM `users` WHERE `id` = {accountID} and `role` > 0;")
     if answer != []:
         return 1
     else:
         return -1
-@router.get("/winnertests/accounts/accountManagement.php", response_class=HTMLResponse)
+@router.get(f"{path}/accounts/accountManagement.php", response_class=HTMLResponse)
 def accountManagement():
     return """<!DOCTYPE html>
 <html lang="en">

@@ -1,4 +1,4 @@
-from origins import PyWIN
+from plugins.origins import PyWIN
 import time
 
 

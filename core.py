@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Request,Body
 from fastapi.responses import PlainTextResponse, HTMLResponse
 
-from gd.levels import router as router_levels
+from gd.levels.levels import router as router_levels
 from gd.accounts.accounts import router as router_accounts
 from gd.accounts.page import router as router_acc_page
-from gd.rate.rate_levels import router as rate_router
+from gd.rate.rate_levels import router as router_rates
+from gd.levels.likes import router as router_likes
+from gd.levels.upload import router as router_upload
 #from database import db
 from plugins.origins import app
 fastapi = FastAPI()
@@ -12,8 +14,9 @@ fastapi = FastAPI()
 fastapi.include_router(router_levels)
 fastapi.include_router(router_accounts)
 fastapi.include_router(router_acc_page)
-fastapi.include_router(rate_router)
-
+fastapi.include_router(router_rates)
+fastapi.include_router(router_likes)
+fastapi.include_router(router_upload)
 @fastapi.get("/", response_class=HTMLResponse)
 async def message():
     return """

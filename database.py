@@ -14,6 +14,7 @@ def db(execute):
         db = mysql_connect.cursor(dictionary=True)
         db.execute(execute)
         result = db.fetchall()
+        mysql_connect.commit()
         db.close()
         mysql_connect.close()
         return result
