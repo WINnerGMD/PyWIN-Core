@@ -1,4 +1,4 @@
-import hashlib
+import hashlib, requests, base64
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import PlainTextResponse,  HTMLResponse
 from database import db
@@ -84,10 +84,17 @@ def downloadLevelHash1(levelString):
 def downloadLevelHash2(levelData):
     return sha1(levelData+"xI25fpAapCQg")
 
+def base64_encode(string):
+    return base64.b64encode(str(string).encode("utf-8")).decode("utf-8")
+
+def xor_cipher(text, key):
+    # потом перепишу с php на py
+    return requests.get(f"https://xor-cipher.dimluxdev.repl.co/?text={text}&key={key}").text
+
 @router.post(f'{path}/downloadGJLevel22.php', response_class=PlainTextResponse)
 def level_download(levelID: str = Form()):
     levelString = "H4sIAAAAAAAAC6WXUZLkIAiGL5StEgWV2qc5wxzAA8wV9vDbielEvumprtp9if3_AiIi0l-fpW8yNI08JNsoI5sNkTnkOUyyDkkpjTZkiO2fPtLoQ_7IOLRTfqst_6qt45dME_7SxC4zFd65kMeu-n829KX-Hr6nfnq3DfvRjfTeidtM_cHM9vUhZUv7YHOoc9Dt8Z2_22TOoe_DZ_ED5eM7DRwTH3p856ykOciWfssmW95yt61sYicsEqEGqCXCGqEHaPmCfYcWZ3uYrRJhXLe2AFuKMHrVbq8eE3nrhx_5CV0C3A804Iz5gnm9zdUdW4yYtBhQ6ZjvcWvZDRgHknAiSYEbDjABF-AaIl3EI84ZOPpXmDDMmCVlDn3FestJHwEt8_jyU79jvY71HOs51vMWsKYEjBxOS7r4QRwBqReWDGxPfOhL9E8L7BdckhJviWqMt6oBx4uiJsC4ohbzQWsChn8d8XLEywswLz1ufcrAuPcpxstEgBU4-mfFgGN8zCrw4l_ZiXYs-FhlL7NXNTq0NFkkSiOhJATE436AMBL5JhC8iRX4cqLi8td5-RX4drLOanAbOKtBuokZrnITTiLFfZ7Evc_T6HfCsMpKOIiz7BQQq4S9JJa9nKWJxOLYWawSiGVzs3ytRHspsdpoIOYzuagoQ6j1pcQ3GytRSTg2pzw5YwiNIZyv8ErwGM5nu0BlIWZBX2ycFX6RUEooJRolGiTmm79INOZYY46dbUKBykow-RvTsjGmnTHtjGlnCPsawryI-N3QxKLaUqwLTTKwAcei2rIAKzAaqsKOKhb9VipwbBqawj-Ffwr_0DQ1PGLNYtFvNQGz5UP8KuLX4J9jvw57jv163G_HI9fxyPXlkTt70NhF9hKb0q4a8XzFblx7xB32HE1uuuzt_jiaOEcT52jiHH2_l5gvrgk45ouj6XON8XOL8XP8OXCDfxX-4f-B15gv3hIw_GsxX7zFfPEO_66m9C_bF5V-dQ8AAA=="
 
     row = db(f"SELECT * FROM levels WHERE id = {levelID}")[0]
-    print(row)
-    return f'1:{row["id"]}:2:{row["name"]}:3:{row["desc"]}:4:{levelString}:5:{row["version"]}:8:10:9:{row["difficulty"]}:10:{row["downloads"]}:12:{row["audioTrack"]}:13:{row["gameVersion"]}:14:{row["likes"]}:17:{row["starDemon"]}:43:{row["starDemonDiff"]}:25:{row["starAuto"]}:18:{row["stars"]}:19:{"1" if row["rate"] == 1 else "0"}:42:{"1" if row["rate"] == 2 else "0"}:45:{row["objects"]}:15:{row["levelLength"]}:30:{row["objects"]}:31:{row["twoPlayer"]}:28:{row["uploadDate"]}:29:{row["updateDate"]}:35:{row["songID"]}:36::37:{row["coins"]}:38:{row["starCoins"]}:39:{row["requestedStars"]}:46::47::40:{row["isLDM"]}:27:Aw==#{downloadLevelHash1(levelString)}#' + downloadLevelHash2(f"{str(row['authorID'])},{str(row['stars'])},{str(row['starDemon'])},{str(row['id'])},{str(row['starCoins'])},{'1' if row['rate'] == 1 else '0'},{str(row['password'])},0")
+    
+    return f'1:{row["id"]}:2:{row["name"]}:3:{row["desc"]}:4:{levelString}:5:{row["version"]}:6:{row["authorID"]}:8:10:9:{row["difficulty"]}0:10:{row["downloads"]}:12:{row["audioTrack"]}:13:{row["gameVersion"]}:14:{row["likes"]}:17:{row["starDemon"]}:43:{row["starDemonDiff"]}:25:{row["starAuto"]}:18:{row["stars"]}:19:{"1" if row["rate"] == 1 else "0"}:42:{"1" if row["rate"] == 2 else "0"}:45:{row["objects"]}:15:{row["levelLength"]}:30:{row["original"]}:31:{row["twoPlayer"]}:28:{row["uploadDate"]}:29:{row["updateDate"]}:35:{row["songID"]}:36::37:{row["coins"]}:38:{row["starCoins"]}:39:{row["requestedStars"]}:46::47::40:{row["isLDM"]}:27:{base64_encode(xor_cipher(row["password"], 26364))}#{downloadLevelHash1(levelString)}#' + downloadLevelHash2(f'{row["authorID"]},{row["stars"]},{row["starDemon"]},{row["id"]},{row["starCoins"]},{"1" if row["rate"] == 1 else "0"},{row["password"]},0')
