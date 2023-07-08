@@ -7,6 +7,7 @@ from gd.accounts.page import router as router_acc_page
 from gd.rate.rate_levels import router as router_rates
 from gd.levels.likes import router as router_likes
 from gd.levels.upload import router as router_upload
+from gd.music.songs import router as router_music
 #from database import db
 from plugins.origins import app
 fastapi = FastAPI()
@@ -17,6 +18,7 @@ fastapi.include_router(router_acc_page)
 fastapi.include_router(router_rates)
 fastapi.include_router(router_likes)
 fastapi.include_router(router_upload)
+fastapi.include_router(router_music)
 @fastapi.get("/", response_class=HTMLResponse)
 async def message():
     return """

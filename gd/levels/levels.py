@@ -4,6 +4,7 @@ from fastapi.responses import PlainTextResponse,  HTMLResponse
 from database import db
 from operator import itemgetter
 from config import path
+from helpers.helper import get_user
 router = APIRouter(
     prefix="",
     tags=["levels"]
@@ -59,11 +60,11 @@ def get_level(str: str = Form(default=""), page: str = Form(), type: str = Form(
             feature = 1
         elif row['rate'] == 2:
             epic = 1
-        levelsDataHash += [{"levelID":row["id"],"stars":row["stars"],"coins":row["coins"]}]
 
+        levelsDataHash += [{"levelID":row["id"],"stars":row["stars"],"coins":row["coins"]}]
         levelString += f'1:{row["id"]}:2:{row["name"]}:5:{row["version"]}:6:{row["authorID"]}:8:10:9:{row["difficulty"]}0:10:{row["downloads"]}:12:{row["audioTrack"]}:13:{row["gameVersion"]}:14:{row["likes"]}:17:{row["starDemon"]}:43:{row["starDemonDiff"]}:25:{row["starAuto"]}:18:{row["stars"]}:19:{feature}:42:{epic}:45:{row["objects"]}:3:{row["desc"]}:15:{row["levelLength"]}:30:{row["original"]}:31:{row["twoPlayer"]}:37:{row["coins"]}:38:{row["starCoins"]}:39:{row["requestedStars"]}:46:1:47:2:35:{row["songID"]}|'
 
-        userString += f'{row["authorID"]}:PyWin-bot:{row["authorID"]}|'
+        userString += f'{row["authorID"]}:{get_user(row["authorID"])["userName"]}:{row["authorID"]}|'
    
     return f"{levelString}#{userString}##{len(result)}:{int(page+'0')}:10#{levelHash(levelsDataHash)}"
 
@@ -93,8 +94,8 @@ def xor_cipher(text, key):
 
 @router.post(f'{path}/downloadGJLevel22.php', response_class=PlainTextResponse)
 def level_download(levelID: str = Form()):
-    levelString = "H4sIAAAAAAAAC6WXUZLkIAiGL5StEgWV2qc5wxzAA8wV9vDbielEvumprtp9if3_AiIi0l-fpW8yNI08JNsoI5sNkTnkOUyyDkkpjTZkiO2fPtLoQ_7IOLRTfqst_6qt45dME_7SxC4zFd65kMeu-n829KX-Hr6nfnq3DfvRjfTeidtM_cHM9vUhZUv7YHOoc9Dt8Z2_22TOoe_DZ_ED5eM7DRwTH3p856ykOciWfssmW95yt61sYicsEqEGqCXCGqEHaPmCfYcWZ3uYrRJhXLe2AFuKMHrVbq8eE3nrhx_5CV0C3A804Iz5gnm9zdUdW4yYtBhQ6ZjvcWvZDRgHknAiSYEbDjABF-AaIl3EI84ZOPpXmDDMmCVlDn3FestJHwEt8_jyU79jvY71HOs51vMWsKYEjBxOS7r4QRwBqReWDGxPfOhL9E8L7BdckhJviWqMt6oBx4uiJsC4ohbzQWsChn8d8XLEywswLz1ufcrAuPcpxstEgBU4-mfFgGN8zCrw4l_ZiXYs-FhlL7NXNTq0NFkkSiOhJATE436AMBL5JhC8iRX4cqLi8td5-RX4drLOanAbOKtBuokZrnITTiLFfZ7Evc_T6HfCsMpKOIiz7BQQq4S9JJa9nKWJxOLYWawSiGVzs3ytRHspsdpoIOYzuagoQ6j1pcQ3GytRSTg2pzw5YwiNIZyv8ErwGM5nu0BlIWZBX2ycFX6RUEooJRolGiTmm79INOZYY46dbUKBykow-RvTsjGmnTHtjGlnCPsawryI-N3QxKLaUqwLTTKwAcei2rIAKzAaqsKOKhb9VipwbBqawj-Ffwr_0DQ1PGLNYtFvNQGz5UP8KuLX4J9jvw57jv163G_HI9fxyPXlkTt70NhF9hKb0q4a8XzFblx7xB32HE1uuuzt_jiaOEcT52jiHH2_l5gvrgk45ouj6XON8XOL8XP8OXCDfxX-4f-B15gv3hIw_GsxX7zFfPEO_66m9C_bF5V-dQ8AAA=="
+    # levelString = "H4sIAAAAAAAAC6WX0ZHdIAxFG3JmAEmAJ19bwxZAAdtCis_DkEl2pEM2kx_zfIwvAmR038e79CsPTaOMXGzIKGYj59WU1Syo41sedeSU0mgjj2zz0kcafeQfeTwSqXxNIv-_xB1KzD7rhS-JlDHfj4TmavwSSn-TMZRJ_xJNBZnr4y3LlWZjq6mr0et1Xb_bIrvps3mX-7krz3UJPA_e9LmupzmtJl_pe77yVa5ml1yvyK7yuk9JN9YY5xg_IpJDXHqs7XCO8SOS71AEcClxJMU-DeV6ZdnT-3zv-1Xg95H71azAE_BHRzTWCbgcuduvNS7xYMcEeAV-n3gw7sPnKJH-vEbxBDwduUuiPV_Y96D_DVyO_V08c8Ro3JkJIe_AS5w_W8fzfuLSYh3kLt9WPMR9Puz-Lh-2vuf9xOduRjoBL0fu8nBzt79b3_MOvEA-2JH7ePqRe50O628xFzg3BU5dgXIhUF0EitHiPt-WTsDzkbs82TqeQ12TBvOFWiVQrFY8AX90YLowK49bvOmbuyTZQRJ3H8UO3vMGXCGefOQ-HnAVArZCwFfszXWHkkLxVQEORVyh6C-ubn2WTsAFeDpxn_wKxV3BDKx4Ag7FWsGcKBRTBXOlUDQViq9C8VUwD1uHOKx_wNOJw_L7NFfwLAoeZ-v48AU4eA0Fj6bg6RQ84N52P98KXI7pCelD20vx-LQy8EQGnsjAExl4IgNPtMYl7j9fA69k4K12PMTdZ2rgoQw8l4HHMfA4Bp7FwOMYeCsDz2vgeQ28pIH3scBrd_n9QqIH4h8EduzPB4EUGM0KhqmCYapgmCrUtqUT8HzkLikq1OAKNbiCwapg1CrU7ApeoYLBqmDIamDgno2p20t9vvcb1cAkNDAJDUxCg1O4wenWoPg2KNYNinsDM9DgFG5gKhqc5g2qRYPq0uHr7fBPpMM_l9slzk8cFHWi9RQAAA=="
 
     row = db(f"SELECT * FROM levels WHERE id = {levelID}")[0]
     
-    return f'1:{row["id"]}:2:{row["name"]}:3:{row["desc"]}:4:{levelString}:5:{row["version"]}:6:{row["authorID"]}:8:10:9:{row["difficulty"]}0:10:{row["downloads"]}:12:{row["audioTrack"]}:13:{row["gameVersion"]}:14:{row["likes"]}:17:{row["starDemon"]}:43:{row["starDemonDiff"]}:25:{row["starAuto"]}:18:{row["stars"]}:19:{"1" if row["rate"] == 1 else "0"}:42:{"1" if row["rate"] == 2 else "0"}:45:{row["objects"]}:15:{row["levelLength"]}:30:{row["original"]}:31:{row["twoPlayer"]}:28:{row["uploadDate"]}:29:{row["updateDate"]}:35:{row["songID"]}:36::37:{row["coins"]}:38:{row["starCoins"]}:39:{row["requestedStars"]}:46::47::40:{row["isLDM"]}:27:{base64_encode(xor_cipher(row["password"], 26364))}#{downloadLevelHash1(levelString)}#' + downloadLevelHash2(f'{row["authorID"]},{row["stars"]},{row["starDemon"]},{row["id"]},{row["starCoins"]},{"1" if row["rate"] == 1 else "0"},{row["password"]},0')
+    return f'1:{row["id"]}:2:{row["name"]}:3:{row["desc"]}:4:{row["string"]}:5:{row["version"]}:6:{row["authorID"]}:8:10:9:{row["difficulty"]}0:10:{row["downloads"]}:12:{row["audioTrack"]}:13:{row["gameVersion"]}:14:{row["likes"]}:17:{row["starDemon"]}:43:{row["starDemonDiff"]}:25:{row["starAuto"]}:18:{row["stars"]}:19:{"1" if row["rate"] == 1 else "0"}:42:{"1" if row["rate"] == 2 else "0"}:45:{row["objects"]}:15:{row["levelLength"]}:30:{row["original"]}:31:{row["twoPlayer"]}:28:{row["uploadDate"]}:29:{row["updateDate"]}:35:{row["songID"]}:36::37:{row["coins"]}:38:{row["starCoins"]}:39:{row["requestedStars"]}:46::47::40:{row["isLDM"]}:27:{base64_encode(xor_cipher(row["password"], 26364))}#{downloadLevelHash1(row["string"])}#' + downloadLevelHash2(f'{row["authorID"]},{row["stars"]},{row["starDemon"]},{row["id"]},{row["starCoins"]},{"1" if row["rate"] == 1 else "0"},{row["password"]},0')

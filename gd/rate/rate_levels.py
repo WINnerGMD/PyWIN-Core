@@ -30,8 +30,8 @@ def suggestGJStars(accountID: str = Form(), feature: str = Form(), levelID: str 
                     difficulty = 4
                 elif int(stars) in [8,9]:
                     difficulty = 5
+            print(difficulty)
             if feature == "0":
-                print(difficulty)
                 db(f"UPDATE `levels` SET `starAuto` = 0, `stars` = {int(stars)},`difficulty` =  {difficulty}, `rate` = 0 WHERE `id` = {levelID}")
             elif feature == "1":
                 db(f"UPDATE `levels` SET `starAuto` = 0, `stars` = {int(stars)},`difficulty` =  {difficulty}, `rate` = 1 WHERE `id` = {levelID}")
