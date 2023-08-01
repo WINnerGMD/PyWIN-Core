@@ -1,26 +1,23 @@
-import sys, json, mysql.connector, colorama
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from config import database
+from sql import models
 
-colorama.init()
+SQLALCHEMY_DATABASE_URL = f'mysql+pymysql://{database["user"]}:{database["password"]}@{database["host"]}/{database["database"]}'
+# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
+print(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, echo=True
+)
+SessionLocal = sessionmaker(bind=engine)
 
-try:
-    db_config = json.loads(open("config.json", "r").read())["database"]
-except:
-    print(colorama.Fore.RED + "\nERROR:" + colorama.Fore.WHITE + "    Не удалось открыть и/или взять данные с \"config.json\"\n")
-    sys.exit()
+Base = declarative_base()
 
-def db(execute):
+
+def get_db():
+    db = SessionLocal()
     try:
-        mysql_connect = mysql.connector.connect(user = db_config["user"], password = db_config["password"], host = db_config["host"], port = db_config["port"], database = db_config["database"])
-        db = mysql_connect.cursor(dictionary=True)
-        db.execute(execute)
-        result = db.fetchall()
-        mysql_connect.commit()
+        yield db
+    finally:
         db.close()
-        mysql_connect.close()
-        return result
-    except Exception as err:
-        print(f"\n{colorama.Fore.RED}ERROR:     {colorama.Fore.WHITE}Не удалось подключиться к серверу MySQL\n{colorama.Fore.YELLOW}REASON:    {colorama.Fore.WHITE}{err}\n")
-        sys.exit()
-
-
-

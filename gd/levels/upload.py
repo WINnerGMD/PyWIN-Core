@@ -1,12 +1,17 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, Depends
 from config import path
-from database import db
-
+from route_manager import default_route
+from services.levels import LevelService
+from objects.schemas import UploadLevel
+from database import get_db
+from sqlalchemy.orm import Session
 router = APIRouter()
 
 
 @router.post(f'{path}/uploadGJLevel21.php')
-def upload_level(levelString: str = Form(),
+@default_route()
+def upload_level(db: Session = Depends(get_db),
+                    levelString: str = Form(),
                   accountID: str = Form(),
                     levelName: str = Form(),
                     #  levelDesc: str = Form(),
@@ -22,7 +27,23 @@ def upload_level(levelString: str = Form(),
                             requestedStars: str = Form(),
                             ldm: str = Form(),
                             gameVersion: str = Form()
-                            ):
-    if int(objects) > 100:
-        db(f"INSERT INTO `levels`(`name`,`version`, `authorID`, `gameVersion`, `audioTrack`, `levelLength`, `coins`, `original`, `twoPlayer`, `songID`, `requestedStars`, `isLDM`, `objects`, `password`, `uploadDate`, `updateDate`, `string`) VALUES ('{levelName}','{levelVersion}','{accountID}','{gameVersion}','{audioTrack}','{levelLength}','{coins}','{original}','{twoPlayer}','{songID}','{requestedStars}','{ldm}','{objects}','{password}','111','111','{levelString}')")
-    return db(f"SELECT * FROM `levels` WHERE `name` = '{levelName}' and `authorID` = '{accountID}'")[0]["id"]
+):
+    SystemObj = UploadLevel(
+                levelString = levelString,
+                accountID = accountID,
+                levelName = levelName,
+                # levelDesc = levelDesc,
+                levelVersion = levelVersion,
+                levelLength = levelLength,
+                audioTrack = audioTrack,
+                password = password,
+                original = original,
+                twoPlayer = twoPlayer,
+                songID = songID ,
+                objects = objects,
+                coins = coins,
+                requestedStars = requestedStars,
+                ldm = ldm,
+                gameVersion = gameVersion
+                )
+    return LevelService().upload_level(db=db, data=SystemObj)

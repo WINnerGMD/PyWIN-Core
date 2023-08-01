@@ -5,11 +5,12 @@ from rich.console import Console
 import inspect
 import os
 import sys
+import route_manager
+import uvicorn
 # Main plugin parser file
 #Не советую что либо тут изменять. Тут также летят запросы на сервер,
 #по этому со сломаным модулем, ошибки могут не регаться,
 #и вы не сможете расширенно управлять ядром
-
 
 console = Console()
 
@@ -23,8 +24,8 @@ class PyWIN:
 
         def __init__(self):
             pass
-
-
+    
+    router = route_manager.router
     token = None
     name = None
     verify_status = 0
@@ -44,6 +45,10 @@ class PyWIN:
     def main_start(self):
         console_th = threading.Thread(target=self.__console, name="console")
         console_th.start()
+        @app.command()
+        def test_for():
+            app.alert("test started!")
+            app.test()
     def reset_method(self , func):
         def wrapper(*args):
             print("hui")
@@ -56,23 +61,23 @@ class PyWIN:
                 request = console.input("")
                 spliter = request.split(" ")
                 if prefix in spliter[0]:
+                    run = True
                     command = spliter[0].replace(prefix,"")
                     args = int(len(spliter) - 1)
                     spliter.pop(0)
                     if args == 0:
                         for i in self.command_start.ZeroArgs:
-                            run = True
                             if i["func_name"] == command:
                                 run = False
                                 try:
-                                    i["func"]()
+                                    i["func"]() 
                                 except:
                                     pass
                         if run == True:
-                            print(f"{self.name} Команда не найдена")
+                            print(f"Команда не найдена")
                     elif args == 1:
+                        run = True
                         for i in self.command_start.OneArgs:
-                            run = True
                             if i["func_name"] == command:
                                 try:
                                     i["func"](spliter[0])
@@ -83,8 +88,8 @@ class PyWIN:
                             print("Команда не найдена")
 
                     elif args == 2:
+                        run = True
                         for i in self.command_start.TwoArgs:
-                            run = True
                             if i["func_name"] == command:
                                 try:
                                     i["func"](spliter[0])
@@ -113,6 +118,11 @@ class PyWIN:
                 raise ValueError("Number of arguments is very big")
             # self.doit.append({"func_name": func.__name__, "func": func,"args": arguments})
         return wrapper
+    def new_route(self, path):
+        def wrapper(func):
+            
+            print("hello")
+        return wrapper
     def alert(self, message):
         console.print(f"[red]{self.name}: {message}[/red]")
 
@@ -134,16 +144,14 @@ class PyWIN:
     def test(self):
         print(self.command_start.ZeroArgs)
         print(self.command_start.OneArgs)
+    # def error(error_code = "server closed"):
 # print(app.opener())
 # app.rebuild({'database': {'host': 'localhoedededest', 'port': 3306, 'name': '', 'password': '', 'database': ''}})
-app = PyWIN("origins","origins")
+app = PyWIN("sdssdsd","\sdsdsd")
 
 @app.command()
 def refresh():
-    
-    app.alert("Server closed")
-    sys.exit()
-
+    app.alert(app.test())
 
 @app.command()
 def server_start():
@@ -153,10 +161,7 @@ def server_start():
     console_th = threading.Thread(target=open_server, name="server")
     console_th.start()
 
-@app.command()
-def test():
-    app.alert("test started!")
 
 
-if __name__ == "__main__":
+if __name__ == "plugins.origins":
     app.main_start()

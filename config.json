@@ -1,10 +1,15 @@
 {
     "database": {
-        "host": "localhost",
+        "host": "95.163.240.218",
         "port": 3306,
-        "user": "root",
-        "password": "root",
-        "database": "pywinbd"
+        "user": "mysqladmin1",
+        "password": "aiPh9eaNgan9",
+        "database": "PyWIN Core"
+    },
+    "system": {
+        "pluginloader": false,
+        "use_w": true,
+        "debug": true
     },
     "pywin": {
         "endpoint": "winnertests",

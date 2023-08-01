@@ -2,12 +2,14 @@ from fastapi import APIRouter, Form
 from fastapi.responses import PlainTextResponse
 from database import db
 from config import  path
+from route_manager import default_route
 
 router = APIRouter(tags=["rate"], prefix="")
 
 
 
 @router.post(path=f'{path}/suggestGJStars20.php',response_class=PlainTextResponse)
+@default_route()
 def suggestGJStars(accountID: str = Form(), feature: str = Form(), levelID: str = Form(), stars: str = Form()):
     answer = db(f"SELECT * FROM `users` WHERE `id` = {accountID}")
     user_obj = answer[0]
