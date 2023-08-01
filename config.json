@@ -1,10 +1,10 @@
 {
     "database": {
-        "host": "95.163.240.218",
+        "host": "",
         "port": 3306,
-        "user": "mysqladmin1",
-        "password": "aiPh9eaNgan9",
-        "database": "PyWIN Core"
+        "user": "",
+        "password": "",
+        "database": ""
     },
     "system": {
         "pluginloader": false,
