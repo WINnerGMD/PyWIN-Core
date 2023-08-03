@@ -39,8 +39,8 @@ def get_user(
     for i in comments_object:
         userObject = UserService().get_user_byid(db=db, id=i.authorId)
         iconkits = userObject.iconkits
-        comment_string +=f"2~{i.content}~3~{i.authorId}~4~9~7~2~10~0~9~fif~6~{i.id}:1~{i.authorName}~9~{iconkits['accIcon']}~12~10~11~11~14~~15~1~16~13735168|"
-    return comment_string + "#5705:0:10"
+        comment_string +=f"2~{i.content}~3~{i.authorId}~4~0~7~0~10~0~9~2 minutes~6~31468976:1~{i.authorName}~9~41~10~25~11~10~14~1~15~0~16~{i.authorId}|"
+    return comment_string + "#5705:2:10"
     # return str(comments_object)
 
 

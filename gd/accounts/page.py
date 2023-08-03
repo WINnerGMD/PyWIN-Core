@@ -15,11 +15,11 @@ router = APIRouter(prefix="", tags=["account"])
 
 @router.post(f"{path}/getGJUserInfo20.php", response_class=PlainTextResponse)
 def get_userInfo(accountID: str = Form(),targetAccountID: str = Form(), db: Session = Depends(get_db)):
-        user_obj = UserService().get_user_byid(db=db, id=accountID)
+        user_obj = UserService().get_user_byid(db=db, id=targetAccountID)
         iconkit = user_obj.iconkits
-
-        # rank = db.query(models.User).filter(models.User.stars > user_obj.stars).all()
-        response = f'1:{user_obj.userName}:2:{user_obj.id}:13:{user_obj.coins}:17:{user_obj.usr_coins}:10:{iconkit["color1"]}:11:{iconkit["color2"]}:3:{user_obj.stars}:46:{user_obj.diamonds}:4:{user_obj.demons}:8:{user_obj.cp}:18:0:19:0:50:0:20:UCZoN2WLAooS6uhREa9Cgpwg:21:{iconkit["accIcon"]}:22:{iconkit["accShip"]}:23:{iconkit["accBall"]}:24:{iconkit["accBird"]}:25:{iconkit["accDart"]}:26:{iconkit["accRobot"]}:28:{iconkit["accGlow"]}:43:{iconkit["accSpider"]}:48:1:30:47981:16:{user_obj.id}:31:0:44::45:devexit:49:{user_obj.role}:29:1'
+        rank  = db.query(models.User).filter(models.User.stars >= user_obj.stars).count()
+        print(rank)
+        response = f'1:{user_obj.userName}:2:{user_obj.id}:13:{user_obj.coins}:17:{user_obj.usr_coins}:10:{iconkit["color1"]}:11:{iconkit["color2"]}:3:{user_obj.stars}:46:{user_obj.diamonds}:4:{user_obj.demons}:8:{user_obj.cp}:18:0:19:0:50:0:20::21:{iconkit["accIcon"]}:22:{iconkit["accShip"]}:23:{iconkit["accBall"]}:24:{iconkit["accBird"]}:25:{iconkit["accDart"]}:26:{iconkit["accRobot"]}:28:{iconkit["accGlow"]}:43:{iconkit["accSpider"]}:48:1:30:{rank}:16:{user_obj.id}:31:0:44::45::49:3:29:1'
         return response
     
     

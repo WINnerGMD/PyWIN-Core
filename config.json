@@ -1,10 +1,10 @@
 {
     "database": {
-        "host": "",
+        "host": "95.163.240.218",
         "port": 3306,
-        "user": "",
-        "password": "",
-        "database": ""
+        "user": "mysqladmin1",
+        "password": "aiPh9eaNgan9",
+        "database": "PyWIN Core"
     },
     "system": {
         "pluginloader": false,
@@ -15,6 +15,7 @@
         "endpoint": "winnertests",
         "username": "",
         "password": "",
-        "path": "/winnertests"
+        "path": "/winnertests",
+        "verifed_users": 0
     }
 }

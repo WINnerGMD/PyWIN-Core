@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from objects.schemas import UploadComments
+from objects.schemas import UploadComments,UploadPost, GetPost
 from sql import models
 from services.user import UserService
 
@@ -16,3 +16,17 @@ class CommentsService:
     
     def get_comments(self,level_id,db:Session):
         return db.query(models.Comments).filter(models.Comments.levelID== level_id).all()
+    
+
+class PostCommentsService:
+
+    def upload_post(self,db:Session, data:UploadPost):
+        db_post = models.posts(accountID = data.accountID,content=data.content)
+
+        db.add(db_post)
+        db.commit()
+        db.refresh(db_post)
+
+
+    def get_post(self, db: Session , data: GetPost):
+        return db.query(models.posts).filter(models.posts.accountID == data.accountID).order_by(models.posts.id.desc()).all()

@@ -56,3 +56,14 @@ class UploadComments:
     comment: str
     levelID: int
     percent: int
+
+
+@dataclass
+class UploadPost:
+    accountID: int
+    content:str
+
+
+@dataclass
+class GetPost:
+    accountID: int

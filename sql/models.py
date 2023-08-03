@@ -127,3 +127,12 @@ class Comments(Base):
         })
 
 
+
+
+class posts(Base):
+    __tablename__ = "post"
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    accountID = Column(Integer)
+    content = Column(Text)
+
