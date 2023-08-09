@@ -1,21 +1,21 @@
-from sqlalchemy.orm import Session
-from sqlalchemy.sql import text
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select,insert
 from sql import models
 from objects.schemas import UploadLevel,GetLevel
 import json
 from services.user import UserService
 from datetime import datetime, timedelta
-
+from sqlalchemy import Delete
+import datetime
 class LevelService:
     
-
-
-    def upload_level(self, db: Session,data: UploadLevel):
-        AuthorObj = UserService().get_user_byid(db=db, id=data.accountID)
+    @staticmethod
+    async def upload_level(db: AsyncSession,data: UploadLevel):
+        AuthorObj = await UserService().get_user_byid(db=db, id=data.accountID)
         if AuthorObj != None:
 
-            db_lvl = models.level(name=data.levelName,
-                                #   desc = data.levelDesc,
+            db_lvl = models.Levels(name=data.levelName,
+                                  desc = data.levelDesc,
                                   version= data.levelVersion,
                                   authorID = data.accountID,
                                   authorName = AuthorObj.userName, 
@@ -33,44 +33,57 @@ class LevelService:
                                   LevelString = data.levelString
                                    )
             db.add(db_lvl)
-            db.commit()
-            db.refresh(db_lvl)
+            await db.commit()
+            await db.refresh(db_lvl)
+            return db_lvl.id
     
-
-    def get_levels(self,db: Session,data: GetLevel):
+    @staticmethod
+    async def get_levels(db: AsyncSession,data: GetLevel):
         page = int(data.page) * 5
         difficulty = data.difficulty
         if difficulty == "-1":
             difficulty = 0
         elif difficulty == "-2":
             difficulty = int(data.demonFilter) + 6
-        result = (db.query(models.level).filter( models.level.coins > 0 if data.coins == "1" 
-                                                 else models.level.coins >= 0 ,
+        result = (select(models.Levels).filter( models.Levels.coins > 0 if data.coins == "1" 
+                                                 else models.Levels.coins >= 0 ,
 
-                                                 models.level.lenght >= 0 if data.lenght == "-" 
-                                                 else models.level.lenght == data.lenght,
+                                                 models.Levels.lenght >= 0 if data.lenght == "-" 
+                                                 else models.Levels.lenght == data.lenght,
                                                  
-                                                 models.level.difficulty >= -3 if data.difficulty == "-" 
-                                                 else models.level.difficulty == difficulty,
+                                                 models.Levels.difficulty >= -3 if data.difficulty == "-" 
+                                                 else models.Levels.difficulty == difficulty,
 
                                                  )
                                                  )
         if data.type == "2":
-            return result.order_by(models.level.likes.desc(), models.level.downloads.desc()).offset(page).limit(5).all()
+            return (await db.execute(result.order_by(models.Levels.likes.desc(), models.Levels.downloads.desc()).offset(page).limit(10))).scalars().all()
         elif data.type == "0":
-            return result.filter(models.level.name.like(f"%{data.str}%")).order_by(models.level.likes.desc(), models.level.downloads.desc()).offset(page).limit(5).all()
+            answer = (await db.execute(result.filter(models.Levels.name.like(f"%{data.str}%")).order_by(models.Levels.likes.desc(), models.Levels.downloads.desc()).offset(page).limit(10))).scalars().all()
+            if answer != []:
+                return answer
+            else:
+                return (await db.execute(result.filter(models.Levels.id == data.str))).scalars().all()
+            
         elif data.type == "5":
-            return result.filter(models.level.authorID == data.str).all()
+            return (await db.execute(result.filter(models.Levels.authorID == data.str))).scalars().all()
         elif data.type == "6":
-            return result.filter(models.level.rate == 1).all()
+            return  (await db.execute(result.filter(models.Levels.rate == 1))).scalars().all()
         elif data.type == "4":
-            return result.order_by(models.level.id.desc())
+            return (await db.execute(result.order_by(models.Levels.id.desc()))).scalars().all()
         elif data.type == "16":
-            return result.filter(models.level.rate >= 1).all()
+            return (await db.execute(result.filter(models.Levels.rate >= 1))).scalars().all()
         else:
-            return result.all()
+            return (await db.execute(result)).all()
     
 
+    @staticmethod
+    async def get_level_buid( levelID,db: AsyncSession):
 
-    def get_level_buid(self,db: Session, level_id):
-        return db.query(models.level).filter(models.level.id == level_id).first()
+        return (await db.execute(select(models.Levels).filter(models.Levels.id == levelID))).scalars().first()
+    
+    @staticmethod
+    async def delete_level(levelID, db: AsyncSession ):
+        db_level = (await db.execute(select(models.Levels).filter(models.Levels.id == levelID))).scalars().first()
+        await db.delete(db_level)
+        await db.commit()

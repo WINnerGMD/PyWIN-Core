@@ -7,3 +7,4 @@ with open("config.json", 'r') as config:
     use_win = json['system']['use_w']
     debug = json['system']['debug']
     pluginload = json['system']['pluginloader']
+    default_role = json['system']['default_role']

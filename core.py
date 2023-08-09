@@ -3,16 +3,17 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 from plugins.origins import app
 from services.user import *
 from database import get_db, engine
+from uvicorn import Config, Server
+import multiprocessing
+import time
 
 
-
-
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)
 from gd.levels.levels import router as router_levels
 from gd.accounts.accounts import router as router_accounts
 from gd.accounts.page import router as router_acc_page
 # from gd.rate.rate_levels import router as router_rates
-# from gd.levels.likes import router as router_likes
+from gd.levels.likes import router as router_likes
 from gd.levels.upload import router as router_upload
 # from win.main import router as router_pywin
 from gd.music.songs import router as router_music
@@ -42,7 +43,7 @@ fastapi.include_router(router_acc_page)
 fastapi.include_router(router_comments)
 # fastapi.include_router(router_rates)
 fastapi.include_router(router_posts)
-# fastapi.include_router(router_likes)
+fastapi.include_router(router_likes)
 fastapi.include_router(router_upload)
 fastapi.include_router(router_music)
 fastapi.include_router(plugin_router)
@@ -50,7 +51,7 @@ fastapi.include_router(plugin_router)
 fastapi.include_router(router_scores)
 @fastapi.get(path, response_class=HTMLResponse )
 # @default_route()
-async def message( db: Session = Depends(get_db)):
+async def message():
     return """
     <!DOCTYPE html>
     <html lang="en">
@@ -69,6 +70,10 @@ async def message( db: Session = Depends(get_db)):
     </html>
     """
 
-
 if __name__ == '__main__':
-    uvicorn.run(app="core:fastapi", reload=True)
+    config = uvicorn.Config("core:fastapi",reload=True)
+    server = uvicorn.Server(config=config)
+    server.run()
+
+
+    

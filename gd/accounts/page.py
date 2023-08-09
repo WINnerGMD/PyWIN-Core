@@ -3,23 +3,26 @@ from fastapi.responses import PlainTextResponse, HTMLResponse
 from helpers.security import bcrypt_hash
 from database import get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import select, func
 from services.user import UserService
+from services.perms import PermissionService
 from sql import models
 import json
 from config import path
 from config import path
 from route_manager import default_route
 from objects.schemas import UpdateStats
+from helpers.security import chechValid
 router = APIRouter(prefix="", tags=["account"])
 
 
 @router.post(f"{path}/getGJUserInfo20.php", response_class=PlainTextResponse)
-def get_userInfo(accountID: str = Form(),targetAccountID: str = Form(), db: Session = Depends(get_db)):
-        user_obj = UserService().get_user_byid(db=db, id=targetAccountID)
+async def get_userInfo(accountID: str = Form(default=0),targetAccountID: str = Form(), db: Session = Depends(get_db)):
+        user_obj = await UserService().get_user_byid(db=db, id=targetAccountID)
         iconkit = user_obj.iconkits
-        rank  = db.query(models.User).filter(models.User.stars >= user_obj.stars).count()
-        print(rank)
-        response = f'1:{user_obj.userName}:2:{user_obj.id}:13:{user_obj.coins}:17:{user_obj.usr_coins}:10:{iconkit["color1"]}:11:{iconkit["color2"]}:3:{user_obj.stars}:46:{user_obj.diamonds}:4:{user_obj.demons}:8:{user_obj.cp}:18:0:19:0:50:0:20::21:{iconkit["accIcon"]}:22:{iconkit["accShip"]}:23:{iconkit["accBall"]}:24:{iconkit["accBird"]}:25:{iconkit["accDart"]}:26:{iconkit["accRobot"]}:28:{iconkit["accGlow"]}:43:{iconkit["accSpider"]}:48:1:30:{rank}:16:{user_obj.id}:31:0:44::45::49:3:29:1'
+        rank  = len((await db.execute(select(models.Users).filter(models.Users.stars >= user_obj.stars))).scalars().all())
+        modlevel = (await PermissionService().get_permissions(id=user_obj.role,db=db)).BadgeID
+        response = f'1:{user_obj.userName}:2:{user_obj.id}:13:{user_obj.coins}:17:{user_obj.usr_coins}:10:{iconkit["color1"]}:11:{iconkit["color2"]}:3:{user_obj.stars}:46:{user_obj.diamonds}:4:{user_obj.demons}:8:{user_obj.cp}:18:0:19:0:50:0:20::21:{iconkit["accIcon"]}:22:{iconkit["accShip"]}:23:{iconkit["accBall"]}:24:{iconkit["accBird"]}:25:{iconkit["accDart"]}:26:{iconkit["accRobot"]}:28:{iconkit["accGlow"]}:43:{iconkit["accSpider"]}:48:1:30:{rank}:16:{user_obj.id}:31:0:44::45::49:{modlevel}:29:1'
         return response
     
     
@@ -47,7 +50,7 @@ def get_userInfo(accountID: str = Form(),targetAccountID: str = Form(), db: Sess
 
 @router.post(f'{path}/updateGJUserScore22.php', response_class=PlainTextResponse)
 @default_route()
-def updateGJUserScore22(accountID: str = Form(),stars: str = Form(),
+async def updateGJUserScore22(accountID: str = Form(),stars: str = Form(),
                         demons: str = Form(),diamonds: str = Form(),
                         coins: str = Form(),userCoins: str = Form(),
                         accIcon: str = Form(),accShip: str = Form(),
@@ -58,11 +61,12 @@ def updateGJUserScore22(accountID: str = Form(),stars: str = Form(),
                         color1: str = Form(), color2: str = Form(),
                         db: Session = Depends(get_db)
                         ):
-    iconkit = {"color1": int(color1), "color2":  int(color2), "accBall":  int(accBall), "accBird":  int(accBird), "accDart":  int(accDart), "accGlow":  int(accGlow), "accIcon":  int(accIcon), "accShip":  int(accShip), "accRobot":  int(accRobot), "accSpider":  int(accSpider), "accExplosion":  int(accExplosion)}
-    result = UpdateStats(id=accountID,stars=stars, demons=demons,diamonds=diamonds,coins=coins,usr_coins=userCoins, iconkits=iconkit)
-    print(result)
-    UserService().update_user(db=db, data=result)
-    print(gjp)
+    if await chechValid(id=accountID, gjp=gjp, db=db):
+        iconkit = {"color1": int(color1), "color2":  int(color2), "accBall":  int(accBall), "accBird":  int(accBird), "accDart":  int(accDart), "accGlow":  int(accGlow), "accIcon":  int(accIcon), "accShip":  int(accShip), "accRobot":  int(accRobot), "accSpider":  int(accSpider), "accExplosion":  int(accExplosion)}
+        result = UpdateStats(id=accountID,stars=stars, demons=demons,diamonds=diamonds,coins=coins,usr_coins=userCoins, iconkits=iconkit)
+        await UserService().update_user(db=db, data=result)
+        return accountID
+    else:
+         raise HTTPException(401, "bro you dump")
     
 #     db(f"UPDATE `users` SET  `iconkit` = '{iconkit}',`stars`='{stars}',`diamonds`='{diamonds}',`coins`='{coins}',`usr_coins`='{userCoins}',`demons`='{demons}' WHERE `id` = {accountID} ")
-    return accountID

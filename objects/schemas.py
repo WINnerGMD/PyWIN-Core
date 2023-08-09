@@ -16,7 +16,7 @@ class UploadLevel:
     levelString: str
     accountID: int
     levelName: str 
-    # levelDesc: str
+    levelDesc: str
     levelVersion: int
     levelLength: int
     audioTrack: int
@@ -62,8 +62,31 @@ class UploadComments:
 class UploadPost:
     accountID: int
     content:str
+    timestamp: str
 
 
 @dataclass
 class GetPost:
     accountID: int
+
+
+
+@dataclass
+class RateLevel:
+    id: int
+    rate: int
+    stars: int
+    difficulty: int
+
+
+
+@dataclass
+class likeItem:
+    itemID: int
+    type: int
+    like: int
+    accountID: int
+
+
+class LikeUpload(BaseModel):
+    likes: int

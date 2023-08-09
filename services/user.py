@@ -1,47 +1,49 @@
 
-from sqlalchemy.orm import Session
-from sqlalchemy import Update
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import Update,select
 from sql import models
 from helpers.security import bcrypt_hash
 from objects.schemas import UpdateStats
-import json
+
 
 class UserService:
 
 
 
 
-    def register_user(self,db: Session, userName: str, password: str, mail:str):
-            if db.query(models.User).filter(models.User.userName == userName).first() != None:
+    async def register_user(self,db: AsyncSession, userName: str, password: str, mail:str):
+            request = select(models.Users).filter(models.Users.userName == userName)
+            if (await db.execute(request)).scalars().first() != None:
                     return {"code": "-2", "message": "error [UserName already registered]"}
-            elif db.query(models.User).filter(models.User.mail == mail).first() != None:
+            elif (await db.execute(select(models.Users).filter(models.Users.mail == mail))).scalars().first() != None:
                     return {"code": "-3", "message": "error [User email already registered]"}
             else:  
                 passhash = bcrypt_hash(password)
-                db_user = models.User(userName=userName, passhash=passhash, mail=mail)
+                db_user = models.Users(userName=userName, passhash=passhash, mail=mail)
                 db.add(db_user)
-                db.commit()
-                db.refresh(db_user)
+                await db.commit()
+                await db.refresh(db_user)
                 return {"code":"1", "message": "success"}
     
 
-    def get_user_byid(self, db: Session,id: int):
-                users = db.query(models.User).filter(models.User.id == id).first()
+    async def get_user_byid(self, db: AsyncSession,id: int):
+                users = (await db.execute(select(models.Users).filter(models.Users.id == id))).scalars().first()
                 # return json.loads(users)
                 return users
     
-    def update_user(self, db: Session,data: UpdateStats):
+    async def update_user(self, db: AsyncSession,data: UpdateStats):
             smtp = (
-                    Update(models.User).where(data.id== models.User.id).values(data.dict(exclude_unset=True))
+                    Update(models.Users).where(data.id== models.Users.id).values(data.dict(exclude_unset=True))
             )
-            result = db.execute(smtp)
-            db.commit()
+            result = await db.execute(smtp)
+            await db.commit()
 
             return result
     
-    def login_user(self, userName: str, password: str, db = Session):
-            user = db.query(models.User).filter(models.User.userName == userName).first()
+    async def login_user(self, userName: str, password: str, db = AsyncSession):
+            user = (await db.execute(select(models.Users).filter(models.Users.userName == userName))).scalars().first()
             passhash = bcrypt_hash(password)
+            print(user)
             if user == None:
                     return {"code": "-11", "message": "error [User not found]"}
             else:

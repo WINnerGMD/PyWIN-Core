@@ -1,21 +1,21 @@
 {
     "database": {
-        "host": "95.163.240.218",
+        "host": "",
         "port": 3306,
-        "user": "mysqladmin1",
-        "password": "aiPh9eaNgan9",
-        "database": "PyWIN Core"
+        "user": "",
+        "password": "",
+        "database": ""
     },
     "system": {
-        "pluginloader": false,
+        "pluginloader": true,
         "use_w": true,
-        "debug": true
+        "debug": true,
+        "default_role": 1
     },
     "pywin": {
-        "endpoint": "winnertests",
         "username": "",
         "password": "",
-        "path": "/winnertests",
+        "path": "/database",
         "verifed_users": 0
     }
 }

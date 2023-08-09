@@ -6,7 +6,9 @@ import inspect
 import os
 import sys
 import route_manager
-import uvicorn
+import time
+import psutil
+import multiprocessing
 # Main plugin parser file
 #Не советую что либо тут изменять. Тут также летят запросы на сервер,
 #по этому со сломаным модулем, ошибки могут не регаться,
@@ -26,6 +28,7 @@ class PyWIN:
             pass
     
     router = route_manager.router
+    run_console = True
     token = None
     name = None
     verify_status = 0
@@ -45,10 +48,8 @@ class PyWIN:
     def main_start(self):
         console_th = threading.Thread(target=self.__console, name="console")
         console_th.start()
-        @app.command()
-        def test_for():
-            app.alert("test started!")
-            app.test()
+
+        return console_th
     def reset_method(self , func):
         def wrapper(*args):
             print("hui")
@@ -57,7 +58,7 @@ class PyWIN:
     def __console(self):
         console = Console()
         prefix = "/"
-        while True:
+        while self.run_console:
                 request = console.input("")
                 spliter = request.split(" ")
                 if prefix in spliter[0]:
@@ -100,7 +101,15 @@ class PyWIN:
                             print("Команда не найдена")
                 else:
                     print("неизвестный запрос")
-                
+        self.alert("emergency shutdown")
+        time.sleep(3)
+        self.alert("emergency shutdown")
+        self.run_console = True
+
+        # self.__emergency_console()
+
+    def __emergency_console(self):
+        self.__console()
     # def __console(self):
     #     asyncio.run(self.__console_async())
     def command(self):
@@ -144,6 +153,13 @@ class PyWIN:
     def test(self):
         print(self.command_start.ZeroArgs)
         print(self.command_start.OneArgs)
+    
+    def fatal(self):
+        self.run_console = False
+        sys.exit(1)
+        
+
+
     # def error(error_code = "server closed"):
 # print(app.opener())
 # app.rebuild({'database': {'host': 'localhoedededest', 'port': 3306, 'name': '', 'password': '', 'database': ''}})
@@ -151,7 +167,7 @@ app = PyWIN("sdssdsd","\sdsdsd")
 
 @app.command()
 def refresh():
-    app.alert(app.test())
+    app.fatal()
 
 @app.command()
 def server_start():

@@ -2,12 +2,13 @@ import hashlib, requests, base64
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import PlainTextResponse,  HTMLResponse
 from database import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from operator import itemgetter
 from config import path
 from route_manager import default_route
 from services.levels import LevelService
 from objects.schemas import GetLevel
+from helpers.security import chechValid
 import json
 router = APIRouter(
     prefix="",
@@ -28,7 +29,7 @@ def levelHash(data):
 
 @router.post(f"{path}/getGJLevels21.php", response_class=HTMLResponse)
 @default_route()
-def get_level(str: str = Form(default=None),
+async def get_level(str: str = Form(default=None),
               page: str = Form(default=None),
               type: str = Form(default=None), 
               len: str = Form(default=None),
@@ -41,7 +42,7 @@ def get_level(str: str = Form(default=None),
               song: str = Form(default=None),
               customSong: str = Form(default=None),
 
-              db: Session = Depends(get_db)):
+              db: AsyncSession = Depends(get_db)):
     scheme = GetLevel(lenght=len,
                       str=str,
                       type=type,
@@ -55,8 +56,7 @@ def get_level(str: str = Form(default=None),
                       song=song,
                       customSong=customSong
                       )
-    print(scheme)
-    result = LevelService().get_levels(db=db,data=scheme)
+    result = await LevelService().get_levels(db=db,data=scheme)
     levelsDataHash = []
     levelString = ""
     userString = ""
@@ -68,12 +68,11 @@ def get_level(str: str = Form(default=None),
         elif row.rate == 2:
             epic = 1
 
-        levelsDataHash += [{"levelID":row.id,"stars":row.stars,"coins":row.coins}]
+        levelsDataHash += [{"levelID":row.id,"stars":row.stars,"coins":row.user_coins}]
         levelString += f'1:{row.id}:2:{row.name}:5:{row.version}:6:{row.authorID}:8:10:9:{row.difficulty}0:10:{row.downloads}:12:{row.AudioTrack}:13:{row.gameVersion}:14:{row.likes}:17:{0}:43:{0}:25:{0}:18:{row.stars}:19:{feature}:42:{epic}:45:{row.objects}:3:{row.desc}:15:{row.lenght}:30:{row.original}:31:{row.two_players}:37:{row.coins}:38:{row.user_coins}:39:{0}:46:1:47:2:35:{row.song_id}|'
 
         userString += f'{row.authorID}:{row.authorName}:{row.authorID}|'
-    print(scheme)
-    return f"{levelString}#{userString}##{2}:{int(page+'0')}:10#{levelHash(levelsDataHash)}"
+    return f"{levelString}#{userString}##{2}:{int(page+'0')}:5#{levelHash(levelsDataHash)}"
 
 
 def downloadLevelHash1(levelString):
@@ -101,9 +100,23 @@ def xor_cipher(text, key):
 
 @router.post(f'{path}/downloadGJLevel22.php', response_class=PlainTextResponse)
 @default_route()
-def level_download(levelID: str = Form(), db: Session = Depends(get_db)):
-    levelString = "H4sIAAAAAAAAC6WX0ZHdIAxFG3JmAEmAJ19bwxZAAdtCis_DkEl2pEM2kx_zfIwvAmR038e79CsPTaOMXGzIKGYj59WU1Syo41sedeSU0mgjj2zz0kcafeQfeTwSqXxNIv-_xB1KzD7rhS-JlDHfj4TmavwSSn-TMZRJ_xJNBZnr4y3LlWZjq6mr0et1Xb_bIrvps3mX-7krz3UJPA_e9LmupzmtJl_pe77yVa5ml1yvyK7yuk9JN9YY5xg_IpJDXHqs7XCO8SOS71AEcClxJMU-DeV6ZdnT-3zv-1Xg95H71azAE_BHRzTWCbgcuduvNS7xYMcEeAV-n3gw7sPnKJH-vEbxBDwduUuiPV_Y96D_DVyO_V08c8Ro3JkJIe_AS5w_W8fzfuLSYh3kLt9WPMR9Puz-Lh-2vuf9xOduRjoBL0fu8nBzt79b3_MOvEA-2JH7ePqRe50O628xFzg3BU5dgXIhUF0EitHiPt-WTsDzkbs82TqeQ12TBvOFWiVQrFY8AX90YLowK49bvOmbuyTZQRJ3H8UO3vMGXCGefOQ-HnAVArZCwFfszXWHkkLxVQEORVyh6C-ubn2WTsAFeDpxn_wKxV3BDKx4Ag7FWsGcKBRTBXOlUDQViq9C8VUwD1uHOKx_wNOJw_L7NFfwLAoeZ-v48AU4eA0Fj6bg6RQ84N52P98KXI7pCelD20vx-LQy8EQGnsjAExl4IgNPtMYl7j9fA69k4K12PMTdZ2rgoQw8l4HHMfA4Bp7FwOMYeCsDz2vgeQ28pIH3scBrd_n9QqIH4h8EduzPB4EUGM0KhqmCYapgmCrUtqUT8HzkLikq1OAKNbiCwapg1CrU7ApeoYLBqmDIamDgno2p20t9vvcb1cAkNDAJDUxCg1O4wenWoPg2KNYNinsDM9DgFG5gKhqc5g2qRYPq0uHr7fBPpMM_l9slzk8cFHWi9RQAAA=="
+async def level_download(levelID: str = Form(), db: AsyncSession = Depends(get_db)):
+    if levelID != "-1":
+        row = await LevelService().get_level_buid(db=db,levelID=levelID)
+        return f'1:{row.id}:2:{row.name}:3:{row.desc}:4:{row.LevelString}:5:{row.version}:6:{row.authorID}:8:10:9:{row.difficulty}0:10:{row.downloads}:12:{row.AudioTrack}:13:{row.gameVersion}:14:{row.likes}:17:{0}:43:{0}:25:{0}:18:{row.stars}:19:{"1" if row.rate == 1 else "0"}:42:{"1" if row.rate == 2 else "0"}:45:{row.objects}:15:{row.lenght}:30:{row.original}:31:{row.two_players}:28:{0}:29:{0}:35:{row.song_id}:36::37:{row.coins}:38:{row.user_coins}:39:{0}:46::47::40:{row.is_ldm}:27:{base64_encode(xor_cipher(row.password, 26364))}#{downloadLevelHash1(row.LevelString)}#' + downloadLevelHash2(f'{row.authorID},{row.stars},{0},{row.id},{row.user_coins},{"1" if row.rate == 1 else "0"},{row.password},0')
+    else:
+        print(levelID)
+        row = await LevelService().get_level_buid(db=db,levelID=17)
+        return f'1:{row.id}:2:{row.name}:3:{row.desc}:4:{row.LevelString}:5:{row.version}:6:{row.authorID}:8:10:9:{row.difficulty}0:10:{row.downloads}:12:{row.AudioTrack}:13:{row.gameVersion}:14:{row.likes}:17:{0}:43:{0}:25:{0}:18:{row.stars}:19:{"1" if row.rate == 1 else "0"}:42:{"1" if row.rate == 2 else "0"}:45:{row.objects}:15:{row.lenght}:30:{row.original}:31:{row.two_players}:28:{0}:29:{0}:35:{row.song_id}:36::37:{row.coins}:38:{row.user_coins}:39:{0}:46::47::40:{row.is_ldm}:27:{base64_encode(xor_cipher(row.password, 26364))}#{downloadLevelHash1(row.LevelString)}#' + downloadLevelHash2(f'{row.authorID},{row.stars},{0},{row.id},{row.user_coins},{"1" if row.rate == 1 else "0"},{row.password},0')
 
-    row = LevelService().get_level_buid(db=db,level_id=levelID)
-    
-    return f'1:{row.id}:2:{row.name}:3:{row.desc}:4:{row.LevelString}:5:{row.version}:6:{row.authorID}:8:10:9:{row.difficulty}0:10:{row.downloads}:12:{row.AudioTrack}:13:{row.gameVersion}:14:{row.likes}:17:{0}:43:{0}:25:{0}:18:{row.stars}:19:{"1" if row.rate == 1 else "0"}:42:{"1" if row.rate == 2 else "0"}:45:{row.objects}:15:{row.lenght}:30:{row.original}:31:{row.two_players}:28:{0}:29:{0}:35:{row.song_id}:36::37:{row.coins}:38:{row.user_coins}:39:{0}:46::47::40:{row.is_ldm}:27:{base64_encode(xor_cipher(row.password, 26364))}#{downloadLevelHash1(row.LevelString)}#' + downloadLevelHash2(f'{row.authorID},{row.stars},{0},{row.id},{row.user_coins},{"1" if row.rate == 1 else "0"},{row.password},0')
+
+@router.post(f'{path}/deleteGJLevelUser20.php', response_class=PlainTextResponse)
+async def level_delete(accountID: str = Form(),
+                 gjp: str = Form(),
+                 levelID: str = Form(),
+                   db: AsyncSession = Depends(get_db)):
+    if await chechValid(id=accountID, gjp=gjp, db=db):
+        level_object = await LevelService().get_level_buid(db=db, level_id=levelID)
+        if level_object.authorID == int(accountID):
+            await LevelService().delete_level(db=db, levelID=levelID)
+            return "1"

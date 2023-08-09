@@ -1,10 +1,11 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String,JSON,Text
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String,JSON,Text,MetaData, Float
 from sqlalchemy.orm import relationship
 
 from database import Base
 from dataclasses import dataclass
+metadata_obj = MetaData()
 
-class User(Base):
+class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -41,7 +42,7 @@ class User(Base):
 
         return str(shprot)
     
-class level(Base):
+class Levels(Base):
     __tablename__ = "levels"
 
 
@@ -85,7 +86,7 @@ class level(Base):
             "downloads": self.downloads,
             "AudioTrack": self.AudioTrack,
             "song_id": self.song_id,
-            "lenght": self.len,
+            "lenght": self.lenght,
             "stars": self.stars,
             "coins": self.coins,
             "difficulty": self.difficulty,
@@ -113,7 +114,7 @@ class Comments(Base):
     content = Column(Text)
     likes = Column(Integer , default=0)
     progress = Column(Integer)
-    is_spam = Column(Boolean, default=False)
+    is_spam = Column(Integer, default=False)
 
 
     def __repr__(self):
@@ -129,10 +130,53 @@ class Comments(Base):
 
 
 
-class posts(Base):
-    __tablename__ = "post"
+class Posts(Base):
+    __tablename__ = "posts"
 
     id = Column(Integer, autoincrement=True, primary_key=True)
     accountID = Column(Integer)
     content = Column(Text)
+    likes = Column(Integer, default=0)
+    timestamp = Column(String(255), default="0-0-0")
 
+    def __repr__(self):
+        return str({
+            "id": self.id,
+            "accountID": self.accountID,
+            "content": self.content,
+            "likes": self.likes,
+            "timestamp": self.timestamp
+        })
+
+
+class Roles(Base):
+    __tablename__ = "roles"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    color = Column(String(255))
+    BadgeID = Column(Integer)
+    typeMod = Column(Integer)
+    rateLevels = Column(Boolean, default=False)
+
+    def __repr__(self):
+        return str({"id": self.id,
+                "color": self.color,
+                "badgeID": self.BadgeID,
+                "typeMod": self.typeMod,
+                "rateLevels": self.rateLevels})
+    
+class logs(Base):
+    __tablename__ = "logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+
+class Songs:
+    __tablename__ = "songs"
+
+
+    id = Column(Integer, autoincrement=True,primary_key=True)
+    song_id = Column(Integer)
+    name = Column(String(255))
+    author = Column(String(255))
+    link = Column(Text)
+    size = Column(Float)

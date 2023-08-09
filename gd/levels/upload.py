@@ -10,11 +10,11 @@ router = APIRouter()
 
 @router.post(f'{path}/uploadGJLevel21.php')
 @default_route()
-def upload_level(db: Session = Depends(get_db),
+async def upload_level(db: Session = Depends(get_db),
                     levelString: str = Form(),
                   accountID: str = Form(),
                     levelName: str = Form(),
-                    #  levelDesc: str = Form(),
+                     levelDesc: str = Form(default='WyBoZXkgaGUgZGlkbid0IHB1dCBhIGRlc2NyaXB0aW9uIF0='),
                       levelVersion: str = Form(), 
                       levelLength: str = Form(),
                         audioTrack: str = Form(),
@@ -32,7 +32,7 @@ def upload_level(db: Session = Depends(get_db),
                 levelString = levelString,
                 accountID = accountID,
                 levelName = levelName,
-                # levelDesc = levelDesc,
+                levelDesc = levelDesc,
                 levelVersion = levelVersion,
                 levelLength = levelLength,
                 audioTrack = audioTrack,
@@ -46,4 +46,4 @@ def upload_level(db: Session = Depends(get_db),
                 ldm = ldm,
                 gameVersion = gameVersion
                 )
-    return LevelService().upload_level(db=db, data=SystemObj)
+    return await LevelService().upload_level(db=db, data=SystemObj)
