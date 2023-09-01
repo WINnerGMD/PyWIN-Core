@@ -36,6 +36,7 @@ class UploadLevel:
 @dataclass
 class GetLevel:
     lenght: int
+    gauntlet: int
     str: str 
     type: int 
     accountID: int
@@ -90,3 +91,7 @@ class likeItem:
 
 class LikeUpload(BaseModel):
     likes: int
+
+
+class DownloadItem(BaseModel):
+    downloads: int

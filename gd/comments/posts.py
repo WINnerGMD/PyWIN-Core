@@ -6,7 +6,7 @@ from objects.schemas import UploadPost, GetPost
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from services.user import UserService
-from helpers.security import chechValid
+from utils.security import chechValid
 from datetime import datetime
 router = APIRouter()
 
@@ -34,7 +34,7 @@ async def get_posts(accountID: str = Form(),
             time = datetime.strptime(i.timestamp, '%Y-%m-%d %H:%M:%S.%f')
         except:
             time = datetime(1,1,1,1,1,1,1)
-        post_string += f"2~{i.content}~4~{i.likes}~9~{time.day}/{time.month}/{time.year} {time.minute}:{time.second}~6~{i.id}|"
+        post_string += f"2~{i.content}~4~{i.likes}~9~{time.day}/{time.month}/{time.year} {time.second}:{time.minute}~6~{i.id}|"
     return post_string + "#67:0:10"
 
 

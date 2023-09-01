@@ -5,8 +5,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sql import models
 from hashlib import sha1
+
+
+def base64_encode(string: str) -> str:
+    return base64.urlsafe_b64encode(string.encode()).decode()
+
+
+def base64_decode(string: str) -> str:
+    return base64.urlsafe_b64decode(string.encode()).decode()
+
+
 def bcrypt_hash(password):
     return bcrypt.hashpw(password.encode(), b'$2b$12$VWAACqVFSNt8bIiWVXdsyO').decode()
+
+
+
+
 
 def xor_cipher(string: str, key: str) -> str:
     return ("").join(chr(ord(x) ^ ord(y)) for x, y in zip(string, itertools.cycle(key)))

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Form, HTTPException, Request,Depends
 from fastapi.responses import PlainTextResponse, HTMLResponse
-from helpers.security import bcrypt_hash
 from database import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from services.user import UserService
 from services.perms import PermissionService
@@ -10,14 +9,19 @@ from sql import models
 import json
 from config import path
 from config import path
-from route_manager import default_route
 from objects.schemas import UpdateStats
-from helpers.security import chechValid
+from objects.levelObject import LevelObject
+from services.levels import LevelService
+from utils.security import chechValid
+from aiocache import cached, Cache
+from aiocache.serializers import PickleSerializer
+from config import redis_ttl, redis_port
 router = APIRouter(prefix="", tags=["account"])
 
 
 @router.post(f"{path}/getGJUserInfo20.php", response_class=PlainTextResponse)
-async def get_userInfo(accountID: str = Form(default=0),targetAccountID: str = Form(), db: Session = Depends(get_db)):
+@cached(ttl=redis_ttl, cache=Cache.REDIS, key="get_user", serializer=PickleSerializer(), port=redis_port, namespace="main")
+async def get_userInfo(accountID: str = Form(default=0),targetAccountID: str = Form(), db: AsyncSession = Depends(get_db)):
         user_obj = await UserService().get_user_byid(db=db, id=targetAccountID)
         iconkit = user_obj.iconkits
         rank  = len((await db.execute(select(models.Users).filter(models.Users.stars >= user_obj.stars))).scalars().all())
@@ -26,7 +30,9 @@ async def get_userInfo(accountID: str = Form(default=0),targetAccountID: str = F
         return response
     
     
-
+@router.get('/admin')
+async def admin(db: AsyncSession = Depends(get_db)):
+     return LevelObject( service= await LevelService.get_level_buid(levelID=89, db=db)).name()
 # @router.post(f"{path}/getGJUsers20.php", response_class=PlainTextResponse)
 # @default_route()
 # def get_users(str: str = Form()):
@@ -49,7 +55,6 @@ async def get_userInfo(accountID: str = Form(default=0),targetAccountID: str = F
 
 
 @router.post(f'{path}/updateGJUserScore22.php', response_class=PlainTextResponse)
-@default_route()
 async def updateGJUserScore22(accountID: str = Form(),stars: str = Form(),
                         demons: str = Form(),diamonds: str = Form(),
                         coins: str = Form(),userCoins: str = Form(),
@@ -59,7 +64,7 @@ async def updateGJUserScore22(accountID: str = Form(),stars: str = Form(),
                         accGlow:str = Form(),accSpider: str = Form(),
                         accExplosion:str = Form(), gjp: str = Form(),
                         color1: str = Form(), color2: str = Form(),
-                        db: Session = Depends(get_db)
+                        db: AsyncSession = Depends(get_db)
                         ):
     if await chechValid(id=accountID, gjp=gjp, db=db):
         iconkit = {"color1": int(color1), "color2":  int(color2), "accBall":  int(accBall), "accBird":  int(accBird), "accDart":  int(accDart), "accGlow":  int(accGlow), "accIcon":  int(accIcon), "accShip":  int(accShip), "accRobot":  int(accRobot), "accSpider":  int(accSpider), "accExplosion":  int(accExplosion)}

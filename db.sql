@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.2
+-- version 4.9.5deb2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Jul 10, 2023 at 04:20 PM
--- Server version: 5.7.24
--- PHP Version: 8.0.1
+-- Хост: localhost:3306
+-- Время создания: Сен 01 2023 г., 05:20
+-- Версия сервера: 8.0.34-0ubuntu0.20.04.1
+-- Версия PHP: 7.4.3-4ubuntu2.19
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -18,133 +19,238 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `pywinbd`
+-- База данных: `mysqladmin1`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `levels`
+-- Структура таблицы `comments`
+--
+
+CREATE TABLE `comments` (
+  `id` int NOT NULL,
+  `authorId` int DEFAULT NULL,
+  `authorName` varchar(255) DEFAULT NULL,
+  `levelID` int NOT NULL,
+  `content` text,
+  `timestamp` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `likes` int DEFAULT NULL,
+  `progress` int DEFAULT NULL,
+  `is_spam` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `gauntlets`
+--
+
+CREATE TABLE `gauntlets` (
+  `id` int NOT NULL,
+  `indexpack` int NOT NULL,
+  `levels` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `levels`
 --
 
 CREATE TABLE `levels` (
-  `id` int(11) NOT NULL,
-  `name` tinytext NOT NULL,
-  `desc` tinytext,
-  `version` tinyint(4) NOT NULL,
-  `authorID` int(11) NOT NULL,
-  `gameVersion` tinyint(2) NOT NULL,
-  `likes` int(11) DEFAULT '0',
-  `downloads` int(11) DEFAULT '0',
-  `audioTrack` tinyint(2) NOT NULL DEFAULT '0',
-  `levelLength` tinyint(1) NOT NULL,
-  `stars` tinyint(2) DEFAULT '0',
-  `difficulty` tinyint(1) DEFAULT '0',
-  `starAuto` tinyint(1) DEFAULT '0',
-  `starDemon` tinyint(1) DEFAULT '0',
-  `starDemonDiff` tinyint(1) DEFAULT '0',
-  `rate` tinyint(1) DEFAULT '0',
-  `starCoins` tinyint(1) DEFAULT '0',
-  `coins` tinyint(1) DEFAULT '0',
-  `original` int(11) NOT NULL,
-  `twoPlayer` tinyint(1) NOT NULL,
-  `songID` int(11) NOT NULL,
-  `requestedStars` tinyint(2) NOT NULL,
-  `isLDM` tinyint(1) NOT NULL,
-  `objects` int(11) NOT NULL,
-  `password` tinyint(4) NOT NULL DEFAULT '0',
-  `uploadDate` int(11) NOT NULL DEFAULT '0',
-  `updateDate` int(11) NOT NULL DEFAULT '0',
-  `string` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id` int NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `desc` text,
+  `version` int DEFAULT NULL,
+  `authorID` int DEFAULT NULL,
+  `authorName` varchar(255) DEFAULT NULL,
+  `gameVersion` int DEFAULT NULL,
+  `likes` int DEFAULT NULL,
+  `downloads` int DEFAULT NULL,
+  `AudioTrack` int DEFAULT NULL,
+  `lenght` int DEFAULT NULL,
+  `stars` int DEFAULT NULL,
+  `difficulty` int DEFAULT NULL,
+  `coins` int DEFAULT NULL,
+  `user_coins` int DEFAULT NULL,
+  `rate` int DEFAULT NULL,
+  `original` int DEFAULT NULL,
+  `two_players` int DEFAULT NULL,
+  `song_id` int DEFAULT NULL,
+  `is_ldm` int DEFAULT NULL,
+  `objects` int DEFAULT NULL,
+  `password` int DEFAULT NULL,
+  `upload_date` varchar(255) DEFAULT NULL,
+  `update_date` int DEFAULT NULL,
+  `LevelString` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `songs`
+-- Структура таблицы `posts`
+--
+
+CREATE TABLE `posts` (
+  `id` int NOT NULL,
+  `accountID` int DEFAULT NULL,
+  `content` text,
+  `likes` int NOT NULL DEFAULT '0',
+  `timestamp` varchar(255) NOT NULL DEFAULT '0-0-0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `roles`
+--
+
+CREATE TABLE `roles` (
+  `id` int NOT NULL,
+  `color` varchar(255) DEFAULT NULL,
+  `BadgeID` int DEFAULT NULL,
+  `typeMod` int DEFAULT NULL,
+  `rateLevels` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `roles`
+--
+
+INSERT INTO `roles` (`id`, `color`, `BadgeID`, `typeMod`, `rateLevels`) VALUES
+(1, '121', 0, 0, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `songs`
 --
 
 CREATE TABLE `songs` (
-  `id` int(11) NOT NULL,
-  `songid` int(11) NOT NULL,
-  `link` text NOT NULL,
+  `id` int NOT NULL,
   `name` varchar(255) NOT NULL,
-  `author` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `songs`
---
-
-INSERT INTO `songs` (`id`, `songid`, `link`, `name`, `author`) VALUES
-(2, 2232, 'https://audio.ngfiles.com/2000/2232_newgrounds_guitar.mp3?f1121439350', 'NICE GUITAR PIECE', 'beatspitta');
+  `author` varchar(255) NOT NULL,
+  `link` text NOT NULL,
+  `size` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Структура таблицы `users`
 --
 
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `userName` varchar(255) NOT NULL,
-  `mail` varchar(255) NOT NULL,
-  `role` int(11) NOT NULL,
-  `passhash` varchar(255) NOT NULL,
-  `verifed` int(11) NOT NULL,
-  `stars` int(11) NOT NULL,
-  `diamonds` int(11) NOT NULL,
-  `coins` int(11) NOT NULL,
-  `usr_coins` int(11) NOT NULL,
-  `demons` int(11) NOT NULL,
-  `cp` int(11) NOT NULL,
-  `iconkit` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `networks` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `id` int NOT NULL,
+  `userName` varchar(255) DEFAULT NULL,
+  `mail` varchar(255) DEFAULT NULL,
+  `role` int DEFAULT NULL,
+  `passhash` varchar(255) DEFAULT NULL,
+  `verified` tinyint(1) DEFAULT NULL,
+  `stars` int DEFAULT NULL,
+  `diamonds` int DEFAULT NULL,
+  `coins` int DEFAULT NULL,
+  `usr_coins` int DEFAULT NULL,
+  `demons` int DEFAULT NULL,
+  `cp` int DEFAULT NULL,
+  `iconkits` json DEFAULT NULL,
+  `networks` json DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Indexes for dumped tables
+-- Индексы сохранённых таблиц
 --
 
 --
--- Indexes for table `levels`
+-- Индексы таблицы `comments`
+--
+ALTER TABLE `comments`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Индексы таблицы `gauntlets`
+--
+ALTER TABLE `gauntlets`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Индексы таблицы `levels`
 --
 ALTER TABLE `levels`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `songs`
+-- Индексы таблицы `posts`
+--
+ALTER TABLE `posts`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Индексы таблицы `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Индексы таблицы `songs`
 --
 ALTER TABLE `songs`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `users`
+-- Индексы таблицы `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `userName` (`userName`),
+  ADD UNIQUE KEY `mail` (`mail`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT для сохранённых таблиц
 --
 
 --
--- AUTO_INCREMENT for table `levels`
+-- AUTO_INCREMENT для таблицы `comments`
+--
+ALTER TABLE `comments`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
+
+--
+-- AUTO_INCREMENT для таблицы `gauntlets`
+--
+ALTER TABLE `gauntlets`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
+
+--
+-- AUTO_INCREMENT для таблицы `levels`
 --
 ALTER TABLE `levels`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
 
 --
--- AUTO_INCREMENT for table `songs`
+-- AUTO_INCREMENT для таблицы `posts`
+--
+ALTER TABLE `posts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
+
+--
+-- AUTO_INCREMENT для таблицы `roles`
+--
+ALTER TABLE `roles`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
+
+--
+-- AUTO_INCREMENT для таблицы `songs`
 --
 ALTER TABLE `songs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

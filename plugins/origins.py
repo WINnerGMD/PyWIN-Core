@@ -3,12 +3,8 @@ import json
 import threading
 from rich.console import Console
 import inspect
-import os
 import sys
-import route_manager
 import time
-import psutil
-import multiprocessing
 # Main plugin parser file
 #Не советую что либо тут изменять. Тут также летят запросы на сервер,
 #по этому со сломаным модулем, ошибки могут не регаться,
@@ -26,8 +22,7 @@ class PyWIN:
 
         def __init__(self):
             pass
-    
-    router = route_manager.router
+    __endpoins = []
     run_console = True
     token = None
     name = None
@@ -37,27 +32,19 @@ class PyWIN:
     def __init__(self,name,token):
         self.token = token
         self.name = name
-
-    def start(self):
-        try:
-            answer = requests.post("http://127.0.0.1:2000/plugins/verify", json={"token": self.token}, headers={"user-agent": self.token}).text
-            if answer == 'originsOMG':
-                self.verify_status = 1
-        except Exception as e:
-            print(f"{self.name}  что то пошло не так ...")
     def main_start(self):
         console_th = threading.Thread(target=self.__console, name="console")
         console_th.start()
 
+        cache.route_config = self.__endpoins
+
         return console_th
-    def reset_method(self , func):
-        def wrapper(*args):
-            print("hui")
-            func(*args)
-        return wrapper
+
+
     def __console(self):
         console = Console()
         prefix = "/"
+        console.print('hello')
         while self.run_console:
                 request = console.input("")
                 spliter = request.split(" ")
@@ -125,12 +112,6 @@ class PyWIN:
                 self.command_start.ThreeArgsArgs.append({"func_name": func.__name__, "func": func,"args": arguments})
             else:
                 raise ValueError("Number of arguments is very big")
-            # self.doit.append({"func_name": func.__name__, "func": func,"args": arguments})
-        return wrapper
-    def new_route(self, path):
-        def wrapper(func):
-            
-            print("hello")
         return wrapper
     def alert(self, message):
         console.print(f"[red]{self.name}: {message}[/red]")
@@ -150,13 +131,6 @@ class PyWIN:
                 return "успешно"
         else:
             print("Функция с конфигом не работает ибо ваш мод ")
-    def test(self):
-        print(self.command_start.ZeroArgs)
-        print(self.command_start.OneArgs)
-    
-    def fatal(self):
-        self.run_console = False
-        sys.exit(1)
         
 
 
@@ -165,19 +139,8 @@ class PyWIN:
 # app.rebuild({'database': {'host': 'localhoedededest', 'port': 3306, 'name': '', 'password': '', 'database': ''}})
 app = PyWIN("sdssdsd","\sdsdsd")
 
-@app.command()
-def refresh():
-    app.fatal()
-
-@app.command()
-def server_start():
-    def open_server():
-        app.alert("Server started!")
-        os.system("uvicorn core:app --reload")
-    console_th = threading.Thread(target=open_server, name="server")
-    console_th.start()
 
 
 
-if __name__ == "plugins.origins":
-    app.main_start()
+# if __name__ == "plugins.origins":
+#     app.main_start()

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Form, Depends
 from config import path
-from route_manager import default_route
 from services.levels import LevelService
 from objects.schemas import UploadLevel
 from database import get_db
@@ -9,7 +8,6 @@ router = APIRouter()
 
 
 @router.post(f'{path}/uploadGJLevel21.php')
-@default_route()
 async def upload_level(db: Session = Depends(get_db),
                     levelString: str = Form(),
                   accountID: str = Form(),
@@ -46,4 +44,4 @@ async def upload_level(db: Session = Depends(get_db),
                 ldm = ldm,
                 gameVersion = gameVersion
                 )
-    return await LevelService().upload_level(db=db, data=SystemObj)
+    return (await LevelService().upload_level(db=db, data=SystemObj)).id

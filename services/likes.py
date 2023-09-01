@@ -7,8 +7,8 @@ from sqlalchemy import Update
 class LikesService:
 
 
-
-    async def upload_like(self,db: AsyncSession, data: likeItem):
+    @staticmethod
+    async def upload_like(db: AsyncSession, data: likeItem):
         if (await db.execute(select(models.Users.verified).filter(models.Users.id == data.accountID))).scalars().first() == True:
             if int(data.type) == 1:
                 if int(data.like) == 1:
@@ -22,13 +22,13 @@ class LikesService:
                     return "1"
                 
                 elif int(data.like) == 0:
-                    request = int(db.query(models.Levels.likes).filter(models.Levels.id == data.itemID).first()[0])
+                    request = int((await db.execute(select(models.Levels.likes).filter(models.Levels.id == data.itemID))).scalars().first())
                     item = LikeUpload(likes=request-1)
                     smtp = (
                             Update(models.Levels).where(data.itemID == models.Levels.id).values(item.dict(exclude_unset=True))
                         )
                     result = db.execute(smtp)
-                    db.commit()
+                    await db.commit()
                     return "1"
             elif int(data.type) == 2:
                 pass
@@ -41,7 +41,7 @@ class LikesService:
                             Update(models.Posts).where(data.itemID == models.Posts.id).values(item.dict(exclude_unset=True))
                         )
                     result = db.execute(smtp)
-                    db.commit()
+                    await db.commit()
                     return "1"
                 
                 elif int(data.like) == 0:
@@ -51,7 +51,7 @@ class LikesService:
                             Update(models.Posts).where(data.itemID == models.Posts.id).values(item.dict(exclude_unset=True))
                         )
                     result = db.execute(smtp)
-                    db.commit()
+                    await db.commit()
                     return "1"
         else:
             return {"error": "Unauthorized"}

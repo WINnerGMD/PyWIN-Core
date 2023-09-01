@@ -164,19 +164,22 @@ class Roles(Base):
                 "typeMod": self.typeMod,
                 "rateLevels": self.rateLevels})
     
-class logs(Base):
-    __tablename__ = "logs"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
     
 
-class Songs:
+class Songs(Base):
     __tablename__ = "songs"
 
 
     id = Column(Integer, autoincrement=True,primary_key=True)
-    song_id = Column(Integer)
     name = Column(String(255))
     author = Column(String(255))
     link = Column(Text)
     size = Column(Float)
+
+
+class Gauntlets(Base):
+    __tablename__ = 'gauntlets'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    indexpack = Column(Integer)
+    levels = Column(String(255))

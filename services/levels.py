@@ -1,17 +1,19 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select,insert
 from sql import models
-from objects.schemas import UploadLevel,GetLevel
+from objects.schemas import UploadLevel,GetLevel, DownloadItem
 import json
 from services.user import UserService
 from datetime import datetime, timedelta
-from sqlalchemy import Delete
+from sqlalchemy import Delete, Update
 import datetime
+
 class LevelService:
     
     @staticmethod
     async def upload_level(db: AsyncSession,data: UploadLevel):
         AuthorObj = await UserService().get_user_byid(db=db, id=data.accountID)
+        upload_time = datetime.datetime.utcnow()
         if AuthorObj != None:
 
             db_lvl = models.Levels(name=data.levelName,
@@ -29,17 +31,23 @@ class LevelService:
                                   song_id = data.songID,
                                   is_ldm = data.ldm, 
                                   password = data.password,
-                                  upload_date= datetime.utcnow(),
+                                  upload_date= upload_time,
                                   LevelString = data.levelString
                                    )
             db.add(db_lvl)
             await db.commit()
             await db.refresh(db_lvl)
-            return db_lvl.id
-    
+
+
+
+            logs = models.Events(type='levelUpload',playerID = data.accountID,valueID = db_lvl.id, timestamp = upload_time)
+            db.add(logs)
+            await db.commit()
+            await db.refresh(logs)
+            return db_lvl
     @staticmethod
     async def get_levels(db: AsyncSession,data: GetLevel):
-        page = int(data.page) * 5
+        page = int(data.page) * 10
         difficulty = data.difficulty
         if difficulty == "-1":
             difficulty = 0
@@ -53,7 +61,11 @@ class LevelService:
                                                  
                                                  models.Levels.difficulty >= -3 if data.difficulty == "-" 
                                                  else models.Levels.difficulty == difficulty,
-
+                                                 
+                                                 models.Levels.rate == 2 if data.epic == "1" 
+                                                 else models.Levels.rate >= 0,
+                                                models.Levels.rate == 1 if data.featured == "1" 
+                                                 else models.Levels.rate >= 0
                                                  )
                                                  )
         if data.type == "2":
@@ -70,7 +82,9 @@ class LevelService:
         elif data.type == "6":
             return  (await db.execute(result.filter(models.Levels.rate == 1))).scalars().all()
         elif data.type == "4":
-            return (await db.execute(result.order_by(models.Levels.id.desc()))).scalars().all()
+            return (await db.execute(result.order_by(models.Levels.id.desc()).limit(10).offset(page))).scalars().all()
+        elif data.type == "11":
+            return (await db.execute(result.filter(models.Levels.stars > 0).limit(10).offset(page))).scalars().all()
         elif data.type == "16":
             return (await db.execute(result.filter(models.Levels.rate >= 1))).scalars().all()
         else:
@@ -79,11 +93,26 @@ class LevelService:
 
     @staticmethod
     async def get_level_buid( levelID,db: AsyncSession):
-
         return (await db.execute(select(models.Levels).filter(models.Levels.id == levelID))).scalars().first()
+    
+
+    # @staticmethod
+    # async def downloads_level(levelID,db: AsyncSession):
+    #     ret
     
     @staticmethod
     async def delete_level(levelID, db: AsyncSession ):
         db_level = (await db.execute(select(models.Levels).filter(models.Levels.id == levelID))).scalars().first()
         await db.delete(db_level)
         await db.commit()
+
+
+    @staticmethod
+    async def downloads_count(levelID, db: AsyncSession):
+            request = int((await db.execute(select(models.Levels.downloads).filter(models.Levels.id == levelID))).scalars().first())
+            item = DownloadItem(downloads=request+1)
+            smtp = (
+                            Update(models.Levels).filter(models.Levels.id == levelID).values(item.dict(exclude_unset=True))
+                        )
+            result = await db.execute(smtp)
+            await db.commit()

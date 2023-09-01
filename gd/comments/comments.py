@@ -6,6 +6,7 @@ from objects.schemas import UploadComments
 from sqlalchemy.orm import Session
 from database import get_db
 from services.user import UserService
+from datetime import datetime
 router = APIRouter()
 
 
@@ -22,7 +23,9 @@ async def upload_comment(
 ):
     comment_object = UploadComments(userName=userName,accountID=accountID, comment=comment,levelID=levelID,percent=percent)
     answer = await CommentsService().upload_comments(db=db, data=comment_object)
-    return str(answer.id)
+    if answer['status'] == 'ok':
+        if answer['type'] == 'comment':
+            return str(answer['data'].id)
     # return "2~ODk4IHRvIGp1c3QgYmVhdCBpbiBwcmFjdGlzZSBtb2RlIGdnIQ==~3~133533914~4~9~7~2~10~1~9~2 minutes~6~31468976:1~depolo~9~41~10~25~11~10~14~~15~1~16~13735168#5705:0:10"
 
 

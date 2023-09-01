@@ -1,38 +1,26 @@
 from fastapi import FastAPI, Request,Body, Depends
 from fastapi.responses import PlainTextResponse, HTMLResponse
-from plugins.origins import app
-from services.user import *
-from database import get_db, engine
-from uvicorn import Config, Server
-import multiprocessing
-import time
-
-
-# models.Base.metadata.create_all(bind=engine)
 from gd.levels.levels import router as router_levels
 from gd.accounts.accounts import router as router_accounts
 from gd.accounts.page import router as router_acc_page
 # from gd.rate.rate_levels import router as router_rates
 from gd.levels.likes import router as router_likes
 from gd.levels.upload import router as router_upload
-# from win.main import router as router_pywin
-from gd.music.songs import router as router_music
+from gd.music.musix import router as router_music
 from gd.scores.scores import router as router_scores
-from route_manager import default_route , plugin_management
-from route_manager import router as plugin_router
 from  gd.comments.comments import router as router_comments
 from gd.comments.posts import router as router_posts
+from asade.verified import router as router_verified_asade
+ 
 from config import path
-import os
+import os 
 import uvicorn
 from config import pluginload
-import json
 if pluginload == True:
     for i in os.listdir("plugins"):
         if i != "origins.py" and i != "__pycache__":
             if i.endswith('.py'):
                 i = i[:-3]
-            # plugin_management(i)
             exec(f"import plugins.{i}")
         
 fastapi = FastAPI()
@@ -46,11 +34,18 @@ fastapi.include_router(router_posts)
 fastapi.include_router(router_likes)
 fastapi.include_router(router_upload)
 fastapi.include_router(router_music)
-fastapi.include_router(plugin_router)
-# fastapi.include_router(router_pywin)
+fastapi.include_router(router_verified_asade)
 fastapi.include_router(router_scores)
+
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.decorator import cache
+
+from aiocache import cached, Cache
+from aiocache.serializers import PickleSerializer
+
 @fastapi.get(path, response_class=HTMLResponse )
-# @default_route()
+@cache(expire=60)
 async def message():
     return """
     <!DOCTYPE html>
@@ -70,10 +65,10 @@ async def message():
     </html>
     """
 
+
+
+
 if __name__ == '__main__':
-    config = uvicorn.Config("core:fastapi",reload=True)
-    server = uvicorn.Server(config=config)
-    server.run()
+    uvicorn.run(app="core:fastapi", host="95.163.240.218", port=4040,  log_level="critical")
 
 
-    

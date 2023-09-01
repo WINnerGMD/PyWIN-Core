@@ -2,7 +2,7 @@ from fastapi import APIRouter, Form, Depends
 from fastapi.responses import PlainTextResponse
 from database import db
 from config import  path
-from route_manager import default_route
+from cache import default_route
 from services.perms import PermissionService
 from sqlalchemy.orm import Session
 from database import get_db

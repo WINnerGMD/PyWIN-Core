@@ -2,7 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Update,select
 from sql import models
-from helpers.security import bcrypt_hash
+from utils.security import bcrypt_hash
 from objects.schemas import UpdateStats
 
 
@@ -48,7 +48,10 @@ class UserService:
                     return {"code": "-11", "message": "error [User not found]"}
             else:
                     if user.passhash == passhash:
-                            return {"code":"1", "message": "success", "id": user.id}
+                            if user.verified == True:
+                                return {"code":"1", "message": "success", "id": user.id}
+                            else:
+                                return {'code': '-12', 'message':  "error [the user's account is disabled]"}
                     else:
                             return {"code":"-11", "message": "error [user's login credentials are incorrect]"}
                 
