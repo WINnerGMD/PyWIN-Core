@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Form, HTTPException,Request,Depends
 from fastapi.responses import PlainTextResponse, HTMLResponse
-# from database import req
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sql import models
@@ -8,7 +7,8 @@ from services.user import UserService
 from config import path
 from database import get_db
 from services.perms import PermissionService
-from utils.security import bcrypt_hash,base64_decode, chechValid
+from utils.crypt import bcrypt_hash,base64_decode, chechValid
+from logger import error
 router = APIRouter(prefix="", tags=["account"])
 
 @router.post(f"{path}/accounts/registerGJAccount.php" , response_class=PlainTextResponse)
@@ -66,7 +66,6 @@ async def backup(saveData:str = Form(), password:str =Form(), userName: str = Fo
             saveData = base64_decode(saveDataArr[0].replace('-', '+').replace('_','/'))
             # with open(f'gd/accounts/backups/{userName}.pw', "w") as f:
             #     f.write(saveData)
-            print(saveData)
             return "1"
     else:
         return "-1"
@@ -79,10 +78,10 @@ async def sync(userName:str = Form(), password: str = Form(),db: AsyncSession = 
         if bcrypt_hash(password) == usersData.passhash:
 
             try:
-                with open(f'gd/accounts/backups/{userName}.pw', "r") as f:
+                with open(f'gd/accounts/backups/{userName}.pw', "r", encoding='utf-8') as f:
                     backup = f.read()
                 print( f"{backup};21;30;a;a")
-            except:
+            except Exception as ex:
                 return "-1"
         else:
             return "-1"

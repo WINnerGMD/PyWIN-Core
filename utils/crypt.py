@@ -57,5 +57,17 @@ async def chechValid(id,gjp,db: AsyncSession):
 
 
 
-def sha1_hash(content, solt):
-      return sha1(content+solt)
+async def sha1_hash(data, salt):
+    hashdata = sha1((data+salt).encode('utf-8'))
+    hashed_string = hashdata.hexdigest()
+    return hashed_string
+
+
+
+
+def return_hash(string):
+    hash_object = sha1(bytes(string, 'utf-8'))
+    return hash_object.hexdigest()
+
+
+"TODO: make normal crypt file"

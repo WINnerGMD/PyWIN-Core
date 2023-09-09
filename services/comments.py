@@ -4,7 +4,7 @@ from objects.schemas import UploadComments,UploadPost, GetPost
 from sql import models
 from services.user import UserService
 from services.perms import PermissionService
-from utils.security import base64_decode
+from utils.crypt import base64_decode
 class CommentsService:
 
     @staticmethod
@@ -13,7 +13,7 @@ class CommentsService:
 
 
     @classmethod
-    async def upload_comments(cls,db:AsyncSession, data: UploadComments):
+    async def upload_comments(cls,db:AsyncSession, data: UploadComments) -> dict:
         try:
             content = base64_decode(data.comment)
             if content.startswith('/'):

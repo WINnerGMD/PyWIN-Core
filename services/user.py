@@ -2,7 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Update,select
 from sql import models
-from utils.security import bcrypt_hash
+from utils.crypt import bcrypt_hash
 from objects.schemas import UpdateStats
 
 
@@ -25,8 +25,8 @@ class UserService:
                 await db.refresh(db_user)
                 return {"code":"1", "message": "success"}
     
-
-    async def get_user_byid(self, db: AsyncSession,id: int):
+    @staticmethod
+    async def get_user_byid(db: AsyncSession,id: int):
                 users = (await db.execute(select(models.Users).filter(models.Users.id == id))).scalars().first()
                 # return json.loads(users)
                 return users

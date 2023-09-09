@@ -1,14 +1,20 @@
 {
     "database": {
-        "host": "localhost",
+        "host": "95.163.240.218",
         "port": 3306,
-        "user": "",
-        "password": "",
-        "database": ""
+        "user": "mysqladmin1",
+        "password": "IcSxkh76gHsBwJ6r",
+        "database": "PyWIN Core"
     },
     "redis": {
         "port": 6379,
-        "ttl": 30
+        "ttl": 1
+    },
+    "logger": {
+        "info": true,
+        "warning": true,
+        "error": true  
+
     },
     "system": {
         "pluginloader": true,

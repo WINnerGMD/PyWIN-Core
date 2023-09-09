@@ -6,7 +6,7 @@ from objects.schemas import UploadPost, GetPost
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from services.user import UserService
-from utils.security import chechValid
+from utils.crypt import chechValid
 from datetime import datetime
 router = APIRouter()
 

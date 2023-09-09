@@ -4,7 +4,7 @@ from sql import models
 from config import default_role
 from objects.schemas import RateLevel
 
-"yep i from Perm"
+"Parma"
 
 class PermissionService:
     

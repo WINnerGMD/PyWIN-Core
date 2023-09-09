@@ -12,7 +12,7 @@ from config import path
 from objects.schemas import UpdateStats
 from objects.levelObject import LevelObject
 from services.levels import LevelService
-from utils.security import chechValid
+from utils.crypt import chechValid
 from aiocache import cached, Cache
 from aiocache.serializers import PickleSerializer
 from config import redis_ttl, redis_port
@@ -32,7 +32,7 @@ async def get_userInfo(accountID: str = Form(default=0),targetAccountID: str = F
     
 @router.get('/admin')
 async def admin(db: AsyncSession = Depends(get_db)):
-     return LevelObject( service= await LevelService.get_level_buid(levelID=89, db=db)).name()
+     return LevelObject( service= await LevelService.get_level_buid(levelID=89, db=db)).name
 # @router.post(f"{path}/getGJUsers20.php", response_class=PlainTextResponse)
 # @default_route()
 # def get_users(str: str = Form()):
