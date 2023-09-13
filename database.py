@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
+from logger import error
 from config import database
 
 SQLALCHEMY_DATABASE_URL = f'mysql+aiomysql://{database["user"]}:{database["password"]}@{database["host"]}/{database["database"]}'
@@ -14,11 +14,15 @@ Base = declarative_base()
 
 
 async def get_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    db = SessionLocal()
     try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+    except Exception as ex:
+        ...
+    
+    try:
+        db = SessionLocal()
         yield db
     finally:
         await db.close()

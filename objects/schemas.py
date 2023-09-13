@@ -35,7 +35,7 @@ class UploadLevel:
 
 @dataclass
 class GetLevel:
-    lenght: int
+    lenght: int | None
     gauntlet: int
     str: str 
     type: int 

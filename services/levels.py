@@ -1,19 +1,22 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select,insert
-from sql import models
-from objects.schemas import UploadLevel,GetLevel, DownloadItem
-import json
-from services.user import UserService
-from datetime import datetime, timedelta
-from sqlalchemy import Delete, Update
 import datetime
+from datetime import datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from logger import info, error, warning
+from objects.schemas import UploadLevel, GetLevel
+from services.user import UserService
+from utils.gdform import formatted_date
+from sql import models
+
+
 class LevelService:
     
     @staticmethod
     async def upload_level(db: AsyncSession,data: UploadLevel):
-        AuthorObj = await UserService().get_user_byid(db=db, id=data.accountID)
-        upload_time = datetime.datetime.utcnow()
+        AuthorObj = (await UserService().get_user_byid(db=db, id=data.accountID))['database']
+        upload_time = formatted_date()
         if AuthorObj != None:
 
             db_lvl = models.Levels(name=data.levelName,
@@ -39,12 +42,8 @@ class LevelService:
             await db.refresh(db_lvl)
 
 
-
-            logs = models.Events(type='levelUpload',playerID = data.accountID,valueID = db_lvl.id, timestamp = upload_time)
-            db.add(logs)
-            await db.commit()
-            await db.refresh(logs)
             return db_lvl
+        
     @staticmethod
     async def get_levels(db: AsyncSession,data: GetLevel):
         try:
@@ -105,18 +104,22 @@ class LevelService:
         except Exception as ex:
             error(ex)
             
-
+    @staticmethod
+    async def get_gauntlets_levels(db: AsyncSession, indexpack: int):
+        query1 = select(models.Gauntlets.levels).filter(models.Gauntlets.indexpack == indexpack)
+        levels = (await db.execute(query1)).scalars().first()
+        query2 = select(models.Levels).filter(models.Levels.id.in_(levels.split(',')))
+        levelpack = (await db.execute(query2)).scalars().all()
+        return {"database":levelpack, "count": 1}
+    @staticmethod
+    async def get_map_packs(db: AsyncSession, page: int):
+        query = select(models.MapPacks).limit(10)
+        return (await db.execute(query)).scalars().all()
     @staticmethod
     async def get_level_buid( levelID,db: AsyncSession):
         return (await db.execute(select(models.Levels).filter(models.Levels.id == levelID))).scalars().first()
     
-    @staticmethod
-    async def get_level_count(db: AsyncSession):
-        return (await db.execute(select(models.Levels))).scalar()
         
-    # @staticmethod
-    # async def downloads_level(levelID,db: AsyncSession):
-    #     ret
     
     @staticmethod
     async def delete_level(levelID, db: AsyncSession ):

@@ -6,7 +6,7 @@ from gd.accounts.page import router as router_acc_page
 from gd.api.get_levels import router as router_api_levels
 from gd.api.get_user import router as router_api_users
 from logger import info
-from gd.levels.likes import router as router_likes
+from gd.misc.likes import router as router_likes
 from gd.levels.upload import router as router_upload
 from gd.music.musix import router as router_music
 from gd.scores.scores import router as router_scores

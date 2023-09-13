@@ -101,6 +101,13 @@ class Levels(Base):
 
         })
     
+class Actions(Base):
+    __tablename__ = "actions"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    actionName = Column(String(255))
+    accountID = Column(Integer)
+    valueID = Column(Integer)
+
 
 class Comments(Base):
     __tablename__ = "comments"
@@ -137,6 +144,8 @@ class Posts(Base):
     accountID = Column(Integer)
     content = Column(Text)
     likes = Column(Integer, default=0)
+    percent = Column(Integer, default=0)
+    lvllink = Column(Integer, default=0)
     timestamp = Column(String(255), default="0-0-0")
 
     def __repr__(self):
@@ -145,6 +154,8 @@ class Posts(Base):
             "accountID": self.accountID,
             "content": self.content,
             "likes": self.likes,
+            "percent": self.percent,
+            'lvllink': self.lvllink,
             "timestamp": self.timestamp
         })
 
@@ -156,7 +167,7 @@ class Roles(Base):
     BadgeID = Column(Integer)
     typeMod = Column(Integer)
     rateLevels = Column(Boolean, default=False)
-
+    regular  = Column(JSON, default={'downloadLevel': 1, "uploadLevel": 1})
     def __repr__(self):
         return str({"id": self.id,
                 "color": self.color,
@@ -183,3 +194,21 @@ class Gauntlets(Base):
     id = Column(Integer, autoincrement=True, primary_key=True)
     indexpack = Column(Integer)
     levels = Column(String(255))
+class MapPacks(Base):
+    __tablename__ = 'mappacks'
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(255))
+    levels = Column(String(255))
+    stars = Column(Integer)
+    coins = Column(Integer)
+    difficulty = Column(Integer)
+    text_color = Column(String(255))
+    bar_color = Column(String(255))
+class Messages(Base):
+    __tablename__ = 'messages'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    authorID = Column(Integer)
+    recipientID = Column(Integer)
+    subject = Column(Text)
+    body = Column(Text)

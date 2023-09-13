@@ -4,7 +4,8 @@ from sqlalchemy import Update,select
 from sql import models
 from utils.crypt import bcrypt_hash
 from objects.schemas import UpdateStats
-
+from services.perms import PermissionService
+from logger import info, error
 
 class UserService:
 
@@ -27,10 +28,46 @@ class UserService:
     
     @staticmethod
     async def get_user_byid(db: AsyncSession,id: int):
-                users = (await db.execute(select(models.Users).filter(models.Users.id == id))).scalars().first()
-                # return json.loads(users)
-                return users
-    
+                try:   
+                        user = (await db.execute(select(models.Users).filter(models.Users.id == id))).scalars().first()
+                        if user == None:
+                               raise Exception("User not found")
+        
+                        rank  = len((await db.execute(select(models.Users).filter(models.Users.stars >= user.stars))).scalars().all())
+                        permissions = await PermissionService.get_permissions(id=user.role, db=db)
+                        return {
+                               'status': 'ok',
+                               'database':user, 
+                                'rank': rank,
+                                'permissions':permissions}
+                
+                except Exception as ex:
+                       return {
+                               'status': 'error',
+                               'details':ex
+                               }
+                
+                
+    @staticmethod
+    async def upload_message(db: AsyncSession,
+                             authorID,
+                             recipientID,
+                             subject,
+                             body):
+           try:
+                message = models.Messages(
+                        authorID=authorID,
+                        recipientID=recipientID,
+                        subject=subject,
+                        body=body
+                )
+                db.add(message)
+                await db.commit()
+                await db.refresh(message)
+                return "1"
+           except Exception as ex:
+                  error(ex)
+                  return "-1"
     async def update_user(self, db: AsyncSession,data: UpdateStats):
             smtp = (
                     Update(models.Users).where(data.id== models.Users.id).values(data.dict(exclude_unset=True))

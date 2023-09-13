@@ -102,5 +102,8 @@ class PostCommentsService:
         await db.commit()
         
     @staticmethod
-    async def get_post(db: AsyncSession , data: GetPost):
-        return (await db.execute(select(models.Posts).filter(models.Posts.accountID == data.accountID).order_by(models.Posts.id.desc()))).scalars().all()
+    async def get_post(db: AsyncSession , usrid:int, page:int):
+        offset = int(page) *10 
+        count = len((await db.execute(select(models.Posts).filter(models.Posts.accountID == usrid))).scalars().all())
+        return {'database': (await db.execute(select(models.Posts).filter(models.Posts.accountID == usrid).limit(10).offset(offset).order_by(models.Posts.id.desc()))).scalars().all(),
+                'count': count}

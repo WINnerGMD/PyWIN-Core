@@ -16,10 +16,6 @@ class PermissionService:
         else:
             return (await db.execute(select(models.Roles).filter(models.Roles.id == default_role))).scalars().first()
     
-    @classmethod
-    async def request_access(cls, id, db: AsyncSession):
-        user_obj = (await db.execute(select(models.Users).filter(models.Users.id == id))).scalars().first()
-        return (await cls.get_permissions(id=user_obj.role, db=db)).typeMod
 
     
 

@@ -7,7 +7,7 @@ from config import path, redis_port, redis_ttl
 from services.levels import LevelService
 from objects.levelObject import LevelGroup,LevelObject
 from objects.schemas import GetLevel
-from utils.crypt import chechValid,xor_cipher,base64_encode
+from utils.crypt import checkValidGJP,xor_cipher,base64_encode
 from utils.gdform import gd_dict_str
 from aiocache import cached, Cache
 from aiocache.serializers import PickleSerializer
@@ -61,8 +61,16 @@ async def get_level(str: str = Form(default=None),
                       customSong=customSong,
                       gauntlet=gauntlet
                       )
-    result = await LevelService().get_levels(db=db,data=scheme)
-    return await LevelGroup(service=result).GDGet_level(page=int(page))
+    
+    if gauntlet != None:
+        result = await LevelService.get_gauntlets_levels(db=db, indexpack=gauntlet)
+        page = 0
+        is_gauntlet = True
+    else:
+        result = await LevelService().get_levels(db=db,data=scheme)
+        page = int(page)
+        is_gauntlet = False
+    return await LevelGroup(service=result).GDGet_level(page=page, is_gauntlet = is_gauntlet)
 
 
 
@@ -72,8 +80,7 @@ async def get_level(str: str = Form(default=None),
 @cached(ttl=redis_ttl, cache=Cache.REDIS, key="download_levels", serializer=PickleSerializer(), port=redis_port, namespace="main")
 async def level_download(levelID: str = Form(), db: AsyncSession = Depends(get_db)):
     service = await LevelService().get_level_buid(db=db,levelID=levelID)
-    return await LevelObject(service=service).GDDownload_level()
-    # return f'1:{row.id}:2:{row.name}:3:{row.desc}:4:{row.LevelString}:5:{row.version}:6:{row.authorID}:8:10:9:{row.difficulty}0:10:{row.downloads}:12:{row.AudioTrack}:13:{row.gameVersion}:14:{row.likes}:17:{0}:43:{0}:25:{0}:18:{row.stars}:19:{"1" if row.rate == 1 else "0"}:42:{"1" if row.rate == 2 else "0"}:45:{row.objects}:15:{row.lenght}:30:{row.original}:31:{row.two_players}:28:{0}:29:{0}:35:{row.song_id}:36::37:{row.coins}:38:{row.user_coins}:39:{0}:46::47::40:{row.is_ldm}:27:{base64_encode(xor_cipher(str(row.password), "26364"))}#{downloadLevelHash1(row.LevelString)}#' + downloadLevelHash2(f'{row.authorID},{row.stars},{0},{row.id},{row.user_coins},{"1" if row.rate == 1 else "0"},{row.password},0')
+    return await LevelObject(service=service, db=db).GDDownload_level()
 
 
 @router.post(f'{path}/deleteGJLevelUser20.php', response_class=PlainTextResponse)
@@ -81,7 +88,7 @@ async def level_delete(accountID: str = Form(),
                  gjp: str = Form(),
                  levelID: str = Form(),
                    db: AsyncSession = Depends(get_db)):
-    if await chechValid(id=accountID, gjp=gjp, db=db):
+    if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         level_object = await LevelService().get_level_buid(db=db, levelID=levelID)
         if level_object.authorID == int(accountID):
             await LevelService().delete_level(db=db, levelID=levelID)
@@ -94,6 +101,7 @@ def return_hash(string):
 @router.post(f'{path}/getGJGauntlets21.php', response_class=PlainTextResponse)
 async def gauntlets(db:AsyncSession = Depends(get_db)):
     gauntlets = (await db.execute(select(models.Gauntlets))).scalars().all()
+    await LevelService.get_gauntlets_levels(db=db, indexpack=2)
     response = ""
     hash_string = ""
     for gn in gauntlets:
@@ -106,3 +114,22 @@ async def gauntlets(db:AsyncSession = Depends(get_db)):
 
     response = response[:-1] + f"#{return_hash(hash_string)}"
     return response
+
+@router.post(f'{path}/getGJMapPacks21.php', response_class=PlainTextResponse)
+async def map_packs(page: str = Form(), db: AsyncSession = Depends(get_db)):
+    packs = await LevelService.get_map_packs(db=db ,page=page)
+    packstrings = []
+    packhash = ""
+    for pack in packs:
+        packstrings.append(gd_dict_str({
+            1: pack.id,
+            2: pack.name,
+            3: pack.levels,
+            4: pack.stars,
+            5: pack.coins,
+            6: pack.difficulty,
+            7: pack.text_color,
+            8: pack.bar_color
+        }))
+        packhash +=(f"{str(pack.id)[0]}{str(pack.id)[-1]}{pack.stars}{pack.coins}")
+    return "|".join(packstrings) + "#1:5:10#" + return_hash(packhash)

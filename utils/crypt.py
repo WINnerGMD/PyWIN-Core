@@ -42,7 +42,7 @@ def decode_gjp(gjp: str) -> str:
 
 	return decoded
 
-async def chechValid(id,gjp,db: AsyncSession):
+async def checkValidGJP(id,gjp,db: AsyncSession):
       try:
         password = decode_gjp(gjp)
         bcrypt = bcrypt_hash(password)

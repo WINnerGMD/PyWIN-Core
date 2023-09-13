@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Form, Depends, Header, HTTPException
-from fastapi.responses import PlainTextResponse
-from config import path
 from typing import Annotated
-from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sql import models
+
+from fastapi import APIRouter, Form, Depends, Header
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
-import json
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from config import path
+from database import get_db
+from sql import models
+
 # with open('/gd/music/musix_config.json', 'r') as f:
 #     config = json.loads(f.read())
 
@@ -20,7 +22,7 @@ router = APIRouter()
 async def get_song(songID: str = Form(), db: AsyncSession = Depends(get_db)):
     song_db = (await db.execute(select(models.Songs).filter(models.Songs.id == songID))).scalars().first()
     
-    if song_db != None:
+    if song_db is not None:
 
         songID = song_db.id
         name = song_db.name
@@ -47,6 +49,7 @@ class get_musix(BaseModel):
     link: str
 @router.post('/musix')
 async def musix_get(data: get_musix,Authorization: Annotated[str, Header()], db: AsyncSession = Depends(get_db)):
+    global song_link
     try:
         if Authorization == SECRET:
             if data.type == 'yt':
