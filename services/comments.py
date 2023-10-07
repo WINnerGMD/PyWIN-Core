@@ -1,94 +1,159 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from types import FunctionType
+import jmespath
 from sqlalchemy import select, update
-from objects.schemas import UploadComments,UploadPost, GetPost
-from sql import models
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from helpers.commands import Commands
+from objects.schemas import UploadComments, UploadPost
 from services.user import UserService
-from services.perms import PermissionService
+from sql import models
 from utils.crypt import base64_decode
+from config import system
+from helpers.rate import Difficulty
+def methods(cls):
+    result = []
+    for x, y in cls.__dict__.items():
+        if type(y) == FunctionType and x.startswith('__') != True:
+            result.append({"name": x, "func": y})
+    return result
+
+
+command_list = methods(Commands)
+
+
 class CommentsService:
-
     @staticmethod
-    async def get_comments(level_id,db:AsyncSession):
-        return (await db.execute(select(models.Comments).filter(models.Comments.levelID== level_id).order_by(models.Comments.id.desc()))).scalars().all()
-
+    async def get_comments(level_id, page: int, db: AsyncSession):
+        comments = (
+            (
+                await db.execute(
+                    select(models.Comments)
+                    .filter(models.Comments.levelID == level_id)
+                    .order_by(models.Comments.id.desc())
+                    .limit(system.page)
+                    .offset(system.page * page)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        count = len(
+            (
+                await db.execute(
+                    select(models.Comments)
+                    .filter(models.Comments.levelID == level_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        if comments is not None:
+            return {"status": "ok", "database": comments, "count": count}
+        else:
+            return {"status": "error", "details": "comments not found"}
 
     @classmethod
-    async def upload_comments(cls,db:AsyncSession, data: UploadComments) -> dict:
+    async def upload_comments(cls, db: AsyncSession, data: UploadComments) -> dict:
         try:
             content = base64_decode(data.comment)
-            if content.startswith('/'):
-                await cls.commands_handler(data=content[1:], accountID= data.accountID, levelID=data.levelID, db=db)
-                return {
-                    'status': 'ok',
-                    'type': 'command'
-                }
+            print(content)
+            if content.startswith("/"):
+                await cls.commands_handler(
+                    data=content[1:],
+                    levelID=data.levelID,
+                    authorID=data.accountID,
+                    db=db,
+                )
+                return {"status": "ok", "type": "command"}
             else:
-                db_comment = models.Comments(authorId = data.accountID, content=data.comment, progress = data.percent, levelID= data.levelID, authorName = (await UserService().get_user_byid(db=db, id=data.accountID)).userName)
+                db_comment = models.Comments(
+                    authorId=data.accountID,
+                    content=data.comment,
+                    progress=data.percent,
+                    levelID=data.levelID,
+                    authorName=(
+                        (await UserService().get_user_byid(db=db, id=data.accountID))
+                    )["database"].userName,
+                )
                 db.add(db_comment)
                 await db.commit()
                 await db.refresh(db_comment)
 
-                return {
-                    'status': 'ok',
-                    'type': 'comment',
-                    'data':db_comment
-                    }
-        except:
-            return {
-                'status': 'error'
-            }
-    
+                return {"status": "ok", "type": "comment", "data": db_comment}
+        except Exception as e:
+            return {"status": "error", "details": e}
+
     @staticmethod
-    async def commands_handler(data: str, accountID: int, levelID: int, db: AsyncSession) -> bool:
-        command = data.split(' ')
-        name = command[0]
-        if name == 'rate':
-            stars = command[1]
-            difficulty = command[2]
-            if difficulty == 'none':
-                smtp = {'difficulty': 0, 'stars': stars}
-            elif difficulty == 'easy':
-                smtp = {'difficulty': 1, 'stars': stars}
-            elif difficulty == 'normal':
-                smtp = {'difficulty': 2, 'stars': stars}
-            elif difficulty == 'hard':
-                smtp = {'difficulty': 3, 'stars': stars}
-            elif difficulty == 'harder':
-                smtp = {'difficulty': 4, 'stars': stars}
-            elif difficulty == 'insane':
-                smtp = {'difficulty': 5, 'stars': stars}
-            elif difficulty == 'easydemon':
-                smtp = {'difficulty': 7, 'stars': stars}
-            elif difficulty == 'mediumdemon':
-                smtp = {'difficulty': 8, 'stars': stars}
-            elif difficulty == 'harddemon':
-                smtp = {'difficulty': 6, 'stars': stars}
-            elif difficulty == 'insanedemon':
-                smtp = {'difficulty': 9, 'stars': stars}
-            elif difficulty == 'extreme':
-                smtp = {'difficulty': 10, 'stars': stars}
+    async def commands_handler(
+            data: str, levelID: int, authorID: int, db: AsyncSession
+    ) -> bool:
+        data = data.split(" ")
+        name = data[0]
+        commands = data[1:]
+        print(name)
+        match name:
+            case 'rate':
+                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
+                    print(commands)
+                    match commands[0]:
+                        case 'easy':
+                            difficulty = Difficulty.easy
+                        case 'normal':
+                            difficulty = Difficulty.normal
+                        case 'hard':
+                            difficulty = Difficulty.hard
+                        case 'harder':
+                            difficulty = Difficulty.harder
+                        case 'insane':
+                            difficulty = Difficulty.insane
+                        case 'easydemon':
+                            difficulty = Difficulty.easyDemon
+                        case 'mediumdemon':
+                            difficulty = Difficulty.mediumDemon
+                        case 'harddemon':
+                            difficulty = Difficulty.hardDemon
+                        case 'insanedemon':
+                            difficulty = Difficulty.insaneDemon
+                        case 'extremedemon':
+                            difficulty = Difficulty.extremeDemon
+                    print(difficulty.value)
+                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
+                        {'difficulty': difficulty.value, 'stars': commands[1]}
+                    )))
 
-        elif name == 'unrate':
-            smtp = {'difficulty': 0, 'stars': 0, 'rate': 0}
+                    await db.commit()
+            case 'epic':
+                if (await UserService.get_user_byid(id=authorID,db=db))['permissions'].rateLevels:
+                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
+                        {'rate': 2}
+                    )))
+                    await db.commit()
+            case 'featured':
+                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
+                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
+                        {'rate': 1}
+                    )))
+                    await db.commit()
+            case 'nonrate':
+                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
+                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
+                        {'rate': 0}
+                    )))
+                    await db.commit()
+            case 'norate':
+                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
+                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
+                        {'rate': 0, 'difficulty': 0, 'stars': 0}
+                    )))
+                    await db.commit()
 
-        elif name == 'nonrate':
-            smtp = {'rate': 0}
-        elif name == 'featured':
-            smtp = {'rate': 1}
-        elif name == 'epic':
-            smtp = {'rate': 2}
-        elif name == 'legendary':
-            smtp = {'rate': 3}
-        elif name == 'godlike':
-            smtp = {'rate': 4}
-        (await db.execute(update(models.Levels).where(models.Levels.id == levelID).values(smtp)))
-        await db.commit()
 
 class PostCommentsService:
-
     @staticmethod
-    async def upload_post(db:AsyncSession, data:UploadPost):
-        db_post = models.Posts(accountID = data.accountID,content=data.content, timestamp = data.timestamp)
+    async def upload_post(db: AsyncSession, data: UploadPost):
+        db_post = models.Posts(
+            accountID=data.accountID, content=data.content, timestamp=data.timestamp
+        )
 
         db.add(db_post)
         await db.commit()
@@ -96,14 +161,38 @@ class PostCommentsService:
         return db_post
 
     @staticmethod
-    async def delete_post(postID, db:AsyncSession):
-        db_level = (await db.execute(select(models.Posts).filter(models.Posts.id == postID))).scalars().first()
+    async def delete_post(postID, db: AsyncSession):
+        db_level = (
+            (await db.execute(select(models.Posts).filter(models.Posts.id == postID)))
+            .scalars()
+            .first()
+        )
         await db.delete(db_level)
         await db.commit()
-        
+
     @staticmethod
-    async def get_post(db: AsyncSession , usrid:int, page:int):
-        offset = int(page) *10 
-        count = len((await db.execute(select(models.Posts).filter(models.Posts.accountID == usrid))).scalars().all())
-        return {'database': (await db.execute(select(models.Posts).filter(models.Posts.accountID == usrid).limit(10).offset(offset).order_by(models.Posts.id.desc()))).scalars().all(),
-                'count': count}
+    async def get_post(db: AsyncSession, usrid: int, page: int):
+        offset = int(page) * 10
+        count = len(
+            (
+                await db.execute(
+                    select(models.Posts).filter(models.Posts.accountID == usrid)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return {
+            "database": (
+                await db.execute(
+                    select(models.Posts)
+                    .filter(models.Posts.accountID == usrid)
+                    .limit(10)
+                    .offset(offset)
+                    .order_by(models.Posts.id.desc())
+                )
+            )
+            .scalars()
+            .all(),
+            "count": count,
+        }

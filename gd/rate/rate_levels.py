@@ -1,54 +1,79 @@
 from fastapi import APIRouter, Form, Depends
 from fastapi.responses import PlainTextResponse
-from database import db
-from config import  path
-from cache import default_route
-from services.perms import PermissionService
-from sqlalchemy.orm import Session
+from config import system
+from services.user import UserService
+from services.levels import LevelService
+from objects.levelObject import LevelObject
+from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
+from utils.crypt import checkValidGJP
+from helpers.rate import Difficulty
+from logger import error
+
 router = APIRouter(tags=["rate"], prefix="")
 
 
+@router.post(f"{system.path}/suggestGJStars20.php", response_class=PlainTextResponse)
+async def suggestGJStars(
+        accountID: int = Form(),
+        gjp: str = Form(),
+        feature: int = Form(),
+        levelID: int = Form(),
+        stars: int = Form(),
+        db: AsyncSession = Depends(get_db),
+):
+    if await checkValidGJP(id=accountID, gjp=gjp, db=db):
+        user = await UserService.get_user_byid(db=db, id=accountID)
+        if user['permissions'].rateLevels:
+            level = await LevelService.get_level_buid(levelID=levelID, db=db)
+            match stars:
+                case 1:
+                    difficulty = Difficulty.gd_auto
+                case 2:
+                    difficulty = Difficulty.easy
+                case 3:
+                    difficulty = Difficulty.normal
+                case 4 | 5:
+                    difficulty = Difficulty.hard
+                case 6 | 7:
+                    difficulty = Difficulty.harder
+                case 8 | 9:
+                    difficulty = Difficulty.insane
+                case 10:
+                    difficulty = Difficulty.easyDemon
+            object_level = await LevelObject(level, db=db).rate(stars=stars, difficulty=difficulty, rate=1 if feature == 1 else 0)
+            if object_level['status'] == 'ok':
+                return "1"
+            else:
+                error(object_level['details'])
+                return "-1"
 
-@router.post(path=f'{path}/suggestGJStars20.php',response_class=PlainTextResponse)
-@default_route()
-def suggestGJStars(accountID: str = Form(), feature: str = Form(), levelID: str = Form(), stars: str = Form(), db: Session = Depends(get_db)):
-    get_user = PermissionService().get_permissions(id=accountID, db=db)
-    if get_user.rateLevels == 1:
-        pass
-    # answer = db(f"SELECT * FROM `users` WHERE `id` = {accountID}")
-    # user_obj = answer[0]
-    # if user_obj['role'] == 1:
-    #     return "1"
-    # elif user_obj['role'] == 2:
-    #     print(type(stars))
-    #     if stars == "1":
-    #         if feature == "0":
-    #             db(f"UPDATE `levels` SET `starAuto` = 1, `stars` = 1, `rate` = 0 WHERE `id` = {levelID}")
-    #         elif feature == "1":
-    #             db(f"UPDATE `levels` SET `starAuto` = 1, `stars` = 1, `rate` = 1 WHERE `id` = {levelID}")
-    #     elif int(stars) <= 9 and int(stars) >= 2:
-    #         if int(stars) <= 3:
-    #             difficulty = int(stars) - 1
-    #         else: 
-    #             if int(stars) in [4,5]:
-    #                 difficulty = 3
-    #             elif int(stars) in [6,7]:
-    #                 difficulty = 4
-    #             elif int(stars) in [8,9]:
-    #                 difficulty = 5
-    #         print(difficulty)
-    #         if feature == "0":
-    #             db(f"UPDATE `levels` SET `starAuto` = 0, `stars` = {int(stars)},`difficulty` =  {difficulty}, `rate` = 0 WHERE `id` = {levelID}")
-    #         elif feature == "1":
-    #             db(f"UPDATE `levels` SET `starAuto` = 0, `stars` = {int(stars)},`difficulty` =  {difficulty}, `rate` = 1 WHERE `id` = {levelID}")
-
-    #     # elif stars == "3":
-    #     #     if feature == "0":
-    #     #         db(f"UPDATE `levels` SET `starAuto` = 0, `stars` = 3,`difficulty` = 2, `rate` = 0 WHERE `id` = {levelID}")
-    #     #     elif feature == '1':
-    #     #         db(f"UPDATE `levels` SET `starAuto` = 0, `stars` = 3,`difficulty` = 2, `rate` = 1 WHERE `id` = {levelID}")
-    #     # db(f"UPDATE `levels` SET `stars` = '1', `difficulty` = '1', `rate` = '1' WHERE `id` = 3;")
-    #     return "1"
-    # else:
-    #     return "-2"
+@router.post(f'{system.path}/rateGJStars211.php', response_class=PlainTextResponse)
+async def rate_stars(
+        gjp: str = Form(),
+        stars: int = Form(),
+        levelID: int = Form(),
+        accountID: int = Form(),
+        db: AsyncSession = Depends(get_db)
+):
+    if  await checkValidGJP(accountID, gjp, db):
+        level = await LevelService.get_level_buid(levelID,db)
+        if level['status'] == 'ok':
+            match stars:
+                case 1:
+                    difficulty = Difficulty.gd_auto
+                case 2:
+                    difficulty = Difficulty.easy
+                case 3:
+                    difficulty = Difficulty.normal
+                case 4 | 5:
+                    difficulty = Difficulty.hard
+                case 6 | 7:
+                    difficulty = Difficulty.harder
+                case 8 | 9:
+                    difficulty = Difficulty.insane
+                case 10:
+                    difficulty = Difficulty.easyDemon
+            level_obj = await LevelObject(level, db).user_rate(difficulty,stars, accountID)
+            if level_obj['status'] == 'ok':
+                return 1

@@ -1,0 +1,3 @@
+errors: 
+  level_notFound: "Level not found"
+  something_went_wrong: "Something went wrong"

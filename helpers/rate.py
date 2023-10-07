@@ -1,8 +1,12 @@
 from enum import Enum
-class Difficulty(Enum): 
 
+
+class Difficulty(Enum):
+    gd_auto = -3
+    gd_demon = -2
+    gd_na = -1
     easy = 1
-    normal = 1
+    normal = 2
     hard = 3
     harder = 4
     insane = 5
@@ -21,8 +25,4 @@ class Rate(Enum):
     GodLike = 4
 
 
-
-
-
-
-    
+print(Difficulty.easy.value)

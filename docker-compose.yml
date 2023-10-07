@@ -1,0 +1,43 @@
+version: "3.7"
+services:
+  pgdatabase:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_DB: "habrdb"
+      POSTGRES_USER: "habrpguser"
+      POSTGRES_PASSWORD: "pgpwd4habr"
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgres
+
+  adminer:
+        image: adminer
+        container_name: adminer
+        restart: always
+        env_file:
+          - .env.example
+        ports:
+              - 8080:8080
+  redis:
+    image: redis:7
+    container_name: redis_app
+    command: --port 6379
+    ports:
+      - '6379:6379'
+
+  app:
+    build:
+      context: .
+    env_file:
+      - .env.example
+    entrypoint:
+      - ./start.sh
+    container_name: core_app
+    depends_on:
+      - pgdatabase
+      - redis
+    ports:
+      - "8000:8000"
+

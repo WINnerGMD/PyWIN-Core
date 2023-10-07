@@ -1,79 +1,78 @@
+import os
+import uvicorn
+from fastapi import Depends, Request
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from gd.levels.levels import router as router_levels
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+
+from asade.verified import router as router_verified_asade
+from config import system
+from database import get_db
+from gd.rate.rate_levels import router as router_rate
 from gd.accounts.accounts import router as router_accounts
 from gd.accounts.page import router as router_acc_page
 from gd.api.get_levels import router as router_api_levels
 from gd.api.get_user import router as router_api_users
-from logger import info
+from gd.comments.comments import router as router_comments
+from gd.comments.posts import router as router_posts
+from gd.levels.levels import router as router_levels
 from gd.misc.likes import router as router_likes
-from gd.levels.upload import router as router_upload
 from gd.music.musix import router as router_music
 from gd.scores.scores import router as router_scores
-from  gd.comments.comments import router as router_comments
-from gd.comments.posts import router as router_posts
-from asade.verified import router as router_verified_asade
-from helpers import rate
-from config import path
-import os 
-import uvicorn
-from config import pluginload
-if pluginload == True:
+from logger import info, warning
+from plugins.origins import router as router_origins
+from services.levels import LevelService
+from services.user import UserService
+
+if system.pluginloader:
     for i in os.listdir("plugins"):
         if i != "origins.py" and i != "__pycache__":
-            if i.endswith('.py'):
+            if i.endswith(".py"):
                 i = i[:-3]
+            info(f"plugin load {i}")
             exec(f"import plugins.{i}")
-        
-fastapi = FastAPI()
 
-fastapi.include_router(router_levels)
+fastapi = FastAPI(docs_url="/swagger", redoc_url=None, title="PyWIN Core",summary='clen')
+
+fastapi.include_router(router_origins)
 fastapi.include_router(router_accounts)
+fastapi.include_router(router_levels)
 fastapi.include_router(router_acc_page)
 fastapi.include_router(router_comments)
-fastapi.include_router(router_api_levels)
-fastapi.include_router(router_api_users)
 fastapi.include_router(router_posts)
 fastapi.include_router(router_likes)
-fastapi.include_router(router_upload)
 fastapi.include_router(router_music)
 fastapi.include_router(router_verified_asade)
 fastapi.include_router(router_scores)
-import logger
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi_cache.decorator import cache
+fastapi.include_router(router_rate)
+fastapi.include_router(router_api_levels)
+fastapi.include_router(router_api_users)
+fastapi.mount("/static", StaticFiles(directory="static"), name="static")
 
-from aiocache import cached, Cache
-from aiocache.serializers import PickleSerializer
-
-@fastapi.get(path, response_class=HTMLResponse )
-@cache(expire=60)
-async def message():
-    return """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>PyWIN Core</title>
-    </head>
-    <body style="background-color: rgb(32, 37, 36);">
-        <div style="background-color: rgb(55, 48, 66); text-align: center; width:100vh; height: 500px; border-radius: 15px; margin-left: 25%; margin-top: 5%;">
-            <h1 style="padding: 25px; font-family: Arial, Helvetica, sans-serif; color: white;">PyWIN Core Успешно припаркован</h1>
-            <h2 style="color: white; font-family: Arial, Helvetica, sans-serif;">Привет🚀 <br>Если ты не админ, я кажется знаю что ты тут делаешь... <br> Ну давай, устрой тест драйв)</h2>
-            <a href="https://pywin.pw/gdps" style="text-decoration: none; color: white; margin-top: 100px;">PyWIN EcoSystem</a>
-        </div>
-    </body>
-    </html>
-    """
+templates = Jinja2Templates(directory="templates")
 
 
-@fastapi.on_event('startup')
+@fastapi.get(system.path, response_class=HTMLResponse)
+async def message(req: Request, db=Depends(get_db)):
+    levels = await LevelService.get_total_levels(db=db)
+    users = await UserService.get_total_users(db=db)
+    if levels["status"] and users["status"] == "ok":
+        return templates.TemplateResponse(
+            "database_page.html",
+            {"request": req, "users": users["count"], "levels": levels["count"]},
+        )
+    else:
+        return templates.TemplateResponse(
+            "error.html", {"request": req, "error": levels["details"]}
+        )
+
+
+@fastapi.on_event("startup")
 async def startup():
-    info('Server Started')
+    info("Server Started")
 
-if __name__ == '__main__':
-    uvicorn.run(app="core:fastapi", host="fhgd.store")
-
-
+if __name__ == "__main__":
+    warning('server started only by localhost')
+    uvicorn.run(app=fastapi)

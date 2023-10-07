@@ -14,18 +14,37 @@
         "info": true,
         "warning": true,
         "error": true  
-
+    },
+    "social": {
+        "GDPS_name": "GDCloud" 
     },
     "system": {
         "pluginloader": true,
-        "use_w": true,
+        "auto_verified": true,
+        "use_asade": true,
         "debug": true,
-        "default_role": 1
+        "default_role": 1,
+        "page": 5,
+        "demonRate": 0,
+        "leaderboards_limit": 5,
+        "lang": "en",
+        "path": "/winnertests"
     },
-    "pywin": {
-        "username": "",
-        "password": "",
-        "path": "/winnertests",
-        "verifed_users": 0
-    }
+    "musix": {
+        "use_musix": false,
+        "musix_token": "",
+        "asade_connect": false
+    },
+
+    "asade": {
+        "token": "...",
+        "verifed_users": 1
+    },
+
+    "danger": {
+        "default-salt": ""
+
+    },
+    "use_env": false,
+    "db": "MySQL"
 }

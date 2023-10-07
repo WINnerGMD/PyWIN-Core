@@ -1,6 +1,8 @@
 from typing import Dict
 import time
+
 "  Help to create Robtops objects for GD"
+
 
 def gd_dict_str(d: Dict[int, str], separator: str = ":") -> str:
     return separator.join([str(arg[i]) for arg in d.items() for i in (0, 1)])

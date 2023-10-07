@@ -1,25 +1,23 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form
 from fastapi.responses import PlainTextResponse
-from config import path
+from config import system
 from database import get_db
 from sqlalchemy.orm import Session
 from services.leader_boards import LeaderBoardsService
+from helpers.scores import LeaderBoards
+from objects.userObject import  UserGroup
 import json
 
 router = APIRouter()
 
-@router.post(f"{path}/getGJScores20.php", response_class=PlainTextResponse)
-async def getScores(db:Session = Depends(get_db)):
-    result= await LeaderBoardsService().leaderboard(db=db)
-    count = 1
-    string = ""
-    for i in result:
 
-        iconkit = i.iconkits
+@router.post(f"{system.path}/getGJScores20.php", response_class=PlainTextResponse, tags=['Misc'])
+async def getScores(
+        type: str = Form(),
+        db: Session = Depends(get_db)
+):
+    score = LeaderBoards(type)
+    service = await LeaderBoardsService().leaderboard(db=db, scores_type=score)
 
- 
-        string += f"1:{i.userName}:2:{i.id}:3:{i.stars}:4:{i.demons}:6:{count}:7:{i.id}:8:{i.cp}:9:{iconkit['accIcon']}:10:{iconkit['color1']}:11:{iconkit['color2']}:13:{i.coins}:14:0:15:{i.id}:16:{i.id}:17:{i.usr_coins}:46:{i.diamonds}|"
-        count += 1
-    return string[:-1]
-
-    
+    data = await UserGroup(service).GDGetUserGroup()
+    return data

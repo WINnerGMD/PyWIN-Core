@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from pydantic import BaseModel
+from helpers.rate import Difficulty, Rate
+
 
 class UpdateStats(BaseModel):
     id: int
@@ -15,39 +17,35 @@ class UpdateStats(BaseModel):
 class UploadLevel:
     levelString: str
     accountID: int
-    levelName: str 
+    levelName: str
     levelDesc: str
     levelVersion: int
     levelLength: int
     audioTrack: int
-    password: str 
+    password: str
     original: int
     twoPlayer: int
-    songID: str  
-    objects: int 
-    coins: int 
+    songID: str
+    objects: int
+    coins: int
     requestedStars: int
     ldm: int
     gameVersion: int
 
 
-
-
-@dataclass
-class GetLevel:
+class GetLevel(BaseModel):
     lenght: int | None
-    gauntlet: int
-    str: str 
-    type: int 
-    accountID: int
-    difficulty: int
-    demonFilter: int
-    page : int
-    featured: int
-    epic: int
+    gauntlet: int | None
+    string: str | None
+    searchType: int
+    accountID: int | None
+    difficulty: Difficulty | None
+    demonFilter: int | None
+    page: int
+    rate: Rate | tuple | None
     coins: int
-    song: int
-    customSong: int
+    song: int | None
+    customSong: int | None
 
 
 @dataclass
@@ -62,7 +60,7 @@ class UploadComments:
 @dataclass
 class UploadPost:
     accountID: int
-    content:str
+    content: str
     timestamp: str
 
 
@@ -71,14 +69,12 @@ class GetPost:
     accountID: int
 
 
-
 @dataclass
 class RateLevel:
     id: int
     rate: int
     stars: int
     difficulty: int
-
 
 
 @dataclass
