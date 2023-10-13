@@ -45,6 +45,6 @@
         "default-salt": ""
 
     },
-    "use_env": false,
+    "use_env": true,
     "db": "MySQL"
 }

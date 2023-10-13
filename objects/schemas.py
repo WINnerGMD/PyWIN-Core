@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pydantic import BaseModel
 from helpers.rate import Difficulty, Rate
 
@@ -13,8 +12,8 @@ class UpdateStats(BaseModel):
     iconkits: dict
 
 
-@dataclass
-class UploadLevel:
+
+class UploadLevel(BaseModel):
     levelString: str
     accountID: int
     levelName: str
@@ -48,8 +47,8 @@ class GetLevel(BaseModel):
     customSong: int | None
 
 
-@dataclass
-class UploadComments:
+
+class UploadComments(BaseModel):
     userName: str
     accountID: int
     comment: str
@@ -57,28 +56,28 @@ class UploadComments:
     percent: int
 
 
-@dataclass
-class UploadPost:
+
+class UploadPost(BaseModel):
     accountID: int
     content: str
     timestamp: str
 
 
-@dataclass
-class GetPost:
+
+class GetPost(BaseModel):
     accountID: int
 
 
-@dataclass
-class RateLevel:
+
+class RateLevel(BaseModel):
     id: int
     rate: int
     stars: int
     difficulty: int
 
 
-@dataclass
-class likeItem:
+
+class likeItem(BaseModel):
     itemID: int
     type: int
     like: int

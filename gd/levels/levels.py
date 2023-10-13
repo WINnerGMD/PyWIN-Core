@@ -26,18 +26,18 @@ async def upload_level(
         accountID: int = Form(),
         levelName: str = Form(),
         levelDesc: str = Form(default="WyBoZXkgaGUgZGlkbid0IHB1dCBhIGRlc2NyaXB0aW9uIF0="),
-        levelVersion: str = Form(),
-        levelLength: str = Form(),
-        audioTrack: str = Form(),
-        password: str = Form(),
-        original: str = Form(),
-        twoPlayer: str = Form(),
-        songID: str = Form(),
-        objects: str = Form(),
-        coins: str = Form(),
-        requestedStars: str = Form(),
-        ldm: str = Form(),
-        gameVersion: str = Form(),
+        levelVersion: int = Form(),
+        levelLength: int = Form(),
+        audioTrack: int = Form(),
+        password: int = Form(),
+        original: int = Form(),
+        twoPlayer: int = Form(),
+        songID: int = Form(),
+        objects: int = Form(),
+        coins: int = Form(),
+        requestedStars: int = Form(),
+        ldm: int = Form(),
+        gameVersion: int = Form(),
         gjp: str = Form()
 ):
     if await checkValidGJP(accountID, gjp=gjp, db=db):
@@ -133,6 +133,7 @@ async def get_level(
         is_gauntlet = True
     else:
         result = await LevelService().test_get_levels(db=db, data=scheme)
+        print(result)
         page = page
         is_gauntlet = False
     if result["status"] == "ok":
@@ -146,24 +147,28 @@ async def get_level(
 
 @router.post(f"{system.path}/downloadGJLevel22.php", response_class=PlainTextResponse)
 @cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
-async def level_download(levelID: str = Form(), db: AsyncSession = Depends(get_db)):
+async def level_download(levelID: int = Form(), db: AsyncSession = Depends(get_db)):
     if int(levelID) < 0:  # daily & weekly
         service = await LevelService().get_level_buid(db=db, levelID=8)
         is_featured = True
     else:
         service = await LevelService().get_level_buid(db=db, levelID=levelID)
         is_featured = False
-    object_level = await LevelObject(service=service, db=db).GDDownload_level(
-        is_featured=is_featured
-    )
-    return object_level
+    match service['status']:
+        case 'ok':
+            object_level = await LevelObject(service=service, db=db).GDDownload_level(
+                is_featured=is_featured
+            )
+            return object_level
+        case 'error':
+            error(service['details'])
 
 
 @router.post(f"{system.path}/deleteGJLevelUser20.php", response_class=PlainTextResponse)
 async def level_delete(
-        accountID: str = Form(),
+        accountID: int = Form(),
         gjp: str = Form(),
-        levelID: str = Form(),
+        levelID: int = Form(),
         db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):

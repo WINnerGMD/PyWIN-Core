@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 
-load_dotenv()
+load_dotenv('.env')
 class Database(BaseModel):
     host: str
     port: int
@@ -33,11 +33,11 @@ def parse_config():
             json_object = json.load(config)
             if json_object['use_env']:
                 parsedb = {
-                    'host': os.environ.get("DB_HOST"),
-                    'port': os.environ.get("DB_PORT"),
-                    'user': os.environ.get("DB_USER"),
-                    'password': os.environ.get("DB_PASS"),
-                    'database': os.environ.get("DB_NAME")
+                    'host': os.environ.get("POSTGRES_HOST"),
+                    'port': os.environ.get("POSTGRES_PORT"),
+                    'user': os.environ.get("POSTGRES_NAME"),
+                    'password': os.environ.get("POSTGRES_PASSWORD"),
+                    'database': os.environ.get("POSTGRES_DB")
                 }
                 parseredis = {
                     'port': os.environ.get('REDIS_PORT'),

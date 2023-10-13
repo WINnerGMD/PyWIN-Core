@@ -57,6 +57,8 @@ class UserService:
                 .all()
             )
             permissions = await PermissionService.get_permissions(id=user.role, db=db)
+            print(user.role)
+            print(permissions)
             return {
                 "status": "ok",
                 "database": user,

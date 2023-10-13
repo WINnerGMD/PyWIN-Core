@@ -10,7 +10,7 @@ from objects.schemas import RateLevel
 class PermissionService:
     @staticmethod
     async def get_permissions(id, db: AsyncSession):
-        if id != None or 0:
+        if id != 0:
             return (
                 (await db.execute(select(models.Roles).filter(models.Roles.id == id)))
                 .scalars()
@@ -27,8 +27,3 @@ class PermissionService:
                 .first()
             )
 
-
-# class RateService:
-
-
-#     def RateLevel(self, db:Session, data: RateLevel):

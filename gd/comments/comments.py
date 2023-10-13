@@ -1,27 +1,30 @@
 from fastapi import APIRouter, Form, Depends
-from config import system
 from fastapi.responses import PlainTextResponse
-from services.comments import CommentsService
-from objects.schemas import UploadComments
 from sqlalchemy.orm import Session
+
+from config import system
 from database import get_db
+from objects.schemas import UploadComments
+from services.comments import CommentsService
 from services.user import UserService
-from datetime import datetime
-from utils.gdform import gd_dict_str
 from utils.crypt import checkValidGJP
+from utils.gdform import gd_dict_str
+
 router = APIRouter(tags=['Comments'])
 
 
 @router.post(f"{system.path}/uploadGJComment21.php", response_class=PlainTextResponse)
 async def upload_comment(
-    accountID: str = Form(default=None),
+    accountID: int = Form(default=None),
     userName: str = Form(default=None),
     comment: str = Form(default=None),
-    levelID: str = Form(default=None),
-    percent: str = Form(default=None),
+    levelID: int = Form(default=None),
+    percent: int = Form(default=None),
     gjp: str = Form(),
     db: Session = Depends(get_db),
 ):
+    if percent == None:
+        percent = 0
     if await checkValidGJP(accountID, gjp, db):
         comment_object = UploadComments(
             userName=userName,
@@ -36,8 +39,8 @@ async def upload_comment(
                 return str(answer["data"].id)
 
 @router.post(f"{system.path}/getGJComments21.php", response_class=PlainTextResponse)
-async def get_user(
-    db: Session = Depends(get_db), levelID: str = Form(), page: str = Form()
+async def get_comments(
+    db: Session = Depends(get_db), levelID: int = Form(), page: int = Form()
 ):
     comments_object = await CommentsService().get_comments(db=db, level_id=levelID,page=page)
     if comments_object["status"] == "ok":
@@ -56,7 +59,6 @@ async def get_user(
                         6: i.id,
                         7: i.is_spam,
                         8: i.id,
-                        9: "aof",
                         10: i.progress,
                     },
                     separator="~"

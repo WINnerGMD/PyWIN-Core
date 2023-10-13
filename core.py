@@ -34,7 +34,7 @@ if system.pluginloader:
             info(f"plugin load {i}")
             exec(f"import plugins.{i}")
 
-fastapi = FastAPI(docs_url="/swagger", redoc_url=None, title="PyWIN Core",summary='clen')
+fastapi = FastAPI(docs_url="/swagger", redoc_url=None, title="PyWIN Core",summary='For developers and testers')
 
 fastapi.include_router(router_origins)
 fastapi.include_router(router_accounts)
