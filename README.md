@@ -5,7 +5,7 @@
 > <p><b>PyWIN Core is a development software for creating your own GDPS, written in python</b></p>
 
 > ### This gdps core can work with different versions of Geometry Dash
-> <img src=".github/images/old_versions.png">
+> ![old_versions](https://github.com/WINnerGMD/PyWIN-Core/assets/134456640/d8c07192-924f-4378-94c7-7d1eefeee153)
 
 
 > ## Plugin  System
@@ -46,7 +46,7 @@ def discord_message(lvl):
 > ### Change database data. 
 > State what the users will be called, what password and database will be used
 > 
-> <img src=".github/images/database.png">
+> ![database](https://github.com/WINnerGMD/PyWIN-Core/assets/134456640/d448fcf8-dae3-466f-b59f-ca6af9bcb63d)
 >
 > # Start server
 > Use ```make build``` to download python with dependencies, and build project.
