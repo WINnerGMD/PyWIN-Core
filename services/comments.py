@@ -1,19 +1,21 @@
 from types import FunctionType
-import jmespath
+
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import system
 from helpers.commands import Commands
+from helpers.rate import Difficulty
+from models import CommentsModel, LevelsModel, PostsModel
 from objects.schemas import UploadComments, UploadPost
 from services.user import UserService
-from sql import models
 from utils.crypt import base64_decode
-from config import system
-from helpers.rate import Difficulty
+
+
 def methods(cls):
     result = []
     for x, y in cls.__dict__.items():
-        if type(y) == FunctionType and x.startswith('__') != True:
+        if type(y) == FunctionType and x.startswith("__") != True:
             result.append({"name": x, "func": y})
     return result
 
@@ -27,9 +29,9 @@ class CommentsService:
         comments = (
             (
                 await db.execute(
-                    select(models.Comments)
-                    .filter(models.Comments.levelID == level_id)
-                    .order_by(models.Comments.id.desc())
+                    select(CommentsModel)
+                    .filter(CommentsModel.levelID == level_id)
+                    .order_by(CommentsModel.id.desc())
                     .limit(system.page)
                     .offset(system.page * page)
                 )
@@ -40,8 +42,7 @@ class CommentsService:
         count = len(
             (
                 await db.execute(
-                    select(models.Comments)
-                    .filter(models.Comments.levelID == level_id)
+                    select(CommentsModel).filter(CommentsModel.levelID == level_id)
                 )
             )
             .scalars()
@@ -66,7 +67,7 @@ class CommentsService:
                 )
                 return {"status": "ok", "type": "command"}
             else:
-                db_comment = models.Comments(
+                db_comment = CommentsModel(
                     authorId=data.accountID,
                     content=data.comment,
                     progress=data.percent,
@@ -85,73 +86,105 @@ class CommentsService:
 
     @staticmethod
     async def commands_handler(
-            data: str, levelID: int, authorID: int, db: AsyncSession
+        data: str, levelID: int, authorID: int, db: AsyncSession
     ) -> bool:
         data = data.split(" ")
         name = data[0]
         commands = data[1:]
         print(name)
         match name:
-            case 'rate':
-                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
+            case "rate":
+                if (await UserService.get_user_byid(id=authorID, db=db))[
+                    "permissions"
+                ].rateLevels:
                     print(commands)
                     match commands[0]:
-                        case 'easy':
+                        case "easy":
                             difficulty = Difficulty.easy
-                        case 'normal':
+                        case "normal":
                             difficulty = Difficulty.normal
-                        case 'hard':
+                        case "hard":
                             difficulty = Difficulty.hard
-                        case 'harder':
+                        case "harder":
                             difficulty = Difficulty.harder
-                        case 'insane':
+                        case "insane":
                             difficulty = Difficulty.insane
-                        case 'easydemon':
+                        case "easydemon":
                             difficulty = Difficulty.easyDemon
-                        case 'mediumdemon':
+                        case "mediumdemon":
                             difficulty = Difficulty.mediumDemon
-                        case 'harddemon':
+                        case "harddemon":
                             difficulty = Difficulty.hardDemon
-                        case 'insanedemon':
+                        case "insanedemon":
                             difficulty = Difficulty.insaneDemon
-                        case 'extremedemon':
+                        case "extremedemon":
                             difficulty = Difficulty.extremeDemon
                     print(difficulty.value)
-                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
-                        {'difficulty': difficulty.value, 'stars': commands[1]}
-                    )))
+                    (
+                        await db.execute(
+                            update(LevelsModel)
+                            .filter(LevelsModel.id == levelID)
+                            .values(
+                                {"difficulty": difficulty.value, "stars": commands[1]}
+                            )
+                        )
+                    )
 
                     await db.commit()
-            case 'epic':
-                if (await UserService.get_user_byid(id=authorID,db=db))['permissions'].rateLevels:
-                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
-                        {'rate': 2}
-                    )))
+            case "epic":
+                if (await UserService.get_user_byid(id=authorID, db=db))[
+                    "permissions"
+                ].rateLevels:
+                    (
+                        await db.execute(
+                            update(LevelsModel)
+                            .filter(LevelsModel.id == levelID)
+                            .values({"rate": 2})
+                        )
+                    )
                     await db.commit()
-            case 'featured':
-                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
-                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
-                        {'rate': 1}
-                    )))
+            case "featured":
+                if (await UserService.get_user_byid(id=authorID, db=db))[
+                    "permissions"
+                ].rateLevels:
+                    (
+                        await db.execute(
+                            update(LevelsModel)
+                            .filter(LevelsModel.id == levelID)
+                            .values({"rate": 1})
+                        )
+                    )
                     await db.commit()
-            case 'nonrate':
-                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
-                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
-                        {'rate': 0}
-                    )))
+            case "nonrate":
+                if (await UserService.get_user_byid(id=authorID, db=db))[
+                    "permissions"
+                ].rateLevels:
+                    (
+                        await db.execute(
+                            update(LevelsModel)
+                            .filter(LevelsModel.id == levelID)
+                            .values({"rate": 0})
+                        )
+                    )
                     await db.commit()
-            case 'norate':
-                if (await UserService.get_user_byid(id=authorID, db=db))['permissions'].rateLevels:
-                    (await db.execute(update(models.Levels).filter(models.Levels.id == levelID).values(
-                        {'rate': 0, 'difficulty': 0, 'stars': 0}
-                    )))
+            case "norate":
+                if (await UserService.get_user_byid(id=authorID, db=db))[
+                    "permissions"
+                ].rateLevels:
+                    (
+                        await db.execute(
+                            update(LevelsModel)
+                            .filter(LevelsModel.id == levelID)
+                            .values({"rate": 0, "difficulty": 0, "stars": 0})
+                        )
+                    )
                     await db.commit()
 
 
 class PostCommentsService:
     @staticmethod
     async def upload_post(db: AsyncSession, data: UploadPost):
-        db_post = models.Posts(
+        db_post = PostsModel(
             accountID=data.accountID, content=data.content, timestamp=data.timestamp
         )
 
@@ -163,7 +196,7 @@ class PostCommentsService:
     @staticmethod
     async def delete_post(postID, db: AsyncSession):
         db_level = (
-            (await db.execute(select(models.Posts).filter(models.Posts.id == postID)))
+            (await db.execute(select(PostsModel).filter(PostsModel.id == postID)))
             .scalars()
             .first()
         )
@@ -176,7 +209,7 @@ class PostCommentsService:
         count = len(
             (
                 await db.execute(
-                    select(models.Posts).filter(models.Posts.accountID == usrid)
+                    select(PostsModel).filter(PostsModel.accountID == usrid)
                 )
             )
             .scalars()
@@ -185,11 +218,11 @@ class PostCommentsService:
         return {
             "database": (
                 await db.execute(
-                    select(models.Posts)
-                    .filter(models.Posts.accountID == usrid)
+                    select(PostsModel)
+                    .filter(PostsModel.accountID == usrid)
                     .limit(10)
                     .offset(offset)
-                    .order_by(models.Posts.id.desc())
+                    .order_by(PostsModel.id.desc())
                 )
             )
             .scalars()

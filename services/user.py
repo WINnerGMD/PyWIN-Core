@@ -5,30 +5,34 @@ from config import system
 from logger import error
 from objects.schemas import UpdateStats
 from services.perms import PermissionService
-from sql import models
+from models import UsersModel, MessagesModel
 from utils.crypt import bcrypt_hash
 
 
 class UserService:
     @staticmethod
     async def register_user(
-            db: AsyncSession, userName: str, password: str, mail: str, ip: str
+        db: AsyncSession, userName: str, password: str, mail: str, ip: str
     ):
-        request = select(models.Users).filter(models.Users.userName == userName)
+        request = select(UsersModel).filter(UsersModel.userName == userName)
         if (await db.execute(request)).scalars().first() is not None:
             return {"code": "-2", "message": "error [UserName already registered]"}
         elif (
-                await db.execute(select(models.Users).filter(models.Users.mail == mail))
+            await db.execute(select(UsersModel).filter(UsersModel.mail == mail))
         ).scalars().first() is not None:
             return {"code": "-3", "message": "error [User email already registered]"}
         else:
             passhash = bcrypt_hash(password)
             if system.auto_verified:
-                db_user = models.Users(
-                    userName=userName, passhash=passhash, mail=mail, ip=ip, verified=True
+                db_user = UsersModel(
+                    userName=userName,
+                    passhash=passhash,
+                    mail=mail,
+                    ip=ip,
+                    verified=True,
                 )
             else:
-                db_user = models.Users(
+                db_user = UsersModel(
                     userName=userName, passhash=passhash, mail=mail, ip=ip
                 )
             db.add(db_user)
@@ -40,7 +44,7 @@ class UserService:
     async def get_user_byid(db: AsyncSession, id: int):
         try:
             user = (
-                (await db.execute(select(models.Users).filter(models.Users.id == id)))
+                (await db.execute(select(UsersModel).filter(UsersModel.id == id)))
                 .scalars()
                 .first()
             )
@@ -50,7 +54,7 @@ class UserService:
             rank = len(
                 (
                     await db.execute(
-                        select(models.Users).filter(models.Users.stars >= user.stars)
+                        select(UsersModel).filter(UsersModel.stars >= user.stars)
                     )
                 )
                 .scalars()
@@ -72,7 +76,7 @@ class UserService:
     @staticmethod
     async def upload_message(db: AsyncSession, authorID, recipientID, subject, body):
         try:
-            message = models.Messages(
+            message = MessagesModel(
                 authorID=authorID, recipientID=recipientID, subject=subject, body=body
             )
             db.add(message)
@@ -86,8 +90,8 @@ class UserService:
     @staticmethod
     async def update_user(db: AsyncSession, data: UpdateStats):
         smtp = (
-            Update(models.Users)
-            .where(data.id == models.Users.id)
+            Update(UsersModel)
+            .where(data.id == UsersModel.id)
             .values(data.dict(exclude_unset=True))
         )
         result = await db.execute(smtp)
@@ -100,7 +104,7 @@ class UserService:
         user = (
             (
                 await db.execute(
-                    select(models.Users).filter(models.Users.userName == userName)
+                    select(UsersModel).filter(UsersModel.userName == userName)
                 )
             )
             .scalars()
@@ -126,7 +130,7 @@ class UserService:
 
     @staticmethod
     async def get_users_byName(name, db: AsyncSession):
-        query = select(models.Users).where(models.Users.userName.like(f"%{name}%"))
+        query = select(UsersModel).where(UsersModel.userName.like(f"%{name}%"))
         result = (await db.execute(query)).scalars().all()
         count = len(result)
         return {"database": result, "count": count}
@@ -134,7 +138,7 @@ class UserService:
     @staticmethod
     async def get_total_users(db: AsyncSession):
         try:
-            query = select(models.Users)
+            query = select(UsersModel)
             total = len((await db.execute(query)).scalars().all())
             return {"status": "ok", "count": total}
         except Exception as e:

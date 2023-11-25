@@ -4,12 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from logger import error
 from services.comments import PostCommentsService
-from sql.models import Users
+from models import UsersModel
 from utils.gdform import gd_dict_str
 
 
 class UserObject:
-    def __init__(self, service: Users, db: AsyncSession):
+    def __init__(self, service: UsersModel, db: AsyncSession):
         self.service = service
         self.db = db
 
@@ -109,8 +109,8 @@ class UserGroup:
                         6: count,
                         7: user.id,
                         8: user.cp,
-                        9: iconkit['accIcon'],
-                        10: iconkit['color1'],
+                        9: iconkit["accIcon"],
+                        10: iconkit["color1"],
                         11: iconkit["color2"],
                         13: user.coins,
                         14: 0,

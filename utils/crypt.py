@@ -3,7 +3,7 @@ import base64
 import itertools
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sql import models
+from models import UsersModel
 from hashlib import sha1
 
 
@@ -47,9 +47,9 @@ async def checkValidGJP(id, gjp, db: AsyncSession):
         password = decode_gjp(gjp)
         bcrypt = bcrypt_hash(password)
         if (
-                await db.execute(
-                    select(models.Users.passhash).filter(models.Users.id == id)
-                )
+            await db.execute(
+                select(UsersModel.passhash).filter(UsersModel.id == id)
+            )
         ).scalars().first() == bcrypt:
             return True
         else:

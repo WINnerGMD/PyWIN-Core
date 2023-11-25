@@ -2,7 +2,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from helpers.rate import Difficulty, Rate
-from sql import models
+from models import ActionsModel,LevelsModel,UsersModel
 from utils.crypt import xor_cipher, base64_encode, sha1_hash
 from utils.gdform import gd_dict_str
 from config import system
@@ -13,7 +13,7 @@ from config import system
 
 
 class LevelObject:
-    def __init__(self, service: models.Levels, db: AsyncSession):
+    def __init__(self, service: LevelsModel, db: AsyncSession):
         self.service = service
         self.db = db
         pass
@@ -22,26 +22,39 @@ class LevelObject:
         return str(self.service)
 
     async def user_rate(self, difficulty: Difficulty, stars: int, accountID: int):
-        if (await self.db.execute(select(models.Actions).filter(models.Actions.accountID == accountID,
-                                                                models.Actions.level == self.service[
-                                                                    'database'].id))).scalars().first() is not None:
+        if (
+            await self.db.execute(
+                select(ActionsModel).filter(
+                    ActionsModel.accountID == accountID,
+                    ActionsModel.level == self.service["database"].id,
+                )
+            )
+        ).scalars().first() is not None:
             return {
                 "status": "error",
-                "details": 'the user has already done this action'
+                "details": "the user has already done this action",
             }
-        rate_model = models.Actions(
+        rate_model = ActionsModel(
             actionName="User Rate",
             value=stars,
-            level=self.service['database'].id,
+            level=self.service["database"].id,
             accountID=accountID,
-            data=str({"difficulty": difficulty.value, 'stars': stars})
+            data=str({"difficulty": difficulty.value, "stars": stars}),
         )
         self.db.add(rate_model)
 
         rates = (
-            await self.db.execute(select(models.Actions).filter(models.Actions.actionName == "User Rate",
-                                                                models.Actions.level == self.service['database'].id))
-        ).scalars().all()
+            (
+                await self.db.execute(
+                    select(ActionsModel).filter(
+                        ActionsModel.actionName == "User Rate",
+                        ActionsModel.level == self.service["database"].id,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
         result = 0
         for i in rates:
             result += i.value
@@ -64,19 +77,17 @@ class LevelObject:
             case 10:
                 difficulty = Difficulty.easyDemon
         if difficulty == Difficulty.easyDemon and not system.demonRate:
-            return {
-                "status": 'error',
-                'details': 'rate demon is false'
-            }
-        await self.db.execute(update(models.Levels).filter(models.Levels.id == self.service['database'].id).values({
-            "difficulty": difficulty.value}))
+            return {"status": "error", "details": "rate demon is false"}
+        await self.db.execute(
+            update(LevelsModel)
+            .filter(LevelsModel.id == self.service["database"].id)
+            .values({"difficulty": difficulty.value})
+        )
         await self.db.commit()
-        return {
-            'status': "error"
-        }
+        return {"status": "error"}
 
     async def rate(
-            self, difficulty: Difficulty = None, stars: int = None, rate: Rate = None
+        self, difficulty: Difficulty = None, stars: int = None, rate: Rate = None
     ):
         try:
             if difficulty is not None:
@@ -102,7 +113,7 @@ class LevelObject:
                     if rate is not None:
                         modify_data = {"rate": rate}
 
-            match self.service['database'].rate:
+            match self.service["database"].rate:
                 case 0:
                     cp = rate if rate is not None else 0
                 case 1:
@@ -110,13 +121,15 @@ class LevelObject:
                 case 3:
                     cp = rate - 2 if rate is not None else 0
             print(cp)
-            await self.db.execute(update(models.Users)
-                                  .filter(models.Users.id == self.service["database"].authorID)
-                                  .values({"cp": models.Users.cp + cp}))
+            await self.db.execute(
+                update(UsersModel)
+                .filter(UsersModel.id == self.service["database"].authorID)
+                .values({"cp": UsersModel.cp + cp})
+            )
 
             request = (
-                update(models.Levels)
-                .filter(models.Levels.id == self.service["database"].id)
+                update(LevelsModel)
+                .filter(LevelsModel.id == self.service["database"].id)
                 .values(modify_data)
             )
             await self.db.execute(request)
@@ -129,57 +142,53 @@ class LevelObject:
     async def like(self, accountID: int):
         try:
             if (
-                    await self.db.execute(
-                        select(models.Actions).filter(
-                            models.Actions.valueID == self.service["database"].id,
-                            models.Actions.accountID == accountID,
-                            models.Actions.actionName == "Like",
-                        )
+                await self.db.execute(
+                    select(ActionsModel).filter(
+                        ActionsModel.valueID == self.service["database"].id,
+                        ActionsModel.accountID == accountID,
+                        ActionsModel.actionName == "Like",
                     )
+                )
             ).scalars().first() is None:
                 query = (
-                    update(models.Levels)
-                    .filter(models.Levels.id == self.service["database"].id)
-                    .values({"likes": models.Levels.likes + 1})
+                    update(LevelsModel)
+                    .filter(LevelsModel.id == self.service["database"].id)
+                    .values({"likes": LevelsModel.likes + 1})
                 )
                 await self.db.execute(query)
                 await self.db.commit()
-            return {
-                "status": "ok"
-            }
+            return {"status": "ok"}
         except Exception as e:
             return {"status": "error", "details": e}
 
     async def dislike(self, accountID: int):
         try:
             if (
-                    await self.db.execute(
-                        select(models.Actions).filter(
-                            models.Actions.valueID == self.service["database"].id,
-                            models.Actions.accountID == accountID,
-                            models.Actions.actionName == "Like",
-                        )
+                await self.db.execute(
+                    select(ActionsModel).filter(
+                        ActionsModel.valueID == self.service["database"].id,
+                        ActionsModel.accountID == accountID,
+                        ActionsModel.actionName == "Like",
                     )
+                )
             ).scalars().first() is None:
                 query = (
-                    update(models.Levels)
-                    .filter(models.Levels.id == self.service["database"].id)
-                    .values({"likes": models.Levels.likes - 1})
+                    update(LevelsModel)
+                    .filter(LevelsModel.id == self.service["database"].id)
+                    .values({"likes": LevelsModel.likes - 1})
                 )
                 await self.db.execute(query)
                 await self.db.commit()
-            return {
-                "status": "ok"
-            }
+            return {"status": "ok"}
         except Exception as e:
             return {"status": "error", "details": e}
 
     @staticmethod
     async def __update_download_counter(level_id, db: AsyncSession):
         query = (
-            update(models.Levels)
-            .filter(models.Levels.id == level_id)
-            .values({"downloads": models.Levels.downloads + 1})
+            update(LevelsModel)
+            .filter(LevelsModel.id == level_id)
+            .values({"downloads": LevelsModel.downloads + 1})
         )
         await db.execute(query)
         await db.commit()
@@ -251,17 +260,17 @@ class LevelObject:
             user_info = f"#{level.authorID}:{level.authorName}:{level.authorID}"
             level_str.update({41: 6})
             answer = (
-                    "#".join(
-                        (
-                            gd_dict_str(level_str),
-                            await self.downloadLevelHash1(level.LevelString),
-                            await sha1_hash(
-                                f'{level.authorID},{level.stars},{0},{level.id},{level.user_coins},{"1" if level.rate == 1 else "0"},{level.password},{featured_id}',
-                                "xI25fpAapCQg",
-                            ),
-                        )
+                "#".join(
+                    (
+                        gd_dict_str(level_str),
+                        await self.downloadLevelHash1(level.LevelString),
+                        await sha1_hash(
+                            f'{level.authorID},{level.stars},{0},{level.id},{level.user_coins},{"1" if level.rate == 1 else "0"},{level.password},{featured_id}',
+                            "xI25fpAapCQg",
+                        ),
                     )
-                    + user_info
+                )
+                + user_info
             )
         else:
             answer = "#".join(
@@ -274,12 +283,12 @@ class LevelObject:
                     ),
                 )
             )
-        await self.__update_download_counter(self.service['database'].id, self.db)
+        await self.__update_download_counter(self.service["database"].id, self.db)
         return answer
 
 
 class LevelGroup:
-    def __init__(self, service: models.Levels):
+    def __init__(self, service: LevelsModel):
         self.service = service
         pass
 
@@ -296,7 +305,7 @@ class LevelGroup:
                 epic = 1
 
             levelsDataHash += (
-                    str(row.id)[0] + str(row.id)[-1] + str(row.stars) + str(row.user_coins)
+                str(row.id)[0] + str(row.id)[-1] + str(row.stars) + str(row.user_coins)
             )
             Level = gd_dict_str(
                 {
@@ -340,8 +349,8 @@ class LevelGroup:
 
 
 class LevelObject19(LevelObject):
-    def __init__(self, service: models.Levels, db: AsyncSession):
+    def __init__(self, service: LevelsModel, db: AsyncSession):
         super().__init__(service, db)
-        if service['database'].gameVersion == 19:
+        if service["database"].gameVersion == 19:
             self.service = service
             self.db = db

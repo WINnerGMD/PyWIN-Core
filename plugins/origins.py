@@ -5,7 +5,6 @@ from objects.levelObject import LevelObject, LevelGroup
 from services.levels import LevelService
 
 
-
 # Main plugin parser file
 # Не советую что либо тут изменять. Тут также летят запросы на сервер,
 # по этому со сломаным модулем, ошибки могут не регаться,

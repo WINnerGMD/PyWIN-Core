@@ -15,8 +15,8 @@ router = APIRouter(prefix="", tags=["Accounts"])
 
 @router.post(f"{system.path}/getGJUserInfo20.php", response_class=PlainTextResponse)
 async def get_userInfo(
-        targetAccountID: int = Form(),
-        db: AsyncSession = Depends(get_db),
+    targetAccountID: int = Form(),
+    db: AsyncSession = Depends(get_db),
 ):
     service = await UserService().get_user_byid(db=db, id=targetAccountID)
     if service["status"] == "ok":
@@ -27,11 +27,13 @@ async def get_userInfo(
         error(f"failed to load user /// {service['details']})")
 
 
-@router.post(f"{system.path}/getGJAccountComments20.php", response_class=PlainTextResponse)
+@router.post(
+    f"{system.path}/getGJAccountComments20.php", response_class=PlainTextResponse
+)
 async def get_posts(
-        accountID: int = Form(),
-        page: int = Form(),
-        db: AsyncSession = Depends(get_db),
+    accountID: int = Form(),
+    page: int = Form(),
+    db: AsyncSession = Depends(get_db),
 ):
     service = await UserService().get_user_byid(db=db, id=accountID)
     return await UserObject(service=service, db=db).GDGetUserPosts(page=page)
@@ -39,25 +41,25 @@ async def get_posts(
 
 @router.post(f"{system.path}/updateGJUserScore22.php", response_class=PlainTextResponse)
 async def updateGJUserScore22(
-        accountID: int = Form(),
-        stars: int = Form(),
-        demons: int = Form(),
-        diamonds: int = Form(),
-        coins: int = Form(),
-        userCoins: int = Form(),
-        accIcon: int = Form(),
-        accShip: int = Form(),
-        accBall: int = Form(),
-        accBird: int = Form(),
-        accDart: int = Form(),
-        accRobot: int = Form(),
-        accGlow: int = Form(),
-        accSpider: int = Form(),
-        accExplosion: int = Form(),
-        gjp: str = Form(),
-        color1: int = Form(),
-        color2: int = Form(),
-        db: AsyncSession = Depends(get_db),
+    accountID: int = Form(),
+    stars: int = Form(),
+    demons: int = Form(),
+    diamonds: int = Form(),
+    coins: int = Form(),
+    userCoins: int = Form(),
+    accIcon: int = Form(),
+    accShip: int = Form(),
+    accBall: int = Form(),
+    accBird: int = Form(),
+    accDart: int = Form(),
+    accRobot: int = Form(),
+    accGlow: int = Form(),
+    accSpider: int = Form(),
+    accExplosion: int = Form(),
+    gjp: str = Form(),
+    color1: int = Form(),
+    color2: int = Form(),
+    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         iconkit = {
@@ -86,5 +88,6 @@ async def updateGJUserScore22(
         return str(accountID)
     else:
         raise HTTPException(401, "bro you dump")
+
 
 #     db(f"UPDATE `users` SET  `iconkit` = '{iconkit}',`stars`='{stars}',`diamonds`='{diamonds}',`coins`='{coins}',`usr_coins`='{userCoins}',`demons`='{demons}' WHERE `id` = {accountID} ")

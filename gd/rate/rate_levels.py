@@ -15,16 +15,16 @@ router = APIRouter(tags=["rate"], prefix="")
 
 @router.post(f"{system.path}/suggestGJStars20.php", response_class=PlainTextResponse)
 async def suggestGJStars(
-        accountID: int = Form(),
-        gjp: str = Form(),
-        feature: int = Form(),
-        levelID: int = Form(),
-        stars: int = Form(),
-        db: AsyncSession = Depends(get_db),
+    accountID: int = Form(),
+    gjp: str = Form(),
+    feature: int = Form(),
+    levelID: int = Form(),
+    stars: int = Form(),
+    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         user = await UserService.get_user_byid(db=db, id=accountID)
-        if user['permissions'].rateLevels:
+        if user["permissions"].rateLevels:
             level = await LevelService.get_level_buid(levelID=levelID, db=db)
             match stars:
                 case 1:
@@ -41,24 +41,27 @@ async def suggestGJStars(
                     difficulty = Difficulty.insane
                 case 10:
                     difficulty = Difficulty.easyDemon
-            object_level = await LevelObject(level, db=db).rate(stars=stars, difficulty=difficulty, rate=1 if feature == 1 else 0)
-            if object_level['status'] == 'ok':
+            object_level = await LevelObject(level, db=db).rate(
+                stars=stars, difficulty=difficulty, rate=1 if feature == 1 else 0
+            )
+            if object_level["status"] == "ok":
                 return "1"
             else:
-                error(object_level['details'])
+                error(object_level["details"])
                 return "-1"
 
-@router.post(f'{system.path}/rateGJStars211.php', response_class=PlainTextResponse)
+
+@router.post(f"{system.path}/rateGJStars211.php", response_class=PlainTextResponse)
 async def rate_stars(
-        gjp: str = Form(),
-        stars: int = Form(),
-        levelID: int = Form(),
-        accountID: int = Form(),
-        db: AsyncSession = Depends(get_db)
+    gjp: str = Form(),
+    stars: int = Form(),
+    levelID: int = Form(),
+    accountID: int = Form(),
+    db: AsyncSession = Depends(get_db),
 ):
-    if  await checkValidGJP(accountID, gjp, db):
-        level = await LevelService.get_level_buid(levelID,db)
-        if level['status'] == 'ok':
+    if await checkValidGJP(accountID, gjp, db):
+        level = await LevelService.get_level_buid(levelID, db)
+        if level["status"] == "ok":
             match stars:
                 case 1:
                     difficulty = Difficulty.gd_auto
@@ -74,6 +77,8 @@ async def rate_stars(
                     difficulty = Difficulty.insane
                 case 10:
                     difficulty = Difficulty.easyDemon
-            level_obj = await LevelObject(level, db).user_rate(difficulty,stars, accountID)
-            if level_obj['status'] == 'ok':
+            level_obj = await LevelObject(level, db).user_rate(
+                difficulty, stars, accountID
+            )
+            if level_obj["status"] == "ok":
                 return 1

@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api", tags=["API"])
 @router.get("/users/{usrid}")
 async def get_user(usrid, db=Depends(get_db)):
     info(f"Request to api | /api/users/{usrid}")
-    userData = (await UserService.get_user_byid(id=usrid, db=db))['database']
+    userData = (await UserService.get_user_byid(id=usrid, db=db))["database"]
     return {
         "status": "ok",
         "userName": userData.userName,

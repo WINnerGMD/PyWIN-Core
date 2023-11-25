@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sql import models
+from models import RolesModel
 from config import system
 from objects.schemas import RateLevel
 
@@ -12,7 +12,7 @@ class PermissionService:
     async def get_permissions(id, db: AsyncSession):
         if id != 0:
             return (
-                (await db.execute(select(models.Roles).filter(models.Roles.id == id)))
+                (await db.execute(select(RolesModel).filter(RolesModel.id == id)))
                 .scalars()
                 .first()
             )
@@ -20,10 +20,11 @@ class PermissionService:
             return (
                 (
                     await db.execute(
-                        select(models.Roles).filter(models.Roles.id == system.default_role)
+                        select(RolesModel).filter(
+                            RolesModel.id == system.default_role
+                        )
                     )
                 )
                 .scalars()
                 .first()
             )
-

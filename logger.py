@@ -59,23 +59,23 @@ console_th.start()
 
 def warning(message):
     # if config.logger_warning:
-        console.print(
-            f"[bold yellow][WARNING][/bold yellow] - {formatted_date()} / {message}",
-        )
+    console.print(
+        f"[bold yellow][WARNING][/bold yellow] - {formatted_date()} / {message}",
+    )
 
 
 def info(message):
     # if config.logger_info:
-        console.print(
-            f"[bold green][INFO][/bold green] - {formatted_date()} / {message}",
-        )
+    console.print(
+        f"[bold green][INFO][/bold green] - {formatted_date()} / {message}",
+    )
 
 
 def error(message):
     # if config.logger_error:
-        console.print(
-            f"[bold red][ERROR][/ bold red] - {formatted_date()} / {message}",
-        )
+    console.print(
+        f"[bold red][ERROR][/ bold red] - {formatted_date()} / {message}",
+    )
 
 
 def alert(message, plugin_name):

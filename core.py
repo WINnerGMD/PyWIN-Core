@@ -7,7 +7,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 
-from asade.verified import router as router_verified_asade
 from config import system
 from database import get_db
 from gd.rate.rate_levels import router as router_rate
@@ -20,6 +19,7 @@ from gd.comments.posts import router as router_posts
 from gd.levels.levels import router as router_levels
 from gd.misc.likes import router as router_likes
 from gd.music.musix import router as router_music
+from gd.rewards.chest import router as router_chest
 from gd.scores.scores import router as router_scores
 from logger import info, warning
 from plugins.origins import router as router_origins
@@ -34,7 +34,12 @@ if system.pluginloader:
             info(f"plugin load {i}")
             exec(f"import plugins.{i}")
 
-fastapi = FastAPI(docs_url="/swagger", redoc_url=None, title="PyWIN Core",summary='For developers and testers')
+fastapi = FastAPI(
+    docs_url="/swagger",
+    redoc_url=None,
+    title="PyWIN Core",
+    summary="For developers and testers",
+)
 
 fastapi.include_router(router_origins)
 fastapi.include_router(router_accounts)
@@ -44,9 +49,9 @@ fastapi.include_router(router_comments)
 fastapi.include_router(router_posts)
 fastapi.include_router(router_likes)
 fastapi.include_router(router_music)
-fastapi.include_router(router_verified_asade)
 fastapi.include_router(router_scores)
 fastapi.include_router(router_rate)
+fastapi.include_router(router_chest)
 fastapi.include_router(router_api_levels)
 fastapi.include_router(router_api_users)
 fastapi.mount("/static", StaticFiles(directory="static"), name="static")
@@ -58,7 +63,7 @@ templates = Jinja2Templates(directory="templates")
 async def message(req: Request, db=Depends(get_db)):
     levels = await LevelService.get_total_levels(db=db)
     users = await UserService.get_total_users(db=db)
-    if levels["status"] and users["status"] == "ok":
+    if levels["status"] == "ok" and users["status"] == "ok":
         return templates.TemplateResponse(
             "database_page.html",
             {"request": req, "users": users["count"], "levels": levels["count"]},
@@ -73,6 +78,7 @@ async def message(req: Request, db=Depends(get_db)):
 async def startup():
     info("Server Started")
 
+
 if __name__ == "__main__":
-    warning('server started only by localhost')
+    warning("server started only by localhost")
     uvicorn.run(app=fastapi)

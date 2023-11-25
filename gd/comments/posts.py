@@ -11,10 +11,11 @@ from services.comments import PostCommentsService
 from utils.crypt import checkValidGJP
 from utils.gdform import formatted_date
 
-router = APIRouter(tags=['Posts'])
+router = APIRouter(tags=["Posts"])
 
 
-@router.post(f"{system.path}/uploadGJAccComment20.php",
+@router.post(
+    f"{system.path}/uploadGJAccComment20.php",
 )
 async def Upload_post(
     db: AsyncSession = Depends(get_db),
@@ -33,7 +34,9 @@ async def Upload_post(
         raise HTTPException(401, "удачи!!!")
 
 
-@router.post(f"{system.path}/deleteGJAccComment20.php", response_class=PlainTextResponse)
+@router.post(
+    f"{system.path}/deleteGJAccComment20.php", response_class=PlainTextResponse
+)
 async def get_posts(
     accountID: int = Form(),
     gjp: str = Form(),

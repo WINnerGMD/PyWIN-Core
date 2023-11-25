@@ -4,62 +4,20 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>PyWIN Core</title>
-        <link rel="stylesheet" href="{{url_for("static", path='normalize.css')}}">
-        <link rel="stylesheet" href="{{url_for("static", path='mainPage.css')}}">
+        <meta name="description">
+        <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body>
-            <ul class="circles">
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li></li>
-            </ul>
-        <main>
-            <div class="wrapper">
-                <div class="start">
-                <h1>PyWIN Core  Успешно припаркован🍾</h1>
-                <h4><span class="green">Привет🚀</span>Добро пожаловать в панель разработчиков, либо просто мамкеных хацкеров которые жаждят побить ядро🔥</h4>
-                </div>
-                <div class="information">
-                <h2>И так:</h2>
-                <ul>
-                    <li>Документация по ядру: ../docs</li>
-                    <li><a href="https://github.com/WINnerGMD/PyWIN-Core/">GitHub</a></li>
-                </ul>
-                </div>
-            </div>
-            <div class="gdps-block">
-                <div class="stats-wrap">
-                    <div class="stats"> 
-                        <h3>Аккаунтов: {{users}}</h3>
-                        <h3>Уровней: {{levels}}</h3>
-                    </div>
-                </div>
-                <div class="level-wrap">
-                    <div class="level"> 
-                        <div class="level-start">
-                            <img src="{{url_for("static", path='difficulties/hard.png')}}" class="level-difficulty">
+    <body class="bg-slate-900 flex justify-center items-center h-screen">
+    <div >
+        <h1 class="text-xl text-white/50 font-bold">
+            <span class="text-yellow-500">Py</span><span class="text-red-500">Win</span> <span class="text-indigo-600">Core</span> <span class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-red-600">0.2.0</span>
+        </h1>
+        <h2 class="font-bold text-white/50">
+            Cleaning, rewards, quests
+        </h2>
+    </div>
 
-                        </div>
+    </div>
 
-                        <div class="level-information">
-                            <h3>LvL Clen</h3>
-                            <h4>3 Coins</h4>
-                            <p>500 likes</p>
-                            <p>500 downloads</p>
-                        </div>
- 
-                    </div>
-                </div>
-            </div>
-        </main>
-        <footer>
-        </footer>
     </body>
     </html>

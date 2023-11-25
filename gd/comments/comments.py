@@ -10,7 +10,7 @@ from services.user import UserService
 from utils.crypt import checkValidGJP
 from utils.gdform import gd_dict_str
 
-router = APIRouter(tags=['Comments'])
+router = APIRouter(tags=["Comments"])
 
 
 @router.post(f"{system.path}/uploadGJComment21.php", response_class=PlainTextResponse)
@@ -38,44 +38,52 @@ async def upload_comment(
             if answer["type"] == "comment":
                 return str(answer["data"].id)
 
+
 @router.post(f"{system.path}/getGJComments21.php", response_class=PlainTextResponse)
 async def get_comments(
     db: Session = Depends(get_db), levelID: int = Form(), page: int = Form()
 ):
-    comments_object = await CommentsService().get_comments(db=db, level_id=levelID,page=page)
+    comments_object = await CommentsService().get_comments(
+        db=db, level_id=levelID, page=page
+    )
     if comments_object["status"] == "ok":
         comment_string = []
-        for i in comments_object['database']:
-            userObject = (await UserService().get_user_byid(db=db, id=i.authorId))['database']
+        for i in comments_object["database"]:
+            userObject = (await UserService().get_user_byid(db=db, id=i.authorId))[
+                "database"
+            ]
             iconkits = userObject.iconkits
 
             comment_string.append(
                 (
-                gd_dict_str(
-                    {
-                        2: i.content,
-                        3: i.authorId,
-                        4: i.likes,
-                        6: i.id,
-                        7: i.is_spam,
-                        8: i.id,
-                        10: i.progress,
-                    },
-                    separator="~"
+                    gd_dict_str(
+                        {
+                            2: i.content,
+                            3: i.authorId,
+                            4: i.likes,
+                            6: i.id,
+                            7: i.is_spam,
+                            8: i.id,
+                            10: i.progress,
+                        },
+                        separator="~",
+                    )
                 )
-            ) + ":" + gd_dict_str(
+                + ":"
+                + gd_dict_str(
                     {
                         1: i.authorName,
-                        9: iconkits['accIcon'],
-                        10: iconkits['color1'],
-                        11: iconkits['color2'],
+                        9: iconkits["accIcon"],
+                        10: iconkits["color1"],
+                        11: iconkits["color2"],
                         14: 0,
                         15: 0,
-                        16: i.authorId
+                        16: i.authorId,
                     },
-                    separator="~"
+                    separator="~",
                 )
-
-
             )
-        return "|".join(comment_string) + f"#{comments_object['count']}:{system.page * page}:{system.page}"
+        return (
+            "|".join(comment_string)
+            + f"#{comments_object['count']}:{system.page * page}:{system.page}"
+        )

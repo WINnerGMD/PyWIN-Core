@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api", tags=["API"])
 @router.get("/levels/{lvlid}")
 async def get_levels(lvlid: int, db=Depends(get_db)):
     info("Request to api | /api/levels")
-    levelData = (await LevelService.get_level_buid(levelID=lvlid, db=db))['database']
+    levelData = (await LevelService.get_level_buid(levelID=lvlid, db=db))["database"]
     return {
         "status": "ok",
         "id": levelData.id,
