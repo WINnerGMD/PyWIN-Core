@@ -122,7 +122,7 @@ async def chest(
         await db.commit()
         # lam = f"pywin:{accountID}:{resultchk}:{device}:{accountID}:{small_time.seconds}:{small_chest_orbs},{small_chest_diamonds},{shard_first},{shard_second}:{small_chest_len}:{big_time.seconds}:{big_shest_orbs},{big_shest_diamonds},{0},{1}:{big_chest_len}:{rewardType}"
         # lam = f"7Tm2j:{accountID}:{resultchk}:{device}:{accountID}:{small_time.seconds}:{small_chest_orbs},{small_chest_diamonds},1,1:{small_chest_len}:{big_time.seconds}:{big_shest_orbs},{big_shest_diamonds},4,10:{big_chest_len}:{rewardType}"
-        lam = f":{accountID}:{resultchk}:{device}:{accountID}:{small_time.seconds}:{small_chest_orbs},{small_chest_diamonds},{shard_first},{shard_second}:{small_chest_len}:{big_time.seconds}:{big_shest_orbs},{big_shest_diamonds},{shard_first},{shard_second}:{big_chest_len}:{rewardType}"
+        lam = f"pywin:{accountID}:{resultchk}:{device}:{accountID}:{small_time.seconds}:{small_chest_orbs},{small_chest_diamonds},{shard_first},{shard_second}:{small_chest_len}:{big_time.seconds}:{big_shest_orbs},{big_shest_diamonds},{shard_first},{shard_second}:{big_chest_len}:{rewardType}"
         encrypt = base64_encode(xor_cipher(lam, "59182"))
         result = (
                 "pywin"

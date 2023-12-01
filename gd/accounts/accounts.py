@@ -61,6 +61,8 @@ async def backup(
     saveData: str = Form(),
     password: str = Form(),
     userName: str = Form(),
+    gameVersion: int = Form(),
+    binaryVersion: int = Form(),
     db: AsyncSession = Depends(get_db),
 ):
     usersData = (
@@ -74,10 +76,9 @@ async def backup(
     )
     if usersData is not None:
         if bcrypt_hash(password) == usersData.passhash:
-            saveDataArr = saveData.split(";")
-            base64_decode(saveDataArr[0].replace("-", "+").replace("_", "/"))
-            # with open(f'gd/accounts/backups/{userName}.pw', "w") as f:
-            #     f.write(saveData)
+            saveData += f";{gameVersion};{binaryVersion};a;a"
+            with open(f'gd/accounts/backups/{userName}.txt', "w") as f:
+                f.write(saveData)
             return "1"
     else:
         return "-1"
@@ -102,9 +103,9 @@ async def sync(
         if bcrypt_hash(password) == usersData.passhash:
             try:
                 with open(
-                    f"gd/accounts/backups/{userName}.pw", "r", encoding="utf-8"
+                    f"gd/accounts/backups/{userName}.txt", "r", encoding="utf-8"
                 ) as f:
-                    f.read()
+                    return (f.read())
             except Exception:
                 return "-1"
         else:
