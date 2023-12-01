@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-
+import logger
 from config import system
 from database import get_db
 from gd.rate.rate_levels import router as router_rate
@@ -26,6 +26,8 @@ from plugins.origins import router as router_origins
 from services.levels import LevelService
 from services.user import UserService
 
+
+logger.StartLog()
 if system.pluginloader:
     for i in os.listdir("plugins"):
         if i != "origins.py" and i != "__pycache__":

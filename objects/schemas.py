@@ -60,13 +60,13 @@ class GetLevel(BaseModel):
     lenght: int | None
     gauntlet: int | None
     string: str | None
-    searchType: int
+    searchType: int |  None
     accountID: int | None
     difficulty: Difficulty | None
     demonFilter: int | None
-    page: int
+    page: int | None
     rate: Rate | tuple | None
-    coins: int
+    coins: int | None
     song: int | None
     customSong: int | None
 

@@ -7,6 +7,21 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 
+class shard(BaseModel):
+    max_shards: int
+    min_shards: int
+class shards(BaseModel):
+    fire: shard
+    ice: shard
+    poison: shard
+    shadow: shard
+    lava: shard
+class small(BaseModel):
+    max_mana: int
+    min_mana: int
+    max_diamonds: int
+    min_diamonds: int
+    shards: shard
 class Database(BaseModel):
     host: str
     port: int
@@ -37,6 +52,7 @@ def parse_config():
     try:
         with open("./config.json", "r") as config:
             json_object = json.load(config)
+            # small_chest = small(**json_object["chests"]["small"])
             if json_object["use_env"]:
                 parsedb = {
                     "host": os.environ.get("POSTGRES_HOST"),
