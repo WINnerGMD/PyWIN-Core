@@ -1,12 +1,25 @@
 import os
+import time
+
+from fastapi_events.handlers.local import local_handler
+from fastapi_events.middleware import EventHandlerASGIMiddleware
+
+import logger
+from logger import info, warning, console
+
+logger.StartLog()
+time.sleep(1)
+console.print("[purple] Building C part ... [/]", justify="center")
+console.print("[yellow bold] Сonfiguration... [/]", justify="center", )
+console.print("[green bold] GDPS started [/]", justify="center")
 import uvicorn
 from fastapi import Depends, Request
 from fastapi import FastAPI
+from fastapi_events.typing import Event
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-import logger
 from config import system
 from database import get_db
 from gd.rate.rate_levels import router as router_rate
@@ -21,13 +34,11 @@ from gd.misc.likes import router as router_likes
 from gd.music.musix import router as router_music
 from gd.rewards.chest import router as router_chest
 from gd.scores.scores import router as router_scores
-from logger import info, warning
+
 from plugins.origins import router as router_origins
 from services.levels import LevelService
 from services.user import UserService
 
-
-logger.StartLog()
 if system.pluginloader:
     for i in os.listdir("plugins"):
         if i != "origins.py" and i != "__pycache__":
@@ -76,9 +87,14 @@ async def message(req: Request, db=Depends(get_db)):
         )
 
 
+fastapi.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
+
+
 @fastapi.on_event("startup")
 async def startup():
     info("Server Started")
+
+
 
 
 if __name__ == "__main__":

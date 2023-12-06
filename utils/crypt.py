@@ -15,7 +15,7 @@ def base64_decode(string: str) -> str:
     return base64.urlsafe_b64decode(string.encode()).decode()
 
 
-def bcrypt_hash(password):
+def bcrypt_hash(password) -> str:
     return bcrypt.hashpw(password, "$2a$12$cFyTWLxu2w5O5mUFVai.be")
 
 
@@ -42,7 +42,7 @@ def decode_gjp(gjp: str) -> str:
     return decoded
 
 
-async def checkValidGJP(id, gjp, db: AsyncSession):
+async def checkValidGJP(id, gjp, db: AsyncSession) -> bool:
     try:
         password = decode_gjp(gjp)
         bcrypt = bcrypt_hash(password)
@@ -58,18 +58,18 @@ async def checkValidGJP(id, gjp, db: AsyncSession):
         return False
 
 
-async def sha1_hash(data, salt):
+async def sha1_hash(data, salt) -> str:
     hashdata = sha1((data + salt).encode("utf-8"))
     hashed_string = hashdata.hexdigest()
     return hashed_string
 
 
-def return_hash(string):
+def return_hash(string) -> str:
     hash_object = sha1(bytes(string, "utf-8"))
     return hash_object.hexdigest()
 
 
-def return_hash2(level):
+def return_hash2(level) -> str:
     data = ""
     l = len(level) // 40
     for i in range(40):

@@ -1,8 +1,10 @@
+import datetime
 from types import FunctionType
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import models
 from config import system
 from helpers.commands import Commands
 from helpers.rate import Difficulty
@@ -131,6 +133,16 @@ class CommentsService:
                     )
 
                     await db.commit()
+            case "daily":
+                day = datetime.date.today() + datetime.timedelta(days=1)
+                model = models.FeaturedLevelsModel(type=1, levelid=levelID, onTime=day)
+                db.add(model)
+                await db.commit()
+            case "weekly":
+                day = datetime.date.today() + datetime.timedelta(days=1)
+                model = models.FeaturedLevelsModel(type=2, levelid = levelID, onTime=day)
+                db.add(model)
+                await db.commit()
             case "epic":
                 if (await UserService.get_user_byid(id=authorID, db=db))[
                     "permissions"

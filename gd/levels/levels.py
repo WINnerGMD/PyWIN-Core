@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 from fastapi import APIRouter, Form, Depends, Request
 from fastapi.responses import PlainTextResponse, HTMLResponse
@@ -5,7 +6,11 @@ from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import system, redis
 from services.levels import LevelService
+from services.daily import DailyService
 from objects.levelObject import LevelGroup, LevelObject
+from fastapi_events.dispatcher import dispatch
+from events import Events
+
 from objects.schemas import GetLevel, UploadLevel
 from utils.crypt import checkValidGJP
 from utils.gdform import gd_dict_str
@@ -21,25 +26,26 @@ router = APIRouter(prefix="", tags=["Levels"])
 
 @router.post(f"{system.path}/uploadGJLevel21.php")
 async def upload_level(
-    db: AsyncSession = Depends(get_db),
-    levelString: str = Form(),
-    accountID: int = Form(),
-    levelName: str = Form(),
-    levelDesc: str = Form(default="WyBoZXkgaGUgZGlkbid0IHB1dCBhIGRlc2NyaXB0aW9uIF0="),
-    levelVersion: int = Form(),
-    levelLength: int = Form(),
-    audioTrack: int = Form(),
-    password: int = Form(),
-    original: int = Form(),
-    twoPlayer: int = Form(),
-    songID: int = Form(),
-    objects: int = Form(),
-    coins: int = Form(),
-    requestedStars: int = Form(),
-    ldm: int = Form(),
-    gameVersion: int = Form(),
-    gjp: str = Form(),
+        db: AsyncSession = Depends(get_db),
+        levelString: str = Form(),
+        accountID: int = Form(),
+        levelName: str = Form(),
+        levelDesc: str = Form(default="WyBoZXkgaGUgZGlkbid0IHB1dCBhIGRlc2NyaXB0aW9uIF0="),
+        levelVersion: int = Form(),
+        levelLength: int = Form(),
+        audioTrack: int = Form(),
+        password: str = Form(),
+        original: int = Form(),
+        twoPlayer: int = Form(),
+        songID: str = Form(),
+        objects: int = Form(),
+        coins: int = Form(),
+        requestedStars: int = Form(),
+        ldm: int = Form(),
+        gameVersion: int = Form(),
+        gjp: str = Form(),
 ):
+
     if await checkValidGJP(accountID, gjp=gjp, db=db):
         SystemObj = UploadLevel(
             levelString=levelString,
@@ -60,7 +66,7 @@ async def upload_level(
             gameVersion=gameVersion,
         )
         service = await LevelService().upload_level(db=db, data=SystemObj)
-        print(service)
+        dispatch(Events.NewLevel, LevelObject(service, db))
         if service["status"] == "ok":
             return service["level"].id
         else:
@@ -74,21 +80,21 @@ async def upload_level(
     key="get_levels:{str}/{diff}/{demonFilter}{type}/{len}/{featured}/{epic}/{gauntlet}/{page}",
 )
 async def get_level(
-    request: Request,
-    str: str = Form(default=None),
-    page: int = Form(default=None),
-    type: int = Form(default=None),
-    len: int | str = Form(default=None),
-    accountID: int = Form(default=None),
-    diff: int | str = Form(default=None),
-    demonFilter: int = Form(default=None),
-    featured: int = Form(default=None),
-    epic: int = Form(default=None),
-    coins: int = Form(default=None),
-    song: int = Form(default=None),
-    gauntlet: int = Form(default=None),
-    customSong: int = Form(default=None),
-    db: AsyncSession = Depends(get_db),
+        request: Request,
+        str: str = Form(default=None),
+        page: int = Form(default=None),
+        type: int = Form(default=None),
+        len: int | str = Form(default=None),
+        accountID: int = Form(default=None),
+        diff: int | str = Form(default=None),
+        demonFilter: int = Form(default=None),
+        featured: int = Form(default=None),
+        epic: int = Form(default=None),
+        coins: int = Form(default=None),
+        song: int = Form(default=None),
+        gauntlet: int = Form(default=None),
+        customSong: int = Form(default=None),
+        db: AsyncSession = Depends(get_db),
 ):
     if str is not None:
         if "," in str:
@@ -133,7 +139,6 @@ async def get_level(
         is_gauntlet = True
     else:
         result = await LevelService().test_get_levels(db=db, data=scheme)
-        print(result)
         page = page
         is_gauntlet = False
     if result["status"] == "ok":
@@ -149,7 +154,7 @@ async def get_level(
 @cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
 async def level_download(levelID: int = Form(), db: AsyncSession = Depends(get_db)):
     if int(levelID) < 0:  # daily & weekly
-        service = await LevelService().get_level_buid(db=db, levelID=8)
+        service = await LevelService().get_level_buid(db=db, levelID=32)
         is_featured = True
     else:
         service = await LevelService().get_level_buid(db=db, levelID=levelID)
@@ -166,10 +171,10 @@ async def level_download(levelID: int = Form(), db: AsyncSession = Depends(get_d
 
 @router.post(f"{system.path}/deleteGJLevelUser20.php", response_class=PlainTextResponse)
 async def level_delete(
-    accountID: int = Form(),
-    gjp: str = Form(),
-    levelID: int = Form(),
-    db: AsyncSession = Depends(get_db),
+        accountID: int = Form(),
+        gjp: str = Form(),
+        levelID: int = Form(),
+        db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         level_object = await LevelService().get_level_buid(db=db, levelID=levelID)
@@ -221,12 +226,31 @@ async def map_packs(page: str = Form(), db: AsyncSession = Depends(get_db)):
         )
         packhash += f"{str(pack.id)[0]}{str(pack.id)[-1]}{pack.stars}{pack.coins}"
     return (
-        "|".join(packstrings)
-        + f"#{packs['count']}:{int(page) * 10}:10#"
-        + return_hash(packhash)
+            "|".join(packstrings)
+            + f"#{packs['count']}:{int(page) * 10}:10#"
+            + return_hash(packhash)
     )
 
 
 @router.post(f"{system.path}/getGJDailyLevel.php", response_class=PlainTextResponse)
-async def get_daily_level():
-    return "712111|4"
+async def get_daily_level(db: AsyncSession = Depends(get_db),
+                          weekly: int = Form(default=0)
+                          ):
+
+    match weekly:
+        case 0:
+            count = await DailyService.getCountDailyLevels(db)
+            additional_id = 0
+            daily = await DailyService.getLastDaily(db)
+            time_last = daily.onTime - datetime.datetime.now()
+        case 1:
+            count = await DailyService.getCountWeeklyLevels(db)
+            additional_id = 100001
+            weekly = await DailyService.getLastWeekly(db)
+            print(weekly.id)
+            time_last = weekly.onTime - datetime.datetime.now()
+            print(time_last.seconds)
+
+    data = f"{count+ additional_id}|{time_last.seconds}"
+    print(data)
+    return data

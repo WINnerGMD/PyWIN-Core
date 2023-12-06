@@ -112,7 +112,7 @@ venv.bak/
 # Spyder project settings
 .spyderproject
 .spyproject
-
+plugins/test_plugin.py
 # Rope project settings
 .ropeproject
 

@@ -2,8 +2,9 @@ from rich.console import Console
 import threading
 from utils.gdform import formatted_date
 
-
 console = Console()
+
+
 
 
 def console_start():
@@ -57,10 +58,11 @@ console_th = threading.Thread(target=console_start, name="console")
 console_th.start()
 
 def StartLog():
-    console.print("[bold green]Hi, THANK You for using PyWIN Core [/] 0.2.0 " )
-    console.print("[blue] System need time to connect dependencies and make the first start[/]")
-    console.print("// Please wait... , [red]** don't turn off PyWIN Core **[/] ")
+    console.print("[bold green]Hello. Thank You for using PyWIN Core [/] [red]II[/]", justify="center")
+    console.print("[blue bold] System need time to connect dependencies and make the first start[/]", justify="center")
+    console.print("// Please wait... , [red]** don't turn off PyWIN Core **[/] ", justify="center")
     # for 2.0 update
+    # deployer, builder GDPS server. need to fast
 
 def warning(message):
     # if config.logger_warning:
