@@ -60,7 +60,7 @@ class GetLevel(BaseModel):
     lenght: int | None
     gauntlet: int | None
     string: str | None
-    searchType: int |  None
+    searchType: int | None
     accountID: int | None
     difficulty: Difficulty | None
     demonFilter: int | None

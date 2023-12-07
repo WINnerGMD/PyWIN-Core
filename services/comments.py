@@ -140,7 +140,7 @@ class CommentsService:
                 await db.commit()
             case "weekly":
                 day = datetime.date.today() + datetime.timedelta(days=1)
-                model = models.FeaturedLevelsModel(type=2, levelid = levelID, onTime=day)
+                model = models.FeaturedLevelsModel(type=2, levelid=levelID, onTime=day)
                 db.add(model)
                 await db.commit()
             case "epic":
@@ -219,11 +219,7 @@ class PostCommentsService:
     async def get_post(db: AsyncSession, usrid: int, page: int):
         offset = int(page) * 10
         count = len(
-            (
-                await db.execute(
-                    select(PostsModel).filter(PostsModel.accountID == usrid)
-                )
-            )
+            (await db.execute(select(PostsModel).filter(PostsModel.accountID == usrid)))
             .scalars()
             .all()
         )

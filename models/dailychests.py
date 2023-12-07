@@ -22,4 +22,3 @@ class ChestsModel(Base):
     poison_shards = Column(Integer)
     shadow_shards = Column(Integer)
     lava_shards = Column(Integer)
-

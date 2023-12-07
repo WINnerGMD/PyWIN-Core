@@ -20,9 +20,7 @@ class PermissionService:
             return (
                 (
                     await db.execute(
-                        select(RolesModel).filter(
-                            RolesModel.id == system.default_role
-                        )
+                        select(RolesModel).filter(RolesModel.id == system.default_role)
                     )
                 )
                 .scalars()

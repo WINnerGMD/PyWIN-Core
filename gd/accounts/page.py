@@ -6,11 +6,11 @@ from config import system
 from database import get_db
 from logger import info, error
 from objects.schemas import UpdateStats
-from objects.userObject import UserObject
+from objects.userObject import UserObject, UserGroup
 from services.user import UserService
 from utils.crypt import checkValidGJP
 
-router = APIRouter(prefix="", tags=["Accounts"])
+router = APIRouter(prefix="", tags=["Profile"])
 
 
 @router.post(f"{system.path}/getGJUserInfo20.php", response_class=PlainTextResponse)
@@ -37,6 +37,13 @@ async def get_posts(
 ):
     service = await UserService().get_user_byid(db=db, id=accountID)
     return await UserObject(service=service, db=db).GDGetUserPosts(page=page)
+
+
+@router.post(f"{system.path}/getGJUsers20.php", response_class=PlainTextResponse)
+async def get_user(str: str = Form(), db: AsyncSession = Depends(get_db)):
+    service = await UserService.get_users_byName(name=str, db=db)
+    usr = await UserGroup(service).GDGetUserGroup()
+    return usr
 
 
 @router.post(f"{system.path}/updateGJUserScore22.php", response_class=PlainTextResponse)

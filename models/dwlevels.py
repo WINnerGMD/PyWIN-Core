@@ -1,8 +1,4 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    DateTime
-)
+from sqlalchemy import Column, Integer, DateTime
 from sqlalchemy.sql import func
 from database import Base
 
@@ -16,12 +12,12 @@ class FeaturedLevelsModel(Base):
     levelid = Column(Integer)
     type = Column(Integer)
 
-
     def __repr__(self):
-        return str({
-            "id": self.id,
-            "time": self.time,
-            "levelid": self.levelid,
-            "type": self.type
-        }
+        return str(
+            {
+                "id": self.id,
+                "time": self.time,
+                "levelid": self.levelid,
+                "type": self.type,
+            }
         )

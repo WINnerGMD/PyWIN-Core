@@ -4,26 +4,35 @@ from models import FeaturedLevelsModel
 
 
 class DailyService:
-
-
     @staticmethod
-    async def getCountDailyLevels(db: AsyncSession) -> int :
+    async def getCountDailyLevels(db: AsyncSession) -> int:
         """Total count of Daily levels"""
 
-        models = (await db.execute(
-            select(FeaturedLevelsModel).filter(FeaturedLevelsModel.type == 1)
-        )).scalars().all()
+        models = (
+            (
+                await db.execute(
+                    select(FeaturedLevelsModel).filter(FeaturedLevelsModel.type == 1)
+                )
+            )
+            .scalars()
+            .all()
+        )
 
         return len(models)
-
 
     @staticmethod
     async def getCountWeeklyLevels(db: AsyncSession) -> int:
         """Total count of Weekly levels"""
 
-        models = (await db.execute(
-            select(FeaturedLevelsModel).filter(FeaturedLevelsModel.type == 2)
-        )).scalars().all()
+        models = (
+            (
+                await db.execute(
+                    select(FeaturedLevelsModel).filter(FeaturedLevelsModel.type == 2)
+                )
+            )
+            .scalars()
+            .all()
+        )
 
         return len(models)
 
@@ -31,9 +40,17 @@ class DailyService:
     async def getLastDaily(db: AsyncSession) -> FeaturedLevelsModel:
         """Get last Daily level for users"""
 
-        model = (await db.execute(
-            select(FeaturedLevelsModel).filter(FeaturedLevelsModel.type == 1).order_by(FeaturedLevelsModel.id.desc())
-        )).scalars().first()
+        model = (
+            (
+                await db.execute(
+                    select(FeaturedLevelsModel)
+                    .filter(FeaturedLevelsModel.type == 1)
+                    .order_by(FeaturedLevelsModel.id.desc())
+                )
+            )
+            .scalars()
+            .first()
+        )
 
         return model
 
@@ -41,8 +58,16 @@ class DailyService:
     async def getLastWeekly(db: AsyncSession) -> FeaturedLevelsModel:
         """Get last Daily level for users"""
 
-        model = (await db.execute(
-            select(FeaturedLevelsModel).filter(FeaturedLevelsModel.type == 2).order_by(FeaturedLevelsModel.id.desc())
-        )).scalars().first()
+        model = (
+            (
+                await db.execute(
+                    select(FeaturedLevelsModel)
+                    .filter(FeaturedLevelsModel.type == 2)
+                    .order_by(FeaturedLevelsModel.id.desc())
+                )
+            )
+            .scalars()
+            .first()
+        )
 
         return model

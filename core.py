@@ -10,26 +10,27 @@ from logger import info, warning, console
 logger.StartLog()
 time.sleep(1)
 console.print("[purple] Building C part ... [/]", justify="center")
-console.print("[yellow bold] Сonfiguration... [/]", justify="center", )
+console.print(
+    "[yellow bold] Сonfiguration... [/]",
+    justify="center",
+)
 console.print("[green bold] GDPS started [/]", justify="center")
 import uvicorn
 from fastapi import Depends, Request
 from fastapi import FastAPI
-from fastapi_events.typing import Event
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
 from config import system
 from database import get_db
 from gd.rate.rate_levels import router as router_rate
-from gd.accounts.accounts import router as router_accounts
-from gd.accounts.page import router as router_acc_page
+from gd.accounts import router as router_accounts
 from gd.api.get_levels import router as router_api_levels
 from gd.api.get_user import router as router_api_users
 from gd.comments.comments import router as router_comments
 from gd.comments.posts import router as router_posts
 from gd.levels.levels import router as router_levels
+from gd.levels.level_packs import router as router_levelpack
 from gd.misc.likes import router as router_likes
 from gd.music.musix import router as router_music
 from gd.rewards.chest import router as router_chest
@@ -52,12 +53,13 @@ fastapi = FastAPI(
     redoc_url=None,
     title="PyWIN Core",
     summary="For developers and testers",
+    swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"},
 )
 
 fastapi.include_router(router_origins)
 fastapi.include_router(router_accounts)
 fastapi.include_router(router_levels)
-fastapi.include_router(router_acc_page)
+fastapi.include_router(router_levelpack)
 fastapi.include_router(router_comments)
 fastapi.include_router(router_posts)
 fastapi.include_router(router_likes)
@@ -93,8 +95,6 @@ fastapi.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
 @fastapi.on_event("startup")
 async def startup():
     info("Server Started")
-
-
 
 
 if __name__ == "__main__":

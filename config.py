@@ -10,18 +10,24 @@ load_dotenv(".env")
 class shard(BaseModel):
     max_shards: int
     min_shards: int
+
+
 class shards(BaseModel):
     fire: shard
     ice: shard
     poison: shard
     shadow: shard
     lava: shard
+
+
 class small(BaseModel):
     max_mana: int
     min_mana: int
     max_diamonds: int
     min_diamonds: int
     shards: shard
+
+
 class Database(BaseModel):
     host: str
     port: int

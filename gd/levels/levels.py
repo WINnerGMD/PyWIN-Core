@@ -1,25 +1,25 @@
 import datetime
 import hashlib
+
 from fastapi import APIRouter, Form, Depends, Request
 from fastapi.responses import PlainTextResponse, HTMLResponse
-from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from config import system, redis
-from services.levels import LevelService
-from services.daily import DailyService
-from objects.levelObject import LevelGroup, LevelObject
 from fastapi_events.dispatcher import dispatch
-from events import Events
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from cache import cache
+from config import system, redis
+from database import get_db
+from events import Events
+from helpers.rate import Difficulty
+from logger import error
+from models import GauntletsModel
+from objects.levelObject import LevelGroup, LevelObject
 from objects.schemas import GetLevel, UploadLevel
+from services.daily import DailyService
+from services.levels import LevelService
 from utils.crypt import checkValidGJP
 from utils.gdform import gd_dict_str
-from cache import cache
-from sqlalchemy import select
-from models import GauntletsModel
-from logger import info, error
-import json
-from helpers.rate import Difficulty
 
 router = APIRouter(prefix="", tags=["Levels"])
 
@@ -183,53 +183,12 @@ async def level_delete(
             return "1"
 
 
-def return_hash(string):
-    hash_object = hashlib.sha1(bytes(string + "xI25fpAapCQg", "utf-8"))
-    return hash_object.hexdigest()
 
 
-@router.post(f"{system.path}/getGJGauntlets21.php", response_class=PlainTextResponse)
-async def gauntlets(db: AsyncSession = Depends(get_db)):
-    gauntlets = (await db.execute(select(GauntletsModel))).scalars().all()
-    await LevelService.get_gauntlets_levels(db=db, indexpack=2)
-    response = ""
-    hash_string = ""
-    for gn in gauntlets:
-        single_response = {1: gn.indexpack, 3: gn.levels}
-
-        hash_string += f"{gn.indexpack}{gn.levels}"
-        response += gd_dict_str(single_response) + "|"
-
-    response = response[:-1] + f"#{return_hash(hash_string)}"
-    return response
 
 
-@router.post(f"{system.path}/getGJMapPacks21.php", response_class=PlainTextResponse)
-async def map_packs(page: str = Form(), db: AsyncSession = Depends(get_db)):
-    packs = await LevelService.get_map_packs(db=db, page=int(page))
-    packstrings = []
-    packhash = ""
-    for pack in packs["database"]:
-        packstrings.append(
-            gd_dict_str(
-                {
-                    1: pack.id,
-                    2: pack.name,
-                    3: pack.levels,
-                    4: pack.stars,
-                    5: pack.coins,
-                    6: pack.difficulty,
-                    7: pack.text_color,
-                    8: pack.bar_color,
-                }
-            )
-        )
-        packhash += f"{str(pack.id)[0]}{str(pack.id)[-1]}{pack.stars}{pack.coins}"
-    return (
-            "|".join(packstrings)
-            + f"#{packs['count']}:{int(page) * 10}:10#"
-            + return_hash(packhash)
-    )
+
+
 
 
 @router.post(f"{system.path}/getGJDailyLevel.php", response_class=PlainTextResponse)

@@ -11,4 +11,5 @@ from models.roles import RolesModel
 from models.songs import SongsModel
 from models.user import UsersModel
 from models.dailychests import ChestsModel
+
 metadata_obj = MetaData()

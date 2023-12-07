@@ -6,6 +6,8 @@ from sqlalchemy import select
 from models import UsersModel
 from hashlib import sha1
 
+# TODO: Make this model faster
+
 
 def base64_encode(string: str) -> str:
     return base64.urlsafe_b64encode(string.encode()).decode()
@@ -47,9 +49,7 @@ async def checkValidGJP(id, gjp, db: AsyncSession) -> bool:
         password = decode_gjp(gjp)
         bcrypt = bcrypt_hash(password)
         if (
-            await db.execute(
-                select(UsersModel.passhash).filter(UsersModel.id == id)
-            )
+            await db.execute(select(UsersModel.passhash).filter(UsersModel.id == id))
         ).scalars().first() == bcrypt:
             return True
         else:
@@ -64,8 +64,8 @@ async def sha1_hash(data, salt) -> str:
     return hashed_string
 
 
-def return_hash(string) -> str:
-    hash_object = sha1(bytes(string, "utf-8"))
+def return_hash(string: str, salt: str) -> str:
+    hash_object = sha1(bytes(string + salt, "utf-8"))
     return hash_object.hexdigest()
 
 
