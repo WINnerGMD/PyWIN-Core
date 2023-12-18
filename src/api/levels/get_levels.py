@@ -1,15 +1,22 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from database import get_db
 from logger import info
 from src.services.levels import LevelService
 from src.utils.crypt import base64_decode
+from src.errors import GenericError
+router = APIRouter(prefix="/levels", tags=["Levels"])
 
-router = APIRouter(prefix="/api", tags=["API"])
 
-
-@router.get("/levels/{lvlid}")
-async def get_levels(lvlid: int, db=Depends(get_db)):
-    info("Request to api | /api/levels")
+@router.get("/{lvlid}", summary="Get level by id", responses={
+    404: {
+        "model": GenericError,
+        "description": "level with this ID not found"
+    }
+}
+            )
+async def get_levels(lvlid: int, db=Depends(get_db)) -> JSONResponse:
+    info("Request to api | /levels")
     levelData = (await LevelService.get_level_buid(levelID=lvlid, db=db))["database"]
     return {
         "status": "ok",
