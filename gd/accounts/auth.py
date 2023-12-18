@@ -3,7 +3,7 @@ from fastapi.responses import PlainTextResponse
 from fastapi import Request, Form, Depends, APIRouter
 
 from services.user import UserService
-from logger import error
+from logger import error, info
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,8 +36,9 @@ async def login(
         userName=userName, password=password, db=db
     )
 
-    if "error" in service_response["message"]:
+    if service_response["status"] == "error":
         error(service_response)
         return str(service_response["code"])
     else:
+        info(service_response['message'])
         return f"{service_response['id']},{service_response['id']}"

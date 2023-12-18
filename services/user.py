@@ -112,18 +112,20 @@ class UserService:
         )
         passhash = bcrypt_hash(password)
         if user is None:
-            return {"code": "-11", "message": "error [User not found]"}
+            return {"status": "error", "code": "-11", "message": "error [User not found]"}
         else:
             if user.passhash == passhash:
                 if user.verified:
-                    return {"code": "1", "message": "success", "id": user.id}
+                    return {"status": "success", "code": "1", "message": f"{user.userName} successfully logged in", "id": user.id}
                 else:
                     return {
+                        "status": "error",
                         "code": "-12",
                         "message": "error [the user's account is disabled]",
                     }
             else:
                 return {
+                    "status": "error",
                     "code": "-11",
                     "message": "error [user's login credentials are incorrect]",
                 }

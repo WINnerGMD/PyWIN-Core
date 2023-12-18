@@ -42,26 +42,11 @@
             "max_diamonds": 1,
             "min_diamonds": 0,
             "shards": {
-                "fire":{
-                    "max_shards": 1,
-                    "min_shards": 0
-                },
-                "ice": {
-                    "max_shards": 1,
-                    "min_shards": 0
-                },
-                "poison": {
-                    "max_shards": 1,
-                    "min_shards": 0
-                },
-                "shadow": {
-                    "max_shards": 1,
-                    "min_shards": 0
-                },
-                "lava": {
-                    "max_shards": 1,
-                    "min_shards": 0
-                }
+                "fire": true,
+                "ice": true,
+                "poison": true,
+                "shadow": true,
+                "lava": true
             }
         },
         "big": {
@@ -70,27 +55,13 @@
             "max_diamonds": 3,
             "min_diamonds": 0,
             "shards": {
-                "fire": {
-                    "max_shards": 5,
-                    "min_shards": 0
-                },
-                "ice": {
-                    "max_shards": 5,
-                    "min_shards": 0
-                },
-                "poison": {
-                    "max_shards": 5,
-                    "min_shards": 0
-                },
-                "shadow": {
-                    "max_shards": 5,
-                    "min_shards": 0
-                },
-                "lava": {
-                    "max_shards": 5,
-                    "min_shards": 0
-                }
+                "fire": true,
+                "ice": true,
+                "poison": true,
+                "shadow": true,
+                "lava": true
             }
+
         }
     },
     "asade": {

@@ -9,6 +9,7 @@ import models
 from datetime import datetime
 from datetime import timedelta
 
+from config import big_chest, small_chest
 from config import system
 from database import get_db
 from utils.crypt import xor_cipher, base64_encode, base64_decode, checkValidGJP
@@ -31,10 +32,10 @@ async def chest(
 
         shard_type = random.randint(0, 4)
         shard_count = random.randint(0, 5)
-        small_chest_orbs = random.randint(20, 100)
-        small_chest_diamonds = random.randint(100, 250)
-        big_shest_orbs = random.randint(50, 500)
-        big_shest_diamonds = random.randint(500, 1000)
+        small_chest_orbs = random.randint(small_chest.min_mana, small_chest.max_mana)
+        small_chest_diamonds = random.randint(small_chest.min_diamonds, small_chest.max_diamonds)
+        big_shest_orbs = random.randint(big_chest.min_mana, big_chest.max_mana)
+        big_shest_diamonds = random.randint(big_chest.min_diamonds, big_chest.max_diamonds)
 
         match rewardType:
             case 1:
