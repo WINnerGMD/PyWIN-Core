@@ -14,7 +14,7 @@ console.print(
     "[yellow bold] Сonfiguration... [/]",
     justify="center",
 )
-console.print("[green bold] GDPS started [/]", justify="center")
+console.print("[green bold] src.gdPS started [/]", justify="center")
 import uvicorn
 from fastapi import Depends, Request
 from fastapi import FastAPI
@@ -23,22 +23,22 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from config import system
 from database import get_db
-from gd.rate.rate_levels import router as router_rate
-from gd.accounts import router as router_accounts
-from gd.api.get_levels import router as router_api_levels
-from gd.api.get_user import router as router_api_users
-from gd.comments.comments import router as router_comments
-from gd.comments.posts import router as router_posts
-from gd.levels.levels import router as router_levels
-from gd.levels.level_packs import router as router_levelpack
-from gd.misc.likes import router as router_likes
-from gd.music.musix import router as router_music
-from gd.rewards.chest import router as router_chest
-from gd.scores.scores import router as router_scores
+from src.gd.rate.rate_levels import router as router_rate
+from src.gd.accounts import router as router_accounts
+from src.api.get_levels import router as router_api_levels
+from src.api.get_user import router as router_api_users
+from src.gd.comments.comments import router as router_comments
+from src.gd.comments.posts import router as router_posts
+from src.gd.levels.levels import router as router_levels
+from src.gd.levels.level_packs import router as router_levelpack
+from src.gd.misc.likes import router as router_likes
+from src.gd.music.musix import router as router_music
+from src.gd.rewards.chest import router as router_chest
+from src.gd.scores.scores import router as router_scores
 
 from plugins.origins import router as router_origins
-from services.levels import LevelService
-from services.user import UserService
+from src.services.levels import LevelService
+from src.services.user import UserService
 
 if system.pluginloader:
     for i in os.listdir("plugins"):

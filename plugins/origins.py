@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
-from objects.levelObject import LevelObject, LevelGroup
-from services.levels import LevelService
+from src.objects.levelObject import LevelObject, LevelGroup
+from src.services.levels import LevelService
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.typing import Event
 
