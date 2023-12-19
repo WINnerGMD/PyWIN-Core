@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.helpers.rate import Difficulty, Rate
 from src.objects.schemas import UploadLevel, GetLevel
-from src.services.user import UserService
-from models import LevelsModel, GauntletsModel, MapPacksModel
+from src.depends.user import UsersRepository
+from src.models import LevelsModel, GauntletsModel, MapPacksModel
 from src.utils.gdform import formatted_date
 from config import system
 
@@ -12,7 +12,7 @@ from config import system
 class LevelService:
     @staticmethod
     async def upload_level(db: AsyncSession, data: UploadLevel):
-        AuthorObj = await UserService().get_user_byid(db=db, id=data.accountID)
+        AuthorObj = await UsersRepository().find_byid(data.accountID)
         upload_time = formatted_date()
         if AuthorObj["status"] == "ok":
             db_lvl = LevelsModel(

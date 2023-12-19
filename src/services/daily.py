@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models import FeaturedLevelsModel
+from src.models import FeaturedLevelsModel
 
 
 class DailyService:

@@ -5,7 +5,7 @@ from config import system
 from logger import error
 from src.objects.schemas import UpdateStats
 from src.services.perms import PermissionService
-from models import UsersModel, MessagesModel
+from src.models import UsersModel, MessagesModel
 from src.utils.crypt import bcrypt_hash
 
 

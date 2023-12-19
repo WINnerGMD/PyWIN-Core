@@ -5,7 +5,6 @@ from src.services.user import UserService
 from src.services.levels import LevelService
 from src.objects.levelObject import LevelObject
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
 from src.utils.crypt import checkValidGJP
 from src.helpers.rate import Difficulty
 from logger import error
@@ -20,7 +19,6 @@ async def suggestGJStars(
     feature: int = Form(),
     levelID: int = Form(),
     stars: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         user = await UserService.get_user_byid(db=db, id=accountID)
@@ -57,7 +55,6 @@ async def rate_stars(
     stars: int = Form(),
     levelID: int = Form(),
     accountID: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(accountID, gjp, db):
         level = await LevelService.get_level_buid(levelID, db)

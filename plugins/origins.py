@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.objects.levelObject import LevelObject, LevelGroup
 from src.services.levels import LevelService

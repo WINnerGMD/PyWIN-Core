@@ -3,7 +3,6 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from database import get_db
 from logger import info, error
 from src.objects.schemas import UpdateStats
 from src.objects.userObject import UserObject, UserGroup
@@ -16,7 +15,6 @@ router = APIRouter(prefix="", tags=["Profile"])
 @router.post(f"{system.path}/getGJUserInfo20.php", response_class=PlainTextResponse)
 async def get_userInfo(
     targetAccountID: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     service = await UserService().get_user_byid(db=db, id=targetAccountID)
     if service["status"] == "ok":
@@ -33,14 +31,13 @@ async def get_userInfo(
 async def get_posts(
     accountID: int = Form(),
     page: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     service = await UserService().get_user_byid(db=db, id=accountID)
     return await UserObject(service=service, db=db).GDGetUserPosts(page=page)
 
 
 @router.post(f"{system.path}/getGJUsers20.php", response_class=PlainTextResponse)
-async def get_user(str: str = Form(), db: AsyncSession = Depends(get_db)):
+async def get_user(str: str = Form()):
     service = await UserService.get_users_byName(name=str, db=db)
     usr = await UserGroup(service).GDGetUserGroup()
     return usr
@@ -66,7 +63,6 @@ async def updateGJUserScore22(
     gjp: str = Form(),
     color1: int = Form(),
     color2: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         iconkit = {

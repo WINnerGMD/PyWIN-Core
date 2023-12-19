@@ -7,8 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from database import get_db
-from models import SongsModel
+from src.models import SongsModel
 
 # with open('/gd/music/musix_config.json', 'r') as f:
 #     config = json.loads(f.read())
@@ -19,7 +18,7 @@ router = APIRouter(tags=["Songs"])
 
 
 @router.post(f"{system.path}/getGJSongInfo.php", response_class=PlainTextResponse)
-async def get_song(songID: str = Form(), db: AsyncSession = Depends(get_db)):
+async def get_song(songID: str = Form()):
     song_db = (
         (await db.execute(select(SongsModel).filter(SongsModel.id == songID)))
         .scalars()
@@ -57,7 +56,6 @@ class get_musix(BaseModel):
 async def musix_get(
     data: get_musix,
     Authorization: Annotated[str, Header()],
-    db: AsyncSession = Depends(get_db),
 ):
     global song_link
     try:

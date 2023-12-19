@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.helpers.scores import LeaderBoards
-from models import UsersModel
+from src.models import UsersModel
 from config import system
 
 

@@ -4,8 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from database import get_db
-from models import UsersModel
+from src.models import UsersModel
 from src.objects.userObject import UserObject
 from src.services.user import UserService
 from src.utils.crypt import bcrypt_hash, checkValidGJP
@@ -29,7 +28,6 @@ async def backup(
     userName: str = Form(),
     gameVersion: int = Form(),
     binaryVersion: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     usersData = (
         (await db.execute(select(UsersModel).filter(UsersModel.userName == userName)))
@@ -50,7 +48,7 @@ async def backup(
     f"/database/accounts/syncGJAccountNew.php", response_class=PlainTextResponse
 )
 async def sync(
-    userName: str = Form(), password: str = Form(), db: AsyncSession = Depends(get_db)
+    userName: str = Form(), password: str = Form(),
 ):
     usersData = (
         (await db.execute(select(UsersModel).filter(UsersModel.userName == userName)))
@@ -74,7 +72,7 @@ async def sync(
 
 @router.post(f"{system.path}/requestUserAccess.php")
 async def get_user_access(
-    gjp: str = Form(), accountID: str = Form(), db: AsyncSession = Depends(get_db)
+    gjp: str = Form(), accountID: str = Form(),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         service = await UserService.get_user_byid(db=db, id=accountID)

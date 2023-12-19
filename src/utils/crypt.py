@@ -3,7 +3,7 @@ import base64
 import itertools
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models import UsersModel
+from src.models import UsersModel
 from hashlib import sha1
 
 # TODO: Make this model faster

@@ -2,7 +2,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.helpers.rate import Difficulty, Rate
-from models import ActionsModel, LevelsModel, UsersModel
+from src.models import ActionsModel, LevelsModel, UsersModel
 from src.utils.crypt import xor_cipher, base64_encode, sha1_hash
 from src.utils.gdform import gd_dict_str
 from config import system

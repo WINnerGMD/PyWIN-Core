@@ -5,7 +5,6 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from database import get_db
 from src.objects.schemas import UploadPost
 from src.services.comments import PostCommentsService
 from src.utils.crypt import checkValidGJP
@@ -18,7 +17,6 @@ router = APIRouter(tags=["Posts"])
     f"{system.path}/uploadGJAccComment20.php",
 )
 async def Upload_post(
-    db: AsyncSession = Depends(get_db),
     accountID: int = Form(),
     comment: str = Form(),
     gjp: str = Form(),
@@ -41,7 +39,6 @@ async def get_posts(
     accountID: int = Form(),
     gjp: str = Form(),
     commentID: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         await PostCommentsService.delete_post(postID=commentID, db=db)

@@ -9,11 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cache import cache
 from config import system, redis
-from database import get_db
 from events import Events
 from src.helpers.rate import Difficulty
 from logger import error
-from models import GauntletsModel
+from src.models import GauntletsModel
 from src.objects.levelObject import LevelGroup, LevelObject
 from src.objects.schemas import GetLevel, UploadLevel
 from src.services.daily import DailyService
@@ -26,7 +25,6 @@ router = APIRouter(prefix="", tags=["Levels"])
 
 @router.post(f"{system.path}/uploadGJLevel21.php")
 async def upload_level(
-        db: AsyncSession = Depends(get_db),
         levelString: str = Form(),
         accountID: int = Form(),
         levelName: str = Form(),
@@ -94,7 +92,6 @@ async def get_level(
         song: int = Form(default=None),
         gauntlet: int = Form(default=None),
         customSong: int = Form(default=None),
-        db: AsyncSession = Depends(get_db),
 ):
     if str is not None:
         if "," in str:
@@ -152,7 +149,7 @@ async def get_level(
 
 @router.post(f"{system.path}/downloadGJLevel22.php", response_class=PlainTextResponse)
 @cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
-async def level_download(levelID: int = Form(), db: AsyncSession = Depends(get_db)):
+async def level_download(levelID: int = Form()):
     if int(levelID) < 0:  # daily & weekly
         service = await LevelService().get_level_buid(db=db, levelID=32)
         is_featured = True
@@ -174,7 +171,6 @@ async def level_delete(
         accountID: int = Form(),
         gjp: str = Form(),
         levelID: int = Form(),
-        db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(id=accountID, gjp=gjp, db=db):
         level_object = await LevelService().get_level_buid(db=db, levelID=levelID)
@@ -192,7 +188,7 @@ async def level_delete(
 
 
 @router.post(f"{system.path}/getGJDailyLevel.php", response_class=PlainTextResponse)
-async def get_daily_level(db: AsyncSession = Depends(get_db),
+async def get_daily_level(
                           weekly: int = Form(default=0)
                           ):
 

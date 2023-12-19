@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-from database import get_db
 from logger import info
 from src.services.levels import LevelService
 from src.utils.crypt import base64_decode
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/levels", tags=["Levels"])
     }
 }
             )
-async def get_levels(lvlid: int, db=Depends(get_db)) -> JSONResponse:
+async def get_levels(lvlid: int) -> JSONResponse:
     info("Request to api | /levels")
     levelData = (await LevelService.get_level_buid(levelID=lvlid, db=db))["database"]
     return {

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from logger import error
 from src.services.comments import PostCommentsService
-from models import UsersModel
+from src.models import UsersModel
 from src.utils.gdform import gd_dict_str
 
 

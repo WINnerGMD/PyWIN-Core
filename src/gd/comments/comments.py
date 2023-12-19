@@ -3,7 +3,6 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from config import system
-from database import get_db
 from src.objects.schemas import UploadComments
 from src.services.comments import CommentsService
 from src.services.user import UserService
@@ -21,7 +20,6 @@ async def upload_comment(
     levelID: int = Form(default=None),
     percent: int = Form(default=None),
     gjp: str = Form(),
-    db: Session = Depends(get_db),
 ):
     if percent == None:
         percent = 0
@@ -41,7 +39,7 @@ async def upload_comment(
 
 @router.post(f"{system.path}/getGJComments21.php", response_class=PlainTextResponse)
 async def get_comments(
-    db: Session = Depends(get_db), levelID: int = Form(), page: int = Form()
+   levelID: int = Form(), page: int = Form()
 ):
     comments_object = await CommentsService().get_comments(
         db=db, level_id=levelID, page=page

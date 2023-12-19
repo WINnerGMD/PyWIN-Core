@@ -4,14 +4,12 @@ from fastapi import APIRouter, Form, Depends
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-import models
 
 from datetime import datetime
 from datetime import timedelta
 
 from config import big_chest, small_chest
 from config import system
-from database import get_db
 from src.utils.crypt import xor_cipher, base64_encode, base64_decode, checkValidGJP
 import random
 
@@ -25,7 +23,6 @@ async def chest(
     rewardType: int = Form(default=0),
     gjp: str = Form(),
     device: str = Form(..., alias="udid"),
-    db: AsyncSession = Depends(get_db),
 ):
     if await checkValidGJP(accountID, gjp, db):
         resultchk = xor_cipher(base64_decode(chk[5:]), "59182")

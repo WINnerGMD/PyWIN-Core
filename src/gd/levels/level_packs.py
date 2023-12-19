@@ -3,8 +3,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import system
-from database import get_db
-from models import GauntletsModel
+from src.models import GauntletsModel
 from src.services.levels import LevelService
 from src.utils.gdform import gd_dict_str
 from src.utils.crypt import return_hash
@@ -12,7 +11,7 @@ from src.utils.crypt import return_hash
 router = APIRouter(tags=["Packs"], default_response_class=PlainTextResponse)
 
 @router.post(f"{system.path}/getGJGauntlets21.php")
-async def gauntlets(db: AsyncSession = Depends(get_db)):
+async def gauntlets():
     gauntlets = (await db.execute(select(GauntletsModel))).scalars().all()
     await LevelService.get_gauntlets_levels(db=db, indexpack=2)
     response = ""
@@ -27,7 +26,7 @@ async def gauntlets(db: AsyncSession = Depends(get_db)):
     return response
 
 @router.post(f"{system.path}/getGJMapPacks21.php")
-async def map_packs(page: str = Form(), db: AsyncSession = Depends(get_db)):
+async def map_packs(page: str = Form()):
     packs = await LevelService.get_map_packs(db=db, page=int(page))
     packstrings = []
     packhash = ""

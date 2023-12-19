@@ -4,11 +4,11 @@ from types import FunctionType
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import models
+import src.models
 from config import system
 from src.helpers.commands import Commands
 from src.helpers.rate import Difficulty
-from models import CommentsModel, LevelsModel, PostsModel
+from src.models import CommentsModel, LevelsModel, PostsModel
 from src.objects.schemas import UploadComments, UploadPost
 from src.services.user import UserService
 from src.utils.crypt import base64_decode

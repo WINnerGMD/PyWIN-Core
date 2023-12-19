@@ -3,7 +3,6 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from database import get_db
 from logger import info
 from src.objects.levelObject import LevelObject
 from src.services.levels import LevelService
@@ -19,7 +18,6 @@ async def like_item(
     liketype: int = Form(alias="type"),
     accountID: str = Form(),
     like: int = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     if liketype == 1:
         if like == 1:

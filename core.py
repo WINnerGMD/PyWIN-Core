@@ -22,7 +22,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from config import system
-from database import get_db
 from src.api import app as api_app
 from src.gd.rate.rate_levels import router as router_rate
 from src.gd.accounts import router as router_accounts
@@ -74,7 +73,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 @fastapi.get(system.path, response_class=HTMLResponse)
-async def message(req: Request, db=Depends(get_db)):
+async def message(req: Request):
     levels = await LevelService.get_total_levels(db=db)
     users = await UserService.get_total_users(db=db)
     if levels["status"] == "ok" and users["status"] == "ok":

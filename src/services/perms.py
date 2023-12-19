@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models import RolesModel
+from src.models import RolesModel
 from config import system
 from src.objects.schemas import RateLevel
 

@@ -4,7 +4,6 @@ from fastapi import Request, Form, Depends, APIRouter
 
 from src.services.user import UserService
 from logger import error, info
-from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -20,7 +19,6 @@ async def register_account(
     userName: str = Form(),
     password: str = Form(),
     email: str = Form(),
-    db: AsyncSession = Depends(get_db),
 ):
     service_response = await UserService().register_user(
         db=db, userName=userName, password=password, mail=email, ip=request.client.host
@@ -30,7 +28,7 @@ async def register_account(
 
 @router.post(f"{system.path}/accounts/loginGJAccount.php")
 async def login(
-    userName: str = Form(), password: str = Form(), db: AsyncSession = Depends(get_db)
+    userName: str = Form(), password: str = Form()
 ):
     service_response = await UserService().login_user(
         userName=userName, password=password, db=db
