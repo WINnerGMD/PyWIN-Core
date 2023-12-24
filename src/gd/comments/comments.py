@@ -42,7 +42,7 @@ async def get_comments(
    levelID: int = Form(), page: int = Form()
 ):
     comments_object = await CommentsService().get_comments(
-        db=db, level_id=levelID, page=page
+       level_id=levelID, page=page
     )
     if comments_object["status"] == "ok":
         comment_string = []

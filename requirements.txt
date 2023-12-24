@@ -18,3 +18,5 @@ psycopg2
 asyncpg
 python-bcrypt
 python-dotenv~=1.0.0
+fastapi-events
+alembic

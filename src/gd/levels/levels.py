@@ -1,24 +1,20 @@
 import datetime
-import hashlib
 
-from fastapi import APIRouter, Form, Depends, Request
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from fastapi_events.dispatcher import dispatch
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from cache import cache
 from config import system, redis
 from events import Events
-from src.helpers.rate import Difficulty
 from logger import error
-from src.models import GauntletsModel
+from src.helpers.rate import Difficulty
 from src.objects.levelObject import LevelGroup, LevelObject
+from src.depends.level import LevelsRepository
 from src.objects.schemas import GetLevel, UploadLevel
 from src.services.daily import DailyService
 from src.services.levels import LevelService
 from src.utils.crypt import checkValidGJP
-from src.utils.gdform import gd_dict_str
 
 router = APIRouter(prefix="", tags=["Levels"])
 
@@ -131,39 +127,34 @@ async def get_level(
         gauntlet=gauntlet,
     )
     if gauntlet != None:
-        result = await LevelService.get_gauntlets_levels(db=db, indexpack=gauntlet)
+        result = await LevelService.get_gauntlets_levels(indexpack=gauntlet)
         page = 0
         is_gauntlet = True
     else:
-        result = await LevelService().test_get_levels(db=db, data=scheme)
+        result = await LevelService().test_get_levels(scheme)
         page = page
         is_gauntlet = False
-    if result["status"] == "ok":
-        return await LevelGroup(service=result).GDGet_level(
+    return await LevelGroup(service=result).GDGet_level(
             page=page, is_gauntlet=is_gauntlet
         )
-    else:
-        error(result["details"])
-        return
+
 
 
 @router.post(f"{system.path}/downloadGJLevel22.php", response_class=PlainTextResponse)
 @cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
 async def level_download(levelID: int = Form()):
     if int(levelID) < 0:  # daily & weekly
-        service = await LevelService().get_level_buid(db=db, levelID=32)
+        service = await LevelsRepository().find_byid(32)
         is_featured = True
     else:
-        service = await LevelService().get_level_buid(db=db, levelID=levelID)
+        service = await LevelsRepository().find_byid(levelID)
         is_featured = False
-    match service["status"]:
-        case "ok":
-            object_level = await LevelObject(service=service, db=db).GDDownload_level(
-                is_featured=is_featured
+
+    object_level = await LevelObject(service=service).GDDownload_level(
+        is_featured=is_featured
             )
-            return object_level
-        case "error":
-            error(service["details"])
+    return object_level
+
 
 
 @router.post(f"{system.path}/deleteGJLevelUser20.php", response_class=PlainTextResponse)

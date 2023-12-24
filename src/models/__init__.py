@@ -3,7 +3,7 @@ from src.models.actions import ActionsModel
 from src.models.comments import CommentsModel
 from src.models.dwlevels import FeaturedLevelsModel
 from src.models.gauntlets import GauntletsModel
-from src.models.levels import LevelsModel
+from src.models.levels import LevelModel
 from src.models.mappacks import MapPacksModel
 from src.models.messages import MessagesModel
 from src.models.posts import PostsModel

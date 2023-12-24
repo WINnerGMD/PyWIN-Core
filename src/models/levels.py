@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 
 
-class LevelsModel(Base):
+class LevelModel(Base):
     __tablename__ = "levels"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -38,6 +38,35 @@ class LevelsModel(Base):
     upload_date = Column(String(255))
     update_date = Column(Integer, default=0)
     LevelString = Column(Text)
+
+    def __repr__(self):
+        return str(
+            {
+                "id": self.id,
+                "name": self.id,
+                "desc": self.desc,
+                "version": self.version,
+                "authorID": self.authorID,
+                "AuthorName": self.authorName,
+                "gameVersion": self.gameVersion,
+                "likes": self.likes,
+                "downloads": self.downloads,
+                "AudioTrack": self.AudioTrack,
+                "song_id": self.song_id,
+                "lenght": self.lenght,
+                "stars": self.stars,
+                "coins": self.coins,
+                "difficulty": self.difficulty,
+                "user_coins": self.user_coins,
+                "rate": self.rate,
+                "original": self.rate,
+                "two_players": self.two_players,
+                "is_ldm": self.is_ldm,
+                "objects": self.objects,
+                "password": self.password,
+                "LevelString": self.LevelString,
+            }
+        )
 
     def to_pydantic_model(self) -> LevelSchema:
         return LevelSchema(

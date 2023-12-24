@@ -2,20 +2,19 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.helpers.rate import Difficulty, Rate
-from src.models import ActionsModel, LevelsModel, UsersModel
+from src.models import ActionsModel, LevelModel, UsersModel
 from src.utils.crypt import xor_cipher, base64_encode, sha1_hash
 from src.utils.gdform import gd_dict_str
 from config import system
-
+from src.depends.level import LevelsRepository
 
 # from services.comments import CommentsService
 # from services.user import UserService
 
 
 class LevelObject:
-    def __init__(self, service: LevelsModel, db: AsyncSession):
+    def __init__(self, service: LevelModel):
         self.service = service
-        self.db = db
         pass
 
     def __str__(self) -> str:
@@ -79,8 +78,8 @@ class LevelObject:
         if difficulty == Difficulty.easyDemon and not system.demonRate:
             return {"status": "error", "details": "rate demon is false"}
         await self.db.execute(
-            update(LevelsModel)
-            .filter(LevelsModel.id == self.service["database"].id)
+            update(LevelModel)
+            .filter(LevelModel.id == self.service["database"].id)
             .values({"difficulty": difficulty.value})
         )
         await self.db.commit()
@@ -183,17 +182,6 @@ class LevelObject:
         except Exception as e:
             return {"status": "error", "details": e}
 
-    @staticmethod
-    async def __update_download_counter(level_id, db: AsyncSession):
-        query = (
-            update(LevelsModel)
-            .filter(LevelsModel.id == level_id)
-            .values({"downloads": LevelsModel.downloads + 1})
-        )
-        await db.execute(query)
-        await db.commit()
-
-    "todo"
 
     @staticmethod
     async def downloadLevelHash1(level):
@@ -219,7 +207,7 @@ class LevelObject:
     #     return comment_string + "#5705:2:10"
 
     async def GDDownload_level(self, is_featured: bool):
-        level = self.service["database"]
+        level = self.service
         # info(f"Level download '{row.name}'")
         featured_id = 0
         if is_featured:
@@ -283,12 +271,12 @@ class LevelObject:
                     ),
                 )
             )
-        await self.__update_download_counter(self.service["database"].id, self.db)
+        await LevelsRepository().update(level.id, {"downloads": level.downloads + 1})
         return answer
 
 
 class LevelGroup:
-    def __init__(self, service: LevelsModel):
+    def __init__(self, service: LevelModel):
         self.service = service
         pass
 
@@ -296,14 +284,20 @@ class LevelGroup:
         levelsDataHash = ""
         levelData = []
         userString = ""
-        for row in self.service["database"]:
+        for row in self.service['database']:
             feature = 0
             epic = 0
-            if row.rate == 1:
-                feature = 1
-            elif row.rate == 2:
-                epic = 1
 
+            match row.rate:
+                case 1:
+                    feature = 1
+                case 2:
+                    epic = 1
+                case 3:
+                    epic = 2
+                case 4:
+                    epic = 3
+            # Fuck Robtop
             levelsDataHash += (
                 str(row.id)[0] + str(row.id)[-1] + str(row.stars) + str(row.user_coins)
             )
@@ -333,10 +327,12 @@ class LevelGroup:
                     35: row.song_id,
                     37: row.coins,
                     38: row.user_coins,
+                    39: 1,
                     42: epic,
                     43: 0,
                     44: 1 if is_gauntlet == True else 0,
                     45: row.objects,
+                    49: 1
                 }
             )
 
@@ -348,9 +344,3 @@ class LevelGroup:
         return f"{levelstr}#{userString}##{self.service['count']}:{page * system.page}:{system.page}#{await sha1_hash(levelsDataHash, 'xI25fpAapCQg')}"
 
 
-class LevelObject19(LevelObject):
-    def __init__(self, service: LevelsModel, db: AsyncSession):
-        super().__init__(service, db)
-        if service["database"].gameVersion == 19:
-            self.service = service
-            self.db = db

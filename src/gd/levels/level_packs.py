@@ -7,13 +7,12 @@ from src.models import GauntletsModel
 from src.services.levels import LevelService
 from src.utils.gdform import gd_dict_str
 from src.utils.crypt import return_hash
-
+from src.depends.gauntlets import GauntletsRepository
 router = APIRouter(tags=["Packs"], default_response_class=PlainTextResponse)
 
 @router.post(f"{system.path}/getGJGauntlets21.php")
 async def gauntlets():
-    gauntlets = (await db.execute(select(GauntletsModel))).scalars().all()
-    await LevelService.get_gauntlets_levels(db=db, indexpack=2)
+    gauntlets = await GauntletsRepository().find_all()
     response = ""
     hash_string = ""
     for gn in gauntlets:

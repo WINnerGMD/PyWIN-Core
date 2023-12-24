@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.helpers.rate import Difficulty, Rate
 from src.objects.schemas import UploadLevel, GetLevel
 from src.depends.user import UsersRepository
-from src.models import LevelsModel, GauntletsModel, MapPacksModel
+from src.models import LevelModel, GauntletsModel, MapPacksModel
 from src.utils.gdform import formatted_date
 from config import system
+from src.depends.level import LevelsRepository
 
 
 class LevelService:
@@ -15,7 +16,7 @@ class LevelService:
         AuthorObj = await UsersRepository().find_byid(data.accountID)
         upload_time = formatted_date()
         if AuthorObj["status"] == "ok":
-            db_lvl = LevelsModel(
+            db_lvl = LevelModel(
                 name=data.levelName,
                 desc=data.levelDesc,
                 version=data.levelVersion,
@@ -65,20 +66,20 @@ class LevelService:
                         difficulty = Difficulty.insaneDemon
                     case 5:
                         difficulty = Difficulty.extremeDemon
-            result = select(LevelsModel).filter(
-                LevelsModel.coins > 0 if data.coins == "1" else LevelsModel.coins >= 0,
-                LevelsModel.lenght >= 0
+            result = select(LevelModel).filter(
+                LevelModel.coins > 0 if data.coins == "1" else LevelModel.coins >= 0,
+                LevelModel.lenght >= 0
                 if data.lenght == "-"
-                else LevelsModel.lenght == data.lenght,
-                LevelsModel.difficulty >= -3
+                else LevelModel.lenght == data.lenght,
+                LevelModel.difficulty >= -3
                 if data.difficulty is None
-                else LevelsModel.difficulty == difficulty,
-                LevelsModel.difficulty > 5
+                else LevelModel.difficulty == difficulty,
+                LevelModel.difficulty > 5
                 if data.demonFilter is None
-                else LevelsModel.difficulty < 0,
-                LevelsModel.rate == 2 if data.epic == 1 else LevelsModel.rate >= 0,
-                LevelsModel.rate == 1 if data.featured == 1 else LevelsModel.rate >= 0,
-                LevelsModel.id <= 76 if data.gauntlet == 1 else LevelsModel.id >= 0,
+                else LevelModel.difficulty < 0,
+                LevelModel.rate == 2 if data.epic == 1 else LevelModel.rate >= 0,
+                LevelModel.rate == 1 if data.featured == 1 else LevelModel.rate >= 0,
+                LevelModel.id <= 76 if data.gauntlet == 1 else LevelModel.id >= 0,
             )
             count = len((await db.execute(result)).scalars().all())
             match data.searchType:
@@ -86,10 +87,10 @@ class LevelService:
                     answer = (
                         (
                             await db.execute(
-                                result.filter(LevelsModel.name.like(f"%{data.string}%"))
+                                result.filter(LevelModel.name.like(f"%{data.string}%"))
                                 .order_by(
-                                    LevelsModel.likes.desc(),
-                                    LevelsModel.downloads.desc(),
+                                    LevelModel.likes.desc(),
+                                    LevelModel.downloads.desc(),
                                 )
                                 .offset(page)
                                 .limit(10)
@@ -104,7 +105,7 @@ class LevelService:
                         database = (
                             (
                                 await db.execute(
-                                    result.filter(LevelsModel.id == data.str)
+                                    result.filter(LevelModel.id == data.str)
                                 )
                             )
                             .scalars()
@@ -115,8 +116,8 @@ class LevelService:
                         (
                             await db.execute(
                                 result.order_by(
-                                    LevelsModel.likes.desc(),
-                                    LevelsModel.downloads.desc(),
+                                    LevelModel.likes.desc(),
+                                    LevelModel.downloads.desc(),
                                 )
                                 .offset(page)
                                 .limit(10)
@@ -129,7 +130,7 @@ class LevelService:
                     database = (
                         (
                             await db.execute(
-                                result.order_by(LevelsModel.id.desc())
+                                result.order_by(LevelModel.id.desc())
                                 .limit(10)
                                 .offset(page)
                             )
@@ -141,7 +142,7 @@ class LevelService:
                     database = (
                         (
                             await db.execute(
-                                result.filter(LevelsModel.authorID == data.string)
+                                result.filter(LevelModel.authorID == data.string)
                             )
                         )
                         .scalars()
@@ -149,7 +150,7 @@ class LevelService:
                     )
                 case 6:
                     database = (
-                        (await db.execute(result.filter(LevelsModel.rate == 1)))
+                        (await db.execute(result.filter(LevelModel.rate == 1)))
                         .scalars()
                         .all()
                     )
@@ -157,7 +158,7 @@ class LevelService:
                     database = (
                         (
                             await db.execute(
-                                result.filter(LevelsModel.stars > 0)
+                                result.filter(LevelModel.stars > 0)
                                 .limit(10)
                                 .offset(page)
                             )
@@ -167,7 +168,7 @@ class LevelService:
                     )
                 case 16:
                     database = (
-                        (await db.execute(result.filter(LevelsModel.rate >= 1)))
+                        (await db.execute(result.filter(LevelModel.rate >= 1)))
                         .scalars()
                         .all()
                     )
@@ -185,7 +186,7 @@ class LevelService:
             return {"status": "error", "details": e}
 
     @staticmethod
-    async def test_get_levels(db: AsyncSession, data: GetLevel):
+    async def test_get_levels(data: GetLevel):
         try:
             if data.page != None:
                 page = data.page * system.page
@@ -209,85 +210,82 @@ class LevelService:
                         difficulty = Difficulty.extremeDemon.value
 
             "fuck"
-            result = select(LevelsModel)
+            result = select(LevelModel)
 
             if data.difficulty != None:
                 match data.difficulty.value:
                     case -1:
-                        result = result.filter(LevelsModel.difficulty == 0)
+                        result = result.filter(LevelModel.difficulty == 0)
                     case -2:
                         match data.demonFilter:
                             case 1:
                                 difficulty = Difficulty.easyDemon.value
                                 result = result.filter(
-                                    LevelsModel.difficulty == difficulty
+                                    LevelModel.difficulty == difficulty
                                 )
                             case 2:
                                 difficulty = Difficulty.mediumDemon.value
                                 result = result.filter(
-                                    LevelsModel.difficulty == difficulty
+                                    LevelModel.difficulty == difficulty
                                 )
                             case 3:
                                 difficulty = Difficulty.hardDemon.value
                                 result = result.filter(
-                                    LevelsModel.difficulty == difficulty
+                                    LevelModel.difficulty == difficulty
                                 )
                             case 4:
                                 difficulty = Difficulty.insaneDemon.value
                                 result = result.filter(
-                                    LevelsModel.difficulty == difficulty
+                                    LevelModel.difficulty == difficulty
                                 )
                             case 5:
                                 difficulty = Difficulty.extremeDemon.value
                                 result = result.filter(
-                                    LevelsModel.difficulty == difficulty
+                                    LevelModel.difficulty == difficulty
                                 )
                             case _:
-                                result = result.filter(LevelsModel.difficulty > 5)
+                                result = result.filter(LevelModel.difficulty > 5)
                     case _:
                         result = result.filter(
-                            LevelsModel.difficulty == Difficulty(data.difficulty).value
+                            LevelModel.difficulty == Difficulty(data.difficulty).value
                         )
             match data.rate:
                 case Rate.NoRate:
-                    result = result.filter(LevelsModel.rate >= 0)
+                    result = result.filter(LevelModel.rate >= 0)
                 case Rate.Feature:
-                    result = result.filter(LevelsModel.rate == 1)
+                    result = result.filter(LevelModel.rate == 1)
                 case Rate.Epic:
-                    result = result.filter(LevelsModel.rate == 2)
+                    result = result.filter(LevelModel.rate == 2)
                 case tuple:
-                    result = result.filter(LevelsModel.rate > 0)
+                    result = result.filter(LevelModel.rate > 0)
 
             match data.searchType:
                 case 0:
                     result = result.filter(
-                        LevelsModel.name.like(f"%{data.string}%")
+                        LevelModel.name.like(f"%{data.string}%")
                     ).order_by(
-                        LevelsModel.likes.desc(),
-                        LevelsModel.downloads.desc(),
+                        LevelModel.likes.desc(),
+                        LevelModel.downloads.desc(),
                     )
                 case 2:
                     result = result.order_by(
-                        LevelsModel.likes.desc(),
-                        LevelsModel.downloads.desc(),
+                        LevelModel.likes.desc(),
+                        LevelModel.downloads.desc(),
                     )
                 case 4:
-                    result = result.order_by(LevelsModel.id.desc())
+                    result = result.order_by(LevelModel.id.desc())
                 case 5:
-                    result = result.filter(LevelsModel.authorID == data.string)
+                    result = result.filter(LevelModel.authorID == data.string)
                 case 6:
-                    result = result.filter(LevelsModel.rate == 1)
+                    result = result.filter(LevelModel.rate == 1)
                 case 11:
-                    result = result.filter(LevelsModel.stars > 0)
+                    result = result.filter(LevelModel.stars > 0)
                 case 16:
-                    result = result.filter(LevelsModel.rate >= 1)
+                    result = result.filter(LevelModel.rate >= 1)
 
-            count = len((await db.execute(result)).scalars().all())
-            database = (
-                (await db.execute(result.offset(page).limit(system.page)))
-                .scalars()
-                .all()
-            )
+            count = len(await LevelsRepository().find_all())
+            database = await LevelsRepository.findall_bySTMT(result.offset(page).limit(system.page))
+
             if database != []:
                 return {"status": "ok", "database": database, "count": count}
             else:
@@ -302,7 +300,7 @@ class LevelService:
     async def get_levels_group(db: AsyncSession, levels: list):
         try:
             print(levels)
-            query = select(LevelsModel).filter(LevelsModel.id.in_(levels))
+            query = select(LevelModel).filter(LevelModel.id.in_(levels))
             levelgroup = (await db.execute(query)).scalars().all()
             if levelgroup != []:
                 count = len(levelgroup)
@@ -313,16 +311,18 @@ class LevelService:
             return {"status": "ok", "details": e}
 
     @staticmethod
-    async def get_gauntlets_levels(db: AsyncSession, indexpack: int):
+    async def get_gauntlets_levels(indexpack: int):
         try:
             query1 = select(GauntletsModel.levels).filter(
                 GauntletsModel.indexpack == indexpack
             )
-            levels = (await db.execute(query1)).scalars().first()
-            query2 = select(LevelsModel).filter(LevelsModel.id.in_(levels.split(",")))
-            levelpack = (await db.execute(query2)).scalars().all()
+            levels = await LevelsRepository.findfirst_bySTMT(query1)
+            print(levels)
+            query2 = select(LevelModel).filter(LevelModel.id.in_(levels.split(",")))
+            levelpack =  await LevelsRepository.findall_bySTMT(query2)
             return {"status": "ok", "database": levelpack, "count": 1}
-        except:
+        except Exception as e:
+            print(e)
             return
 
     @staticmethod
@@ -335,7 +335,7 @@ class LevelService:
     @staticmethod
     async def get_level_buid(levelID, db: AsyncSession):
         levels = (
-            (await db.execute(select(LevelsModel).filter(LevelsModel.id == levelID)))
+            (await db.execute(select(LevelModel).filter(LevelModel.id == levelID)))
             .scalars()
             .first()
         )
@@ -347,7 +347,7 @@ class LevelService:
     @staticmethod
     async def get_total_levels(db: AsyncSession):
         try:
-            query = select(LevelsModel)
+            query = select(LevelModel)
             total = len((await db.execute(query)).scalars().all())
             return {"status": "ok", "count": total}
         except Exception as e:
@@ -356,7 +356,7 @@ class LevelService:
     @staticmethod
     async def delete_level(levelID, db: AsyncSession):
         db_level = (
-            (await db.execute(select(LevelsModel).filter(LevelsModel.id == levelID)))
+            (await db.execute(select(LevelModel).filter(LevelModel.id == levelID)))
             .scalars()
             .first()
         )

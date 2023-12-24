@@ -7,37 +7,39 @@ from src.objects.schemas import UpdateStats
 from src.services.perms import PermissionService
 from src.models import UsersModel, MessagesModel
 from src.utils.crypt import bcrypt_hash
+from src.depends.user import UsersRepository
 
 
 class UserService:
     @staticmethod
     async def register_user(
-        db: AsyncSession, userName: str, password: str, mail: str, ip: str
+            userName: str, password: str, mail: str, ip: str
     ):
         request = select(UsersModel).filter(UsersModel.userName == userName)
-        if (await db.execute(request)).scalars().first() is not None:
+        request2 = select(UsersModel).filter(UsersModel.mail == mail)
+        if await UsersRepository().findfirst_bySTMT(request) is not None:
             return {"code": "-2", "message": "error [UserName already registered]"}
-        elif (
-            await db.execute(select(UsersModel).filter(UsersModel.mail == mail))
-        ).scalars().first() is not None:
+        elif await UsersRepository().findfirst_bySTMT(request2) is not None:
             return {"code": "-3", "message": "error [User email already registered]"}
         else:
             passhash = bcrypt_hash(password)
             if system.auto_verified:
-                db_user = UsersModel(
-                    userName=userName,
-                    passhash=passhash,
-                    mail=mail,
-                    ip=ip,
-                    verified=True,
-                )
+                db_user = {
+                    "userName": userName,
+                    "passhash": passhash,
+                    "mail": mail,
+                    "ip": ip,
+                    "verified": True
+                }
+
             else:
-                db_user = UsersModel(
-                    userName=userName, passhash=passhash, mail=mail, ip=ip
-                )
-            db.add(db_user)
-            await db.commit()
-            await db.refresh(db_user)
+                db_user = {
+                    "userName": userName,
+                    "passhash": passhash,
+                    "mail": mail,
+                    "ip": ip,
+                }
+            await UsersRepository().add_one(db_user)
             return {"code": "1", "message": "success"}
 
     @staticmethod
@@ -116,7 +118,8 @@ class UserService:
         else:
             if user.passhash == passhash:
                 if user.verified:
-                    return {"status": "success", "code": "1", "message": f"{user.userName} successfully logged in", "id": user.id}
+                    return {"status": "success", "code": "1", "message": f"{user.userName} successfully logged in",
+                            "id": user.id}
                 else:
                     return {
                         "status": "error",

@@ -5,10 +5,11 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.models
+from src.depends.comments import CommentsModel
 from config import system
 from src.helpers.commands import Commands
 from src.helpers.rate import Difficulty
-from src.models import CommentsModel, LevelsModel, PostsModel
+from src.models import CommentsModel, LevelModel, PostsModel
 from src.objects.schemas import UploadComments, UploadPost
 from src.services.user import UserService
 from src.utils.crypt import base64_decode
