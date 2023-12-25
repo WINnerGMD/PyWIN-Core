@@ -314,7 +314,7 @@ class LevelGroup:
                     12: row.AudioTrack,
                     13: row.gameVersion,
                     14: row.likes,
-                    15: row.lenght,
+                    15: 5,
                     17: 0,
                     18: row.stars,
                     19: feature,
@@ -332,7 +332,7 @@ class LevelGroup:
                     43: 0,
                     44: 1 if is_gauntlet == True else 0,
                     45: row.objects,
-                    49: 1
+                    47: 2
                 }
             )
 

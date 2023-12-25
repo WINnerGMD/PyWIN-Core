@@ -7,7 +7,7 @@ from logger import info, error
 from src.objects.schemas import UpdateStats
 from src.objects.userObject import UserObject, UserGroup
 from src.services.user import UserService
-from src.utils.crypt import checkValidGJP
+from src.utils.crypt import checkValidGJP2
 
 router = APIRouter(prefix="", tags=["Profile"])
 

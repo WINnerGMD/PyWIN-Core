@@ -14,7 +14,7 @@ from src.depends.level import LevelsRepository
 from src.objects.schemas import GetLevel, UploadLevel
 from src.services.daily import DailyService
 from src.services.levels import LevelService
-from src.utils.crypt import checkValidGJP
+from src.utils.crypt import checkValidGJP2
 
 router = APIRouter(prefix="", tags=["Levels"])
 
@@ -37,10 +37,10 @@ async def upload_level(
         requestedStars: int = Form(),
         ldm: int = Form(),
         gameVersion: int = Form(),
-        gjp: str = Form(),
+        gjp2: str = Form(),
 ):
 
-    if await checkValidGJP(accountID, gjp=gjp, db=db):
+    if await checkValidGJP2(accountID, gjp2=gjp2):
         SystemObj = UploadLevel(
             levelString=levelString,
             accountID=accountID,
@@ -59,13 +59,17 @@ async def upload_level(
             ldm=ldm,
             gameVersion=gameVersion,
         )
-        service = await LevelService().upload_level(db=db, data=SystemObj)
-        dispatch(Events.NewLevel, LevelObject(service, db))
+        service = await LevelService().upload_level(data=SystemObj)
+        dispatch(Events.NewLevel, LevelObject(service))
         if service["status"] == "ok":
+            print("its okey")
             return service["level"].id
         else:
             error(service["details"])
             return "-1"
+    else:
+        print("ups")
+        return "-1"
 
 
 @router.post(f"{system.path}/getGJLevels21.php", response_class=HTMLResponse)

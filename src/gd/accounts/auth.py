@@ -2,10 +2,11 @@ from config import system
 from fastapi.responses import PlainTextResponse
 from fastapi import Request, Form, Depends, APIRouter
 
-from src.services.user import UserService
-from logger import error, info
+from src.services.user import UserService, UsersModel
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from src.utils.crypt import checkValidGJP2byName
+from src.schemas.auth.errors import *
+from fastapi.responses import PlainTextResponse
 
 router = APIRouter(prefix="", tags=["Auth"])
 
@@ -15,31 +16,46 @@ router = APIRouter(prefix="", tags=["Auth"])
     response_class=PlainTextResponse,
 )
 async def register_account(
-    request: Request,
-    userName: str = Form(),
-    password: str = Form(),
-    email: str = Form(),
-):
-    print(await request.form())
-    service_response = await UserService().register_user(
-       userName=userName, password=password, mail=email, ip=request.client.host
-    )
-    return str(service_response["code"])
+        request: Request,
+        userName: str = Form(),
+        password: str = Form(),
+        email: str = Form(),
+) -> PlainTextResponse:
+    """
+     Register endpoint
+
+     Return status code
+    """
+    try:
+        await UserService().register_user(
+            userName=userName, password=password, mail=email, ip=request.client.host
+        )
+        return PlainTextResponse("1", 200)
+
+    # errors validate
+    except UsernameIsAlreadyInUseError:
+        return PlainTextResponse("-2", 200)
+
+    except EmailIsAlreadyInUseError:
+        return PlainTextResponse("-3", 200)
 
 
 @router.post(f"{system.path}/accounts/loginGJAccount.php")
 async def login(
-        req: Request
-    # userName: str = Form(), password: str = Form()
-):
-    print( await req.form())
-    # service_response = await UserService().login_user(
-    #     userName=userName, password=password, db=db
-    # )
-    #
-    # if service_response["status"] == "error":
-    #     error(service_response)
-    #     return str(service_response["code"])
-    # else:
-    #     info(service_response['message'])
-    #     return f"{service_response['id']},{service_response['id']}"
+        userName: str = Form(),
+        gjp2: str = Form()
+) -> PlainTextResponse:
+    """
+     Login endpoint
+     Return userid or error code
+    """
+    try:
+        user: UsersModel = await UserService.login_user(userName, gjp2)
+        return f"{user.id},{user.id}"
+
+    # validate errors
+    except InvalidCreditionalsError:
+        return PlainTextResponse("-11", 200)
+
+    except AccountIsDisabledError:
+        return PlainTextResponse("-12", 200)

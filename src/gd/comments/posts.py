@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import system
 from src.objects.schemas import UploadPost
 from src.services.comments import PostCommentsService
-from src.utils.crypt import checkValidGJP
+from src.utils.crypt import checkValidGJP2
 from src.utils.gdform import formatted_date
 
 router = APIRouter(tags=["Posts"])

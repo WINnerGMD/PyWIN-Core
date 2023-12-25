@@ -12,7 +12,7 @@ from src.depends.level import LevelsRepository
 
 class LevelService:
     @staticmethod
-    async def upload_level(db: AsyncSession, data: UploadLevel):
+    async def upload_level(data: UploadLevel):
         AuthorObj = await UsersRepository().find_byid(data.accountID)
         upload_time = formatted_date()
         if AuthorObj["status"] == "ok":
@@ -35,9 +35,7 @@ class LevelService:
                 upload_date=upload_time,
                 LevelString=data.levelString,
             )
-            db.add(db_lvl)
-            await db.commit()
-            await db.refresh(db_lvl)
+            await LevelsRepository.add_one(db_lvl)
 
             return {"status": "ok", "level": db_lvl}
         else:

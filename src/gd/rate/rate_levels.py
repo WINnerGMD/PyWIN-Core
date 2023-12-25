@@ -5,7 +5,7 @@ from src.services.user import UserService
 from src.services.levels import LevelService
 from src.objects.levelObject import LevelObject
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.utils.crypt import checkValidGJP
+from src.utils.crypt import checkValidGJP2
 from src.helpers.rate import Difficulty
 from logger import error
 

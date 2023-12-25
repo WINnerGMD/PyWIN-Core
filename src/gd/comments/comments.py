@@ -6,7 +6,7 @@ from config import system
 from src.objects.schemas import UploadComments
 from src.services.comments import CommentsService
 from src.services.user import UserService
-from src.utils.crypt import checkValidGJP
+from src.utils.crypt import checkValidGJP2
 from src.utils.gdform import gd_dict_str
 
 router = APIRouter(tags=["Comments"])

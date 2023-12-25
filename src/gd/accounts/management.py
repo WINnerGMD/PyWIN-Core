@@ -7,7 +7,7 @@ from config import system
 from src.models import UsersModel
 from src.objects.userObject import UserObject
 from src.services.user import UserService
-from src.utils.crypt import bcrypt_hash, checkValidGJP
+from src.utils.crypt import bcrypt_hash, checkValidGJP2
 
 router = APIRouter(
     prefix="", tags=["User Management"], default_response_class=PlainTextResponse

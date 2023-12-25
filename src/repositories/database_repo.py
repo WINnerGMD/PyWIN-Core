@@ -67,6 +67,17 @@ class SQLAlchemyRepo(AbstractRepo):
             res = await session.execute(stmt)
             return res.scalars().first()
 
+    async def find_byfield(self, data: dict):
+        """
+        Method for get one item by field
+
+        Return model
+        """
+        async with async_session_maker() as session:
+            stmt = select(self.model).filter(data)
+            res = await session.execute(stmt)
+            return res.scalars().first()
+
     @staticmethod
     async def findall_bySTMT(stmt: Any) -> Any:
         """

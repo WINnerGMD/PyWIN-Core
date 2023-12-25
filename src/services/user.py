@@ -6,10 +6,10 @@ from logger import error
 from src.objects.schemas import UpdateStats
 from src.services.perms import PermissionService
 from src.models import UsersModel, MessagesModel
-from src.utils.crypt import bcrypt_hash
+from src.utils.crypt import bcrypt_hash, sha1_hash
 from src.depends.user import UsersRepository
-
-
+from src.schemas.auth.errors import *
+from typing import Any
 class UserService:
     @staticmethod
     async def register_user(
@@ -18,29 +18,30 @@ class UserService:
         request = select(UsersModel).filter(UsersModel.userName == userName)
         request2 = select(UsersModel).filter(UsersModel.mail == mail)
         if await UsersRepository().findfirst_bySTMT(request) is not None:
-            return {"code": "-2", "message": "error [UserName already registered]"}
+            raise UsernameIsAlreadyInUseError
+
         elif await UsersRepository().findfirst_bySTMT(request2) is not None:
-            return {"code": "-3", "message": "error [User email already registered]"}
+            raise EmailIsAlreadyInUseError
+
         else:
-            passhash = bcrypt_hash(password)
+            passhash = await sha1_hash(password, "mI29fmAnxgTs")
             if system.auto_verified:
-                db_user = {
-                    "userName": userName,
-                    "passhash": passhash,
-                    "mail": mail,
-                    "ip": ip,
-                    "verified": True
-                }
+                db_user = UsersModel(
+                    userName=userName,
+                    passhash=passhash,
+                    mail=mail,
+                    ip=ip,
+                    verified=True
+                )
 
             else:
-                db_user = {
-                    "userName": userName,
-                    "passhash": passhash,
-                    "mail": mail,
-                    "ip": ip,
-                }
+                db_user = UsersModel(
+                    userName=userName,
+                    passhash=passhash,
+                    mail=mail,
+                    ip=ip,
+                )
             await UsersRepository().add_one(db_user)
-            return {"code": "1", "message": "success"}
 
     @staticmethod
     async def get_user_byid(db: AsyncSession, id: int):
@@ -102,36 +103,21 @@ class UserService:
         return result
 
     @staticmethod
-    async def login_user(userName: str, password: str, db=AsyncSession):
-        user = (
-            (
-                await db.execute(
-                    select(UsersModel).filter(UsersModel.userName == userName)
-                )
-            )
-            .scalars()
-            .first()
-        )
-        passhash = bcrypt_hash(password)
+    async def login_user(userName: str, password: str) -> Any:
+        """
+        Logic of user login
+        """
+        user: UsersModel = await UsersRepository().find_byfield(UsersModel.userName == userName)
         if user is None:
-            return {"status": "error", "code": "-11", "message": "error [User not found]"}
+            raise InvalidCreditionalsError  
         else:
-            if user.passhash == passhash:
+            if user.passhash == password:
                 if user.verified:
-                    return {"status": "success", "code": "1", "message": f"{user.userName} successfully logged in",
-                            "id": user.id}
+                    return user
                 else:
-                    return {
-                        "status": "error",
-                        "code": "-12",
-                        "message": "error [the user's account is disabled]",
-                    }
+                    raise AccountIsDisabledError
             else:
-                return {
-                    "status": "error",
-                    "code": "-11",
-                    "message": "error [user's login credentials are incorrect]",
-                }
+                raise InvalidCreditionalsError
 
     @staticmethod
     async def get_users_byName(name, db: AsyncSession):
