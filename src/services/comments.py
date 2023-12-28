@@ -13,7 +13,7 @@ from src.models import CommentsModel, LevelModel, PostsModel
 from src.objects.schemas import UploadComments, UploadPost
 from src.services.user import UserService
 from src.utils.crypt import base64_decode
-
+from src.depends.posts import PostsModel, PostsRepository
 
 def methods(cls):
     result = []
@@ -196,14 +196,12 @@ class CommentsService:
 
 class PostCommentsService:
     @staticmethod
-    async def upload_post(db: AsyncSession, data: UploadPost):
+    async def upload_post(data: UploadPost):
         db_post = PostsModel(
             accountID=data.accountID, content=data.content, timestamp=data.timestamp
         )
 
-        db.add(db_post)
-        await db.commit()
-        await db.refresh(db_post)
+        await PostsRepository.add_one(db_post)
         return db_post
 
     @staticmethod
@@ -217,24 +215,18 @@ class PostCommentsService:
         await db.commit()
 
     @staticmethod
-    async def get_post(db: AsyncSession, usrid: int, page: int):
+    async def get_post(usrid: int, page: int):
         offset = int(page) * 10
+        stmt = select(PostsModel).filter(PostsModel.accountID == usrid)
         count = len(
-            (await db.execute(select(PostsModel).filter(PostsModel.accountID == usrid)))
-            .scalars()
-            .all()
+            await PostsRepository.findall_bySTMT(stmt)
+        )
+        stmt2 = select(PostsModel).filter(PostsModel.accountID == usrid).limit(10).offset(offset).order_by(
+            PostsModel.id.desc()
         )
         return {
             "database": (
-                await db.execute(
-                    select(PostsModel)
-                    .filter(PostsModel.accountID == usrid)
-                    .limit(10)
-                    .offset(offset)
-                    .order_by(PostsModel.id.desc())
-                )
-            )
-            .scalars()
-            .all(),
+                await PostsRepository.findall_bySTMT(stmt2)
+            ),
             "count": count,
         }

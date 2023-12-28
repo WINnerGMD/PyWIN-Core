@@ -11,11 +11,12 @@ from logger import error
 from src.helpers.rate import Difficulty
 from src.objects.levelObject import LevelGroup, LevelObject
 from src.depends.level import LevelsRepository
-from src.objects.schemas import GetLevel, UploadLevel
+from src.objects.schemas import UploadLevel
+from src.schemas.levels.service.get import GetLevel
 from src.services.daily import DailyService
 from src.services.levels import LevelService
 from src.utils.crypt import checkValidGJP2
-
+from src.schemas.levels.errors import *
 router = APIRouter(prefix="", tags=["Levels"])
 
 
@@ -78,7 +79,6 @@ async def upload_level(
     key="get_levels:{str}/{diff}/{demonFilter}{type}/{len}/{featured}/{epic}/{gauntlet}/{page}",
 )
 async def get_level(
-        request: Request,
         str: str = Form(default=None),
         page: int = Form(default=None),
         type: int = Form(default=None),
@@ -135,9 +135,13 @@ async def get_level(
         page = 0
         is_gauntlet = True
     else:
-        result = await LevelService().test_get_levels(scheme)
-        page = page
-        is_gauntlet = False
+        try:
+            result = await LevelService().test_get_levels(scheme)
+        except LevelNotFoundError:
+            return PlainTextResponse("-1", 200)
+
+    page = page
+    is_gauntlet = False
     return await LevelGroup(service=result).GDGet_level(
             page=page, is_gauntlet=is_gauntlet
         )

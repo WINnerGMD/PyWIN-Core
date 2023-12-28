@@ -4,7 +4,7 @@ pydantic~=2.4.2
 python_bcrypt==0.3.2
 Requests==2.31.0
 rich~=13.5.3
-SQLAlchemy~=2.0.21
+SQLAlchemy~=2.0.18
 uvicorn==0.23.2
 cashews~=6.3.0
 py-bcrypt
@@ -19,4 +19,6 @@ asyncpg
 python-bcrypt
 python-dotenv~=1.0.0
 fastapi-events
-alembic
+alembic~=1.13.1
+numpy~=1.26.2
+bcrypt~=4.0.1

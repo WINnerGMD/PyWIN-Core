@@ -10,11 +10,11 @@ class Difficulty(Enum):
     hard = 3
     harder = 4
     insane = 5
-    easyDemon = 7
-    mediumDemon = 8
-    hardDemon = 6
-    insaneDemon = 9
-    extremeDemon = 10
+    easy_Demon = 7
+    medium_Demon = 8
+    hard_Demon = 6
+    insane_Demon = 9
+    extreme_Demon = 10
 
 
 class Rate(Enum):
@@ -25,4 +25,3 @@ class Rate(Enum):
     GodLike = 4
 
 
-print(Difficulty.easy.value)

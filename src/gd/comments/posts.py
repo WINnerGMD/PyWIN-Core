@@ -19,14 +19,14 @@ router = APIRouter(tags=["Posts"])
 async def Upload_post(
     accountID: int = Form(),
     comment: str = Form(),
-    gjp: str = Form(),
+    gjp2: str = Form(),
 ):
     timestamp = formatted_date()
-    if await checkValidGJP(id=accountID, gjp=gjp, db=db):
+    if await checkValidGJP2(id=accountID, gjp2=gjp2):
         post_object = UploadPost(
             accountID=accountID, content=comment, timestamp=timestamp
         )
-        await PostCommentsService().upload_post(db=db, data=post_object)
+        await PostCommentsService().upload_post(data=post_object)
         return "1"
     else:
         raise HTTPException(401, "удачи!!!")

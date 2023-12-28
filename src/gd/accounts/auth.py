@@ -5,7 +5,7 @@ from fastapi import Request, Form, Depends, APIRouter
 from src.services.user import UserService, UsersModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.utils.crypt import checkValidGJP2byName
-from src.schemas.auth.errors import *
+from src.schemas.users.errors import *
 from fastapi.responses import PlainTextResponse
 
 router = APIRouter(prefix="", tags=["Auth"])
@@ -32,7 +32,7 @@ async def register_account(
         )
         return PlainTextResponse("1", 200)
 
-    # errors validate
+    # Validate errors
     except UsernameIsAlreadyInUseError:
         return PlainTextResponse("-2", 200)
 
@@ -53,7 +53,7 @@ async def login(
         user: UsersModel = await UserService.login_user(userName, gjp2)
         return f"{user.id},{user.id}"
 
-    # validate errors
+    # Validate errors
     except InvalidCreditionalsError:
         return PlainTextResponse("-11", 200)
 

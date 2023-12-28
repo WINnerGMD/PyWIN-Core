@@ -16,7 +16,7 @@ console.print(
 )
 console.print("[green bold] src.gdPS started [/]", justify="center")
 import uvicorn
-from fastapi import Depends, Request
+from fastapi import Depends, Request, status
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,7 +25,6 @@ from config import system
 from src.api import app as api_app
 from src.gd.rate.rate_levels import router as router_rate
 from src.gd.accounts import router as router_accounts
-from src.api.get_user import router as router_api_users
 from src.gd.comments.comments import router as router_comments
 from src.gd.comments.posts import router as router_posts
 from src.gd.levels.levels import router as router_levels
@@ -54,6 +53,20 @@ fastapi = FastAPI(
     summary="For developers and testers",
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"},
 )
+
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+
+@fastapi.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "Error": "Name field is missing"}),
+    )
+
+
 fastapi.mount(app=api_app, path='/v2')
 fastapi.include_router(router_origins)
 fastapi.include_router(router_accounts)
@@ -66,7 +79,6 @@ fastapi.include_router(router_music)
 fastapi.include_router(router_scores)
 fastapi.include_router(router_rate)
 fastapi.include_router(router_chest)
-fastapi.include_router(router_api_users)
 fastapi.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")

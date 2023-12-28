@@ -9,9 +9,8 @@ from src.utils.gdform import gd_dict_str
 
 
 class UserObject:
-    def __init__(self, service: UsersModel, db: AsyncSession):
+    def __init__(self, service: UsersModel):
         self.service = service
-        self.db = db
 
     async def request_access(self):
         return self.service["permissions"].typeMod
@@ -26,7 +25,8 @@ class UserObject:
                     2: user.id,
                     3: user.stars,
                     4: user.demons,
-                    6: self.service["rank"],
+                    5: 20,
+                    6: 1,
                     8: user.cp,
                     10: iconkit["color1"],
                     11: iconkit["color2"],
@@ -43,13 +43,14 @@ class UserObject:
                     26: iconkit["accRobot"],
                     28: iconkit["accGlow"],
                     29: 1,
-                    30: self.service["rank"],
+                    30: 1,
                     43: iconkit["accSpider"],
                     44: "",
                     45: "",
                     46: user.diamonds,
                     48: 1,
-                    49: self.service["permissions"].BadgeID,
+                    49: 4,
+                    52: 890
                 }
             )
             return response_strs
@@ -59,7 +60,7 @@ class UserObject:
     async def GDGetUserPosts(self, page):
         post_string = []
         service = await PostCommentsService().get_post(
-            db=self.db, usrid=self.service["database"].id, page=page
+            usrid=self.service["database"].id, page=page
         )
         for post in service["database"]:
             try:

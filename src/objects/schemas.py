@@ -56,19 +56,7 @@ class UploadLevel(BaseModel):
     gameVersion: int
 
 
-class GetLevel(BaseModel):
-    lenght: int | None
-    gauntlet: int | None
-    string: str | None
-    searchType: int | None
-    accountID: int | None
-    difficulty: Difficulty | None
-    demonFilter: int | None
-    page: int | None
-    rate: Rate | tuple | None
-    coins: int | None
-    song: int | None
-    customSong: int | None
+
 
 
 class UploadComments(BaseModel):

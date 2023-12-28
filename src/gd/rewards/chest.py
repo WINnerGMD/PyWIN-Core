@@ -12,7 +12,7 @@ from config import big_chest, small_chest
 from config import system
 from src.utils.crypt import xor_cipher, base64_encode, base64_decode, checkValidGJP2
 import random
-
+from src.models import ChestsModel
 router = APIRouter()
 
 
@@ -21,10 +21,9 @@ async def chest(
     chk: str = Form(),
     accountID: int = Form(),
     rewardType: int = Form(default=0),
-    gjp: str = Form(),
+    # gjp: str = Form(),
     device: str = Form(..., alias="udid"),
 ):
-    if await checkValidGJP(accountID, gjp, db):
         resultchk = xor_cipher(base64_decode(chk[5:]), "59182")
 
         shard_type = random.randint(0, 4)
@@ -36,7 +35,7 @@ async def chest(
 
         match rewardType:
             case 1:
-                chestmodel = models.ChestsModel(
+                chestmodel = ChestsModel(
                     userID=accountID,
                     type=rewardType,
                     orbs=small_chest_orbs,
@@ -50,7 +49,7 @@ async def chest(
                 db.add(chestmodel)
 
             case 2:
-                chestmodel = models.ChestsModel(
+                chestmodel = ChestsModel(
                     userID=accountID,
                     type=rewardType,
                     orbs=big_shest_orbs,
@@ -61,14 +60,14 @@ async def chest(
                     shadow_shards=1,
                     lava_shards=1,
                 )
-                db.add(chestmodel)
+                # db.add(chestmodel)
 
         small_chest_len = len(
             (
                 await db.execute(
-                    select(models.ChestsModel)
-                    .filter(models.ChestsModel.userID == accountID)
-                    .filter(models.ChestsModel.type == 1)
+                    select(ChestsModel)
+                    .filter(ChestsModel.userID == accountID)
+                    .filter(ChestsModel.type == 1)
                 )
             )
             .scalars()
@@ -77,9 +76,9 @@ async def chest(
         big_chest_len = len(
             (
                 await db.execute(
-                    select(models.ChestsModel)
-                    .filter(models.ChestsModel.userID == accountID)
-                    .filter(models.ChestsModel.type == 2)
+                    select(ChestsModel)
+                    .filter(ChestsModel.userID == accountID)
+                    .filter(ChestsModel.type == 2)
                 )
             )
             .scalars()
@@ -88,10 +87,10 @@ async def chest(
         last_big = (
             (
                 await db.execute(
-                    select(models.ChestsModel)
-                    .filter(models.ChestsModel.userID == accountID)
-                    .filter(models.ChestsModel.type == 2)
-                    .order_by(models.ChestsModel.id.desc())
+                    select(ChestsModel)
+                    .filter(ChestsModel.userID == accountID)
+                    .filter(ChestsModel.type == 2)
+                    .order_by(ChestsModel.id.desc())
                 )
             )
             .scalars()
@@ -100,10 +99,10 @@ async def chest(
         last_small = (
             (
                 await db.execute(
-                    select(models.ChestsModel)
-                    .filter(models.ChestsModel.userID == accountID)
-                    .filter(models.ChestsModel.type == 1)
-                    .order_by(models.ChestsModel.id.desc())
+                    select(ChestsModel)
+                    .filter(ChestsModel.userID == accountID)
+                    .filter(ChestsModel.type == 1)
+                    .order_by(ChestsModel.id.desc())
                 )
             )
             .scalars()

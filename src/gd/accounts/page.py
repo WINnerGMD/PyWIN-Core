@@ -8,7 +8,7 @@ from src.objects.schemas import UpdateStats
 from src.objects.userObject import UserObject, UserGroup
 from src.services.user import UserService
 from src.utils.crypt import checkValidGJP2
-
+from fastapi import Request
 router = APIRouter(prefix="", tags=["Profile"])
 
 
@@ -16,9 +16,10 @@ router = APIRouter(prefix="", tags=["Profile"])
 async def get_userInfo(
     targetAccountID: int = Form(),
 ):
-    service = await UserService().get_user_byid(db=db, id=targetAccountID)
+
+    service = await UserService().get_user_byid(id=targetAccountID)
     if service["status"] == "ok":
-        usr_obj = await UserObject(service=service, db=db).GDGetUser()
+        usr_obj = await UserObject(service=service).GDGetUser()
         info(f"get user {service['database'].userName}")
         return usr_obj
     else:
@@ -32,8 +33,8 @@ async def get_posts(
     accountID: int = Form(),
     page: int = Form(),
 ):
-    service = await UserService().get_user_byid(db=db, id=accountID)
-    return await UserObject(service=service, db=db).GDGetUserPosts(page=page)
+    service = await UserService().get_user_byid(id=accountID)
+    return await UserObject(service=service).GDGetUserPosts(page=page)
 
 
 @router.post(f"{system.path}/getGJUsers20.php", response_class=PlainTextResponse)
@@ -45,10 +46,12 @@ async def get_user(str: str = Form()):
 
 @router.post(f"{system.path}/updateGJUserScore22.php", response_class=PlainTextResponse)
 async def updateGJUserScore22(
+    req: Request,
     accountID: int = Form(),
     stars: int = Form(),
     demons: int = Form(),
     diamonds: int = Form(),
+    moons: int = Form(),
     coins: int = Form(),
     userCoins: int = Form(),
     accIcon: int = Form(),
@@ -59,12 +62,16 @@ async def updateGJUserScore22(
     accRobot: int = Form(),
     accGlow: int = Form(),
     accSpider: int = Form(),
+    accJetpack: int = Form(),
+    accSwing: int = Form(),
     accExplosion: int = Form(),
-    gjp: str = Form(),
+    gjp2: str = Form(),
     color1: int = Form(),
     color2: int = Form(),
+    color3: int = Form()
 ):
-    if await checkValidGJP(id=accountID, gjp=gjp, db=db):
+    print(await req.form())
+    if await checkValidGJP2(id=accountID, gjp2=gjp2):
         iconkit = {
             "color1": color1,
             "color2": color2,
@@ -87,7 +94,7 @@ async def updateGJUserScore22(
             usr_coins=userCoins,
             iconkits=iconkit,
         )
-        await UserService().update_user(db=db, data=result)
+        await UserService().update_user(data=result)
         return str(accountID)
     else:
         raise HTTPException(401, "bro you dump")

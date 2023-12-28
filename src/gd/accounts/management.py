@@ -72,13 +72,15 @@ async def sync(
 
 @router.post(f"{system.path}/requestUserAccess.php")
 async def get_user_access(
-    gjp: str = Form(), accountID: str = Form(),
+    req: Request,
+    # gjp: str = Form(), accountID: str = Form(),
 ):
-    if await checkValidGJP(id=accountID, gjp=gjp, db=db):
-        service = await UserService.get_user_byid(db=db, id=accountID)
-        return await UserObject(service, db).request_access()
-    else:
-        return "0"
+    print( await req.form())
+    # if await checkValidGJP(id=accountID, gjp=gjp, db=db):
+    #     service = await UserService.get_user_byid(db=db, id=accountID)
+    #     return await UserObject(service, db).request_access()
+    # else:
+    return "2"
 
 
 "Tests"

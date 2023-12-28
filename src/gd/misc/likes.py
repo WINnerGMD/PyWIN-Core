@@ -21,17 +21,17 @@ async def like_item(
 ):
     if liketype == 1:
         if like == 1:
-            service = await LevelService.get_level_buid(levelID=itemID, db=db)
+            service = await LevelService.get_level_buid(levelID=itemID)
 
-            like = await LevelObject(service=service, db=db).like(accountID=accountID)
+            like = await LevelObject(service=service).like(accountID=accountID)
             if like["status"] == "ok":
                 info("Like")
                 return "1"
 
         elif like == 0:
-            service = await LevelService.get_level_buid(levelID=itemID, db=db)
+            service = await LevelService.get_level_buid(levelID=itemID)
 
-            like = await LevelObject(service=service, db=db).dislike(
+            like = await LevelObject(service=service).dislike(
                 accountID=accountID
             )
             if like["status"] == "ok":

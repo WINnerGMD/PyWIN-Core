@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends
 from src.services.user import UserService
 from logger import info
 
-router = APIRouter(prefix="/api", tags=["API"])
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/users/{usrid}")
+@router.get("/{usrid}")
 async def get_user(usrid):
     info(f"Request to api | /api/users/{usrid}")
-    userData = (await UserService.get_user_byid(id=usrid, db=db))["database"]
+    userData = (await UserService.get_user_byid(id=usrid))["database"]
     return {
         "status": "ok",
         "userName": userData.userName,

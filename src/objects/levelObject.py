@@ -314,7 +314,7 @@ class LevelGroup:
                     12: row.AudioTrack,
                     13: row.gameVersion,
                     14: row.likes,
-                    15: 5,
+                    15: row.lenght,
                     17: 0,
                     18: row.stars,
                     19: feature,
@@ -337,8 +337,6 @@ class LevelGroup:
             )
 
             levelData.append(Level)
-            # levelString += f'1:{row.id}:2:{row.name}:5:{row.version}:6:{row.authorID}:8:10:9:{row.difficulty}0:10:{row.downloads}:12:{row.AudioTrack}:13:{row.gameVersion}:14:{row.likes}:17:{0}:43:{0}:25:{0}:18:{row.stars}:19:{feature}:42:{epic}:45:{row.objects}:3:{row.desc}:15:{row.lenght}:30:{row.original}:31:{row.two_players}:37:{row.coins}:38:{row.user_coins}:39:{0}:46:1:47:2:35:{row.song_id}|'
-
             userString += f"{row.authorID}:{row.authorName}:{row.authorID}|"
         levelstr = "|".join(levelData)
         return f"{levelstr}#{userString}##{self.service['count']}:{page * system.page}:{system.page}#{await sha1_hash(levelsDataHash, 'xI25fpAapCQg')}"

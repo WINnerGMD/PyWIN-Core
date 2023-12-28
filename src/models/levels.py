@@ -5,7 +5,8 @@ from sqlalchemy import (
     Text,
     ForeignKey,
 )
-from src.schemas.levels import LevelSchema
+from src.helpers.rate import Rate, Difficulty
+from src.schemas.levels.model import APILevelSchema, StatsSchema
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 
@@ -68,29 +69,37 @@ class LevelModel(Base):
             }
         )
 
-    def to_pydantic_model(self) -> LevelSchema:
-        return LevelSchema(
+    def to_API_model(self) -> APILevelSchema:
+        """
+        Converter to LevelAPI Scheme.
+        Without security data
+
+        Return LevelAPIScheme
+        """
+        return APILevelSchema(
             id=self.id,
-            name=self.id,
+            name=self.name,
             desc=self.desc,
             version=self.version,
             authorID=self.authorID,
             AuthorName=self.authorName,
             gameVersion=self.gameVersion,
-            likes=self.likes,
-            downloads=self.downloads,
             AudioTrack=self.AudioTrack,
             song_id=self.song_id,
             lenght=self.lenght,
-            stars=self.stars,
-            coins=self.coins,
-            difficulty=self.difficulty,
-            user_coins=self.user_coins,
-            rate=self.rate,
+            difficulty=Difficulty(self.difficulty).name,
+            rate=Rate(self.rate).name,
             original=self.rate,
             two_players=self.two_players,
             is_ldm=self.is_ldm,
-            objects=self.objects,
             password=self.password,
             LevelString=self.LevelString,
+            stats=StatsSchema(
+                stars=self.stars,
+                coins=self.coins,
+                user_coins=self.user_coins,
+                objects=self.objects,
+                likes=self.likes,
+                downloads=self.downloads,
+            )
         )

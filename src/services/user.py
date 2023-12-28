@@ -8,7 +8,7 @@ from src.services.perms import PermissionService
 from src.models import UsersModel, MessagesModel
 from src.utils.crypt import bcrypt_hash, sha1_hash
 from src.depends.user import UsersRepository
-from src.schemas.auth.errors import *
+from src.schemas.users.errors import *
 from typing import Any
 class UserService:
     @staticmethod
@@ -44,33 +44,15 @@ class UserService:
             await UsersRepository().add_one(db_user)
 
     @staticmethod
-    async def get_user_byid(db: AsyncSession, id: int):
+    async def get_user_byid(id: int):
         try:
-            user = (
-                (await db.execute(select(UsersModel).filter(UsersModel.id == id)))
-                .scalars()
-                .first()
-            )
+            user = await UsersRepository().find_byid(id)
             if user is None:
-                raise Exception("User not found")
+                raise UserNotFoundError
 
-            rank = len(
-                (
-                    await db.execute(
-                        select(UsersModel).filter(UsersModel.stars >= user.stars)
-                    )
-                )
-                .scalars()
-                .all()
-            )
-            permissions = await PermissionService.get_permissions(id=user.role, db=db)
-            print(user.role)
-            print(permissions)
             return {
                 "status": "ok",
                 "database": user,
-                "rank": rank,
-                "permissions": permissions,
             }
 
         except Exception as ex:
@@ -91,15 +73,8 @@ class UserService:
             return "-1"
 
     @staticmethod
-    async def update_user(db: AsyncSession, data: UpdateStats):
-        smtp = (
-            Update(UsersModel)
-            .where(data.id == UsersModel.id)
-            .values(data.dict(exclude_unset=True))
-        )
-        result = await db.execute(smtp)
-        await db.commit()
-
+    async def update_user(data: UpdateStats):
+        result = UsersRepository().update(data.id, data.dict(exclude_unset=True))
         return result
 
     @staticmethod

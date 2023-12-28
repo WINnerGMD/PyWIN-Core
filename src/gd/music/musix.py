@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Form, Depends, Header
+from fastapi import APIRouter, Form, Depends, Header, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -16,7 +16,10 @@ SECRET = "secret"
 
 router = APIRouter(tags=["Songs"])
 
-
+@router.post(f"{system.path}/getCustomContentURL.php",response_class=PlainTextResponse)
+async def get_song(req: Request):
+    print(await req.form())
+    return "https://geometrydashfiles.b-cdn.net/"
 @router.post(f"{system.path}/getGJSongInfo.php", response_class=PlainTextResponse)
 async def get_song(songID: str = Form()):
     song_db = (

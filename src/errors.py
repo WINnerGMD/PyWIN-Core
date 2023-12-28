@@ -1,6 +1,6 @@
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 
-class GenericError(BaseModel):
-    status: str = "error"
-    details: str
+def GenericError(details: str, code: int = 500) -> JSONResponse:
+    return JSONResponse({"status": "error", "details": details}, code)
