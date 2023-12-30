@@ -14,7 +14,7 @@ console.print(
     "[yellow bold] Сonfiguration... [/]",
     justify="center",
 )
-console.print("[green bold] src.gdPS started [/]", justify="center")
+console.print("[green bold] GDPS started [/]", justify="center")
 import uvicorn
 from fastapi import Depends, Request, status
 from fastapi import FastAPI
@@ -33,11 +33,11 @@ from src.gd.misc.likes import router as router_likes
 from src.gd.music.musix import router as router_music
 from src.gd.rewards.chest import router as router_chest
 from src.gd.scores.scores import router as router_scores
-
+from src.gd.lists.lists import router as router_lists
 from plugins.origins import router as router_origins
 from src.services.levels import LevelService
 from src.services.user import UserService
-
+from database import engine, Base
 if system.pluginloader:
     for i in os.listdir("plugins"):
         if i != "origins.py" and i != "__pycache__":
@@ -79,6 +79,7 @@ fastapi.include_router(router_music)
 fastapi.include_router(router_scores)
 fastapi.include_router(router_rate)
 fastapi.include_router(router_chest)
+fastapi.include_router(router_lists)
 fastapi.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
@@ -104,6 +105,9 @@ fastapi.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
 
 @fastapi.on_event("startup")
 async def startup():
+    async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all) if you need clear all data
+        await conn.run_sync(Base.metadata.create_all)
     info("Server Started")
 
 

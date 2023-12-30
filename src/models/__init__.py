@@ -11,5 +11,8 @@ from src.models.roles import RolesModel
 from src.models.songs import SongsModel
 from src.models.user import UsersModel
 from src.models.dailychests import ChestsModel
-
+from .lists import ListModel
 metadata_obj = MetaData()
+
+#
+# metadata_obj.create_all(tables=[ListModel])

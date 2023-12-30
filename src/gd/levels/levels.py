@@ -74,11 +74,12 @@ async def upload_level(
 
 
 @router.post(f"{system.path}/getGJLevels21.php", response_class=HTMLResponse)
-@cache(
-    ttl=f"{redis.ttl}s",
-    key="get_levels:{str}/{diff}/{demonFilter}{type}/{len}/{featured}/{epic}/{gauntlet}/{page}",
-)
+# @cache(
+#     ttl=f"{redis.ttl}s",
+#     key="get_levels:{str}/{diff}/{demonFilter}{type}/{len}/{featured}/{epic}/{gauntlet}/{page}",
+# )
 async def get_level(
+        req: Request,
         str: str = Form(default=None),
         page: int = Form(default=None),
         type: int = Form(default=None),
@@ -93,9 +94,9 @@ async def get_level(
         gauntlet: int = Form(default=None),
         customSong: int = Form(default=None),
 ):
+    print(await req.form())
     if str is not None:
         if "," in str:
-            print("clen")
             result = await LevelService.get_levels_group(db=db, levels=str.split(","))
             is_gauntlet = False
             page = 0
