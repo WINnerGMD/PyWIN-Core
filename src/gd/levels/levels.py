@@ -17,10 +17,10 @@ from src.services.daily import DailyService
 from src.services.levels import LevelService
 from src.utils.crypt import checkValidGJP2
 from src.schemas.levels.errors import *
-router = APIRouter(prefix="", tags=["Levels"])
+router = APIRouter(tags=["Levels"])
 
 
-@router.post(f"{system.path}/uploadGJLevel21.php")
+@router.post("/uploadGJLevel21.php")
 async def upload_level(
         levelString: str = Form(),
         accountID: int = Form(),
@@ -73,7 +73,7 @@ async def upload_level(
         return "-1"
 
 
-@router.post(f"{system.path}/getGJLevels21.php", response_class=HTMLResponse)
+@router.post("/getGJLevels21.php")
 # @cache(
 #     ttl=f"{redis.ttl}s",
 #     key="get_levels:{str}/{diff}/{demonFilter}{type}/{len}/{featured}/{epic}/{gauntlet}/{page}",
@@ -94,7 +94,6 @@ async def get_level(
         gauntlet: int = Form(default=None),
         customSong: int = Form(default=None),
 ):
-    print(await req.form())
     if str is not None:
         if "," in str:
             result = await LevelService.get_levels_group(db=db, levels=str.split(","))
@@ -149,14 +148,14 @@ async def get_level(
 
 
 
-@router.post(f"{system.path}/downloadGJLevel22.php", response_class=PlainTextResponse)
-@cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
+@router.post("/downloadGJLevel22.php")
+# @cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
 async def level_download(levelID: int = Form()):
     if int(levelID) < 0:  # daily & weekly
         service = await LevelsRepository().find_byid(32)
         is_featured = True
     else:
-        service = await LevelsRepository().find_byid(levelID)
+        service = await LevelsRepository.find_byid(levelID)
         is_featured = False
 
     object_level = await LevelObject(service=service).GDDownload_level(
@@ -166,7 +165,7 @@ async def level_download(levelID: int = Form()):
 
 
 
-@router.post(f"{system.path}/deleteGJLevelUser20.php", response_class=PlainTextResponse)
+@router.post("}/deleteGJLevelUser20.php")
 async def level_delete(
         accountID: int = Form(),
         gjp: str = Form(),
@@ -187,7 +186,7 @@ async def level_delete(
 
 
 
-@router.post(f"{system.path}/getGJDailyLevel.php", response_class=PlainTextResponse)
+@router.post("/getGJDailyLevel.php")
 async def get_daily_level(
                           weekly: int = Form(default=0)
                           ):

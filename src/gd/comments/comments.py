@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Form, Depends
-from fastapi.responses import PlainTextResponse
-from sqlalchemy.orm import Session
 
 from config import system
 from src.objects.schemas import UploadComments
@@ -12,18 +10,18 @@ from src.utils.gdform import gd_dict_str
 router = APIRouter(tags=["Comments"])
 
 
-@router.post(f"{system.path}/uploadGJComment21.php", response_class=PlainTextResponse)
+@router.post("/uploadGJComment21.php")
 async def upload_comment(
     accountID: int = Form(default=None),
     userName: str = Form(default=None),
     comment: str = Form(default=None),
     levelID: int = Form(default=None),
     percent: int = Form(default=None),
-    gjp: str = Form(),
+    gjp2: str = Form(),
 ):
     if percent == None:
         percent = 0
-    if await checkValidGJP(accountID, gjp, db):
+    if await checkValidGJP2(accountID, gjp2):
         comment_object = UploadComments(
             userName=userName,
             accountID=accountID,
@@ -31,13 +29,13 @@ async def upload_comment(
             levelID=levelID,
             percent=percent,
         )
-        answer = await CommentsService().upload_comments(db=db, data=comment_object)
+        answer = await CommentsService().upload_comments(data=comment_object)
         if answer["status"] == "ok":
             if answer["type"] == "comment":
                 return str(answer["data"].id)
 
 
-@router.post(f"{system.path}/getGJComments21.php", response_class=PlainTextResponse)
+@router.post("/getGJComments21.php")
 async def get_comments(
    levelID: int = Form(), page: int = Form()
 ):
@@ -47,7 +45,7 @@ async def get_comments(
     if comments_object["status"] == "ok":
         comment_string = []
         for i in comments_object["database"]:
-            userObject = (await UserService().get_user_byid(db=db, id=i.authorId))[
+            userObject = (await UserService().get_user_byid(id=i.authorId))[
                 "database"
             ]
             iconkits = userObject.iconkits

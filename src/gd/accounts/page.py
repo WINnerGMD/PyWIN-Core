@@ -6,45 +6,47 @@ from config import system
 from logger import info, error
 from src.objects.schemas import UpdateStats
 from src.objects.userObject import UserObject, UserGroup
+from src.schemas.users.errors import UserNotFoundError
 from src.services.user import UserService
 from src.utils.crypt import checkValidGJP2
 from fastapi import Request
 router = APIRouter(prefix="", tags=["Profile"])
 
 
-@router.post(f"{system.path}/getGJUserInfo20.php", response_class=PlainTextResponse)
+@router.post("/getGJUserInfo20.php", response_class=PlainTextResponse)
 async def get_userInfo(
     targetAccountID: int = Form(),
 ):
-
-    service = await UserService().get_user_byid(id=targetAccountID)
-    if service["status"] == "ok":
+    try:
+        service = await UserService().get_user_byid(id=targetAccountID)
         usr_obj = await UserObject(service=service).GDGetUser()
-        info(f"get user {service['database'].userName}")
-        return usr_obj
-    else:
-        error(f"failed to load user /// {service['details']})")
+        return PlainTextResponse(usr_obj)
+
+    except UserNotFoundError:
+        return PlainTextResponse("-1")
 
 
 @router.post(
-    f"{system.path}/getGJAccountComments20.php", response_class=PlainTextResponse
+    "/getGJAccountComments20.php", response_class=PlainTextResponse
 )
 async def get_posts(
     accountID: int = Form(),
     page: int = Form(),
 ):
-    service = await UserService().get_user_byid(id=accountID)
-    return await UserObject(service=service).GDGetUserPosts(page=page)
+    try:
+        service = await UserService().get_user_byid(id=accountID)
+        return await UserObject(service=service).GDGetUserPosts(page=page)
+    except UserNotFoundError:
+        return PlainTextResponse("-1")
 
-
-@router.post(f"{system.path}/getGJUsers20.php", response_class=PlainTextResponse)
+@router.post("/getGJUsers20.php", response_class=PlainTextResponse)
 async def get_user(str: str = Form()):
     service = await UserService.get_users_byName(name=str, db=db)
     usr = await UserGroup(service).GDGetUserGroup()
     return usr
 
 
-@router.post(f"{system.path}/updateGJUserScore22.php", response_class=PlainTextResponse)
+@router.post("/updateGJUserScore22.php", response_class=PlainTextResponse)
 async def updateGJUserScore22(
     req: Request,
     accountID: int = Form(),

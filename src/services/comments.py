@@ -5,7 +5,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.models
-from src.depends.comments import CommentsModel
+from src.depends.comments import CommentsModel, CommentsRepository
 from config import system
 from src.helpers.commands import Commands
 from src.helpers.rate import Difficulty
@@ -28,10 +28,10 @@ command_list = methods(Commands)
 
 class CommentsService:
     @staticmethod
-    async def get_comments(level_id, page: int, db: AsyncSession):
+    async def get_comments(level_id, page: int):
         comments = (
             (
-                await db.execute(
+                await CommentsRepository.find_bySTMT(
                     select(CommentsModel)
                     .filter(CommentsModel.levelID == level_id)
                     .order_by(CommentsModel.id.desc())
@@ -44,9 +44,7 @@ class CommentsService:
         )
         count = len(
             (
-                await db.execute(
-                    select(CommentsModel).filter(CommentsModel.levelID == level_id)
-                )
+                await CommentsRepository.find_byfield(CommentsModel.levelID == level_id)
             )
             .scalars()
             .all()
@@ -57,7 +55,7 @@ class CommentsService:
             return {"status": "error", "details": "comments not found"}
 
     @classmethod
-    async def upload_comments(cls, db: AsyncSession, data: UploadComments) -> dict:
+    async def upload_comments(cls, data: UploadComments) -> dict:
         try:
             content = base64_decode(data.comment)
             print(content)
@@ -66,7 +64,6 @@ class CommentsService:
                     data=content[1:],
                     levelID=data.levelID,
                     authorID=data.accountID,
-                    db=db,
                 )
                 return {"status": "ok", "type": "command"}
             else:
@@ -76,13 +73,10 @@ class CommentsService:
                     progress=data.percent,
                     levelID=data.levelID,
                     authorName=(
-                        (await UserService().get_user_byid(db=db, id=data.accountID))
+                        (await UserService().get_user_byid(data.accountID))
                     )["database"].userName,
                 )
-                db.add(db_comment)
-                await db.commit()
-                await db.refresh(db_comment)
-
+                await CommentsRepository.add_one(db_comment)
                 return {"status": "ok", "type": "comment", "data": db_comment}
         except Exception as e:
             return {"status": "error", "details": e}
@@ -219,14 +213,14 @@ class PostCommentsService:
         offset = int(page) * 10
         stmt = select(PostsModel).filter(PostsModel.accountID == usrid)
         count = len(
-            await PostsRepository.findall_bySTMT(stmt)
+            (await PostsRepository.find_bySTMT(stmt)).scalars().all()
         )
         stmt2 = select(PostsModel).filter(PostsModel.accountID == usrid).limit(10).offset(offset).order_by(
             PostsModel.id.desc()
         )
         return {
             "database": (
-                await PostsRepository.findall_bySTMT(stmt2)
+                (await PostsRepository.find_bySTMT(stmt2)).scalars().all()
             ),
             "count": count,
         }

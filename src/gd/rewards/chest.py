@@ -16,7 +16,7 @@ from src.models import ChestsModel
 router = APIRouter()
 
 
-@router.post(f"{system.path}/getGJRewards.php", response_class=PlainTextResponse)
+@router.post("/getGJRewards.php", response_class=PlainTextResponse)
 async def chest(
     chk: str = Form(),
     accountID: int = Form(),

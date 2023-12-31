@@ -1,6 +1,7 @@
+import numpy
+import numpy as np
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.helpers.rate import Difficulty, Rate
 from src.models import ActionsModel, LevelModel, UsersModel
 from src.utils.crypt import xor_cipher, base64_encode, sha1_hash
@@ -271,7 +272,7 @@ class LevelObject:
                     ),
                 )
             )
-        await LevelsRepository().update(level.id, {"downloads": level.downloads + 1})
+        await LevelsRepository.update(level.id, {"downloads": level.downloads + 1})
         return answer
 
 
@@ -280,9 +281,9 @@ class LevelGroup:
         self.service = service
         pass
 
-    async def GDGet_level(self, page: int | None = 0, is_gauntlet: bool = False):
+    async def GDGet_level(self, page: numpy.uint8 | None = 0, is_gauntlet: bool = False):
         levelsDataHash = ""
-        levelData = []
+        levelData = np.array([])
         userString = ""
         for row in self.service['database']:
             feature = 0
@@ -336,7 +337,7 @@ class LevelGroup:
                 }
             )
 
-            levelData.append(Level)
+            levelData = numpy.append(levelData, Level)
             userString += f"{row.authorID}:{row.authorName}:{row.authorID}|"
         levelstr = "|".join(levelData)
         return f"{levelstr}#{userString}##{self.service['count']}:{page * system.page}:{system.page}#{await sha1_hash(levelsDataHash, 'xI25fpAapCQg')}"

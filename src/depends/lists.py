@@ -4,7 +4,4 @@ from src.models.lists import ListModel
 """For easy import"""
 
 
-class ListRepository(SQLAlchemyRepo):
-    """User Database Repository for easy import"""
-
-    model = ListModel
+ListRepository = SQLAlchemyRepo(ListModel)

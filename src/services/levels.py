@@ -141,11 +141,10 @@ class LevelService:
                 case 16:
                     result = result.filter(LevelModel.rate >= 1)
 
-            count = len(await LevelsRepository().find_all())
-            database = await LevelsRepository.findall_bySTMT(result.offset(page).limit(system.page))
-
-            if database:
-                return {"status": "ok", "database": numpy.array(database), "count": count}
+            count = len(await LevelsRepository.find_all())
+            database = np.array((await LevelsRepository.find_bySTMT(result.offset(page).limit(system.page))).scalars().all())
+            if database.size is not 0:
+                return {"status": "ok", "database": database, "count": count}
             else:
                 raise LevelNotFoundError
 

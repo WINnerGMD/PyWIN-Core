@@ -14,13 +14,13 @@ router = APIRouter(
 )
 
 
-@router.post(f"{system.path}/getAccountURL.php", response_class=PlainTextResponse)
+@router.post("/getAccountURL.php", response_class=PlainTextResponse)
 async def get_url(req: Request):
     return f"{req.url.scheme}://{req.url.hostname}:{req.url.port}"
 
 
 @router.post(
-    f"/database/accounts/backupGJAccountNew.php", response_class=PlainTextResponse
+    "/accounts/backupGJAccountNew.php", response_class=PlainTextResponse
 )
 async def backup(
     saveData: str = Form(),
@@ -45,7 +45,7 @@ async def backup(
 
 
 @router.post(
-    f"/database/accounts/syncGJAccountNew.php", response_class=PlainTextResponse
+    "/accounts/syncGJAccountNew.php", response_class=PlainTextResponse
 )
 async def sync(
     userName: str = Form(), password: str = Form(),
@@ -70,7 +70,7 @@ async def sync(
         pass
 
 
-@router.post(f"{system.path}/requestUserAccess.php")
+@router.post("/requestUserAccess.php")
 async def get_user_access(
     req: Request,
     # gjp: str = Form(), accountID: str = Form(),

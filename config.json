@@ -30,6 +30,14 @@
         "lang": "en",
         "path": "/winnertestss"
     },
+    "json:api": {
+        "isWorked": true,
+        "path": "/v2"
+    },
+    "gd:api": {
+        "isWorked": true,
+        "path": "/database"
+    },
     "musix": {
         "use_musix": false,
         "musix_token": "",

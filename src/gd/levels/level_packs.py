@@ -10,11 +10,12 @@ from src.utils.crypt import return_hash
 from src.depends.gauntlets import GauntletsRepository
 import numpy
 
-router = APIRouter(tags=["Packs"], default_response_class=PlainTextResponse)
+router = APIRouter(tags=["Packs"])
 
-@router.post(f"{system.path}/getGJGauntlets21.php")
+
+@router.post("/getGJGauntlets21.php")
 async def gauntlets():
-    gauntlets = await GauntletsRepository().find_all()
+    gauntlets = await GauntletsRepository.find_all()
     response = ""
     hash_string = ""
     for gn in numpy.arange(gauntlets):
@@ -28,7 +29,7 @@ async def gauntlets():
     return response
 
 
-@router.post(f"{system.path}/getGJMapPacks21.php")
+@router.post("/getGJMapPacks21.php")
 async def map_packs(page: str = Form()):
     packs = await LevelService.get_map_packs(db=db, page=int(page))
     packstrings = []
@@ -50,9 +51,7 @@ async def map_packs(page: str = Form()):
         )
         packhash += f"{str(pack.id)[0]}{str(pack.id)[-1]}{pack.stars}{pack.coins}"
     return (
-        "|".join(packstrings)
-        + f"#{packs['count']}:{int(page) * 10}:10#"
-        + return_hash(packhash, 'xI25fpAapCQg')
+            "|".join(packstrings)
+            + f"#{packs['count']}:{int(page) * 10}:10#"
+            + return_hash(packhash, 'xI25fpAapCQg')
     )
-
-

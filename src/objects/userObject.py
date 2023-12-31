@@ -17,7 +17,7 @@ class UserObject:
 
     async def GDGetUser(self):
         try:
-            user = self.service["database"]
+            user = self.service
             iconkit = user.iconkits
             response_strs = gd_dict_str(
                 {
@@ -60,7 +60,7 @@ class UserObject:
     async def GDGetUserPosts(self, page):
         post_string = []
         service = await PostCommentsService().get_post(
-            usrid=self.service["database"].id, page=page
+            usrid=self.service.id, page=page
         )
         for post in service["database"]:
             try:

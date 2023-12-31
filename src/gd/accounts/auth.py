@@ -8,11 +8,11 @@ from src.utils.crypt import checkValidGJP2byName
 from src.schemas.users.errors import *
 from fastapi.responses import PlainTextResponse
 
-router = APIRouter(prefix="", tags=["Auth"])
+router = APIRouter(prefix="/accounts", tags=["Auth"])
 
 
 @router.post(
-    f"{system.path}/accounts/registerGJAccount.php",
+    "/registerGJAccount.php",
     response_class=PlainTextResponse,
 )
 async def register_account(
@@ -40,7 +40,7 @@ async def register_account(
         return PlainTextResponse("-3", 200)
 
 
-@router.post(f"{system.path}/accounts/loginGJAccount.php")
+@router.post("/loginGJAccount.php")
 async def login(
         userName: str = Form(),
         gjp2: str = Form()

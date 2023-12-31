@@ -9,12 +9,15 @@ from src.models import UsersModel, MessagesModel
 from src.utils.crypt import bcrypt_hash, sha1_hash
 from src.depends.user import UsersRepository
 from src.schemas.users.errors import *
+from src.schemas.errors import SQLAlchemyNotFound
 from typing import Any
+
+
 class UserService:
     @staticmethod
     async def register_user(
             userName: str, password: str, mail: str, ip: str
-    ):
+    ) -> None:
         request = select(UsersModel).filter(UsersModel.userName == userName)
         request2 = select(UsersModel).filter(UsersModel.mail == mail)
         if await UsersRepository().findfirst_bySTMT(request) is not None:
@@ -46,17 +49,11 @@ class UserService:
     @staticmethod
     async def get_user_byid(id: int):
         try:
-            user = await UsersRepository().find_byid(id)
-            if user is None:
-                raise UserNotFoundError
+            user = await UsersRepository.find_byid(id)
+            return user
 
-            return {
-                "status": "ok",
-                "database": user,
-            }
-
-        except Exception as ex:
-            return {"status": "error", "details": ex}
+        except SQLAlchemyNotFound:
+            raise UserNotFoundError
 
     @staticmethod
     async def upload_message(db: AsyncSession, authorID, recipientID, subject, body):
@@ -82,9 +79,9 @@ class UserService:
         """
         Logic of user login
         """
-        user: UsersModel = await UsersRepository().find_byfield(UsersModel.userName == userName)
+        user = (await UsersRepository.find_byfield(UsersModel.userName == userName)).scalars().first()
         if user is None:
-            raise InvalidCreditionalsError  
+            raise InvalidCreditionalsError
         else:
             if user.passhash == password:
                 if user.verified:

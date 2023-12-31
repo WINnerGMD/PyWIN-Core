@@ -14,9 +14,9 @@ router = APIRouter(tags=["Posts"])
 
 
 @router.post(
-    f"{system.path}/uploadGJAccComment20.php",
+    "/uploadGJAccComment20.php",
 )
-async def Upload_post(
+async def upload_post(
     accountID: int = Form(),
     comment: str = Form(),
     gjp2: str = Form(),
@@ -33,14 +33,14 @@ async def Upload_post(
 
 
 @router.post(
-    f"{system.path}/deleteGJAccComment20.php", response_class=PlainTextResponse
+    "/deleteGJAccComment20.php"
 )
-async def get_posts(
+async def delete_posts(
     accountID: int = Form(),
-    gjp: str = Form(),
+    gjp2: str = Form(),
     commentID: int = Form(),
 ):
-    if await checkValidGJP(id=accountID, gjp=gjp, db=db):
-        await PostCommentsService.delete_post(postID=commentID, db=db)
+    if await checkValidGJP2(id=accountID, gjp2=gjp2):
+        await PostCommentsService.delete_post(postID=commentID)
 
     return "1"

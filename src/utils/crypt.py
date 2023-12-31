@@ -37,7 +37,7 @@ async def checkValidGJP2(id: int, gjp2: str) -> bool:
     """
 
     try:
-        user: UsersModel = await UsersRepository().find_byid(id)
+        user = await UsersRepository.find_byid(id)
         if user.passhash == gjp2:
             return True
         else:
