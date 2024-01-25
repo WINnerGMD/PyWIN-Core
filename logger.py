@@ -1,9 +1,4 @@
-from rich.console import Console
-import threading
-from src.utils.gdform import formatted_date
-
-console = Console()
-
+import typer
 
 def console_start():
     """/"""
@@ -26,74 +21,46 @@ def console_start():
     #                 if run == True:
     #                     print(f"Команда не найдена")
     #             elif args == 1:
-    #                 run = True
-    #                 for i in self.command_start.OneArgs:
-    #                     if i["func_name"] == command:
-    #                         try:
-    #                             i["func"](spliter[0])
-    #                             run = False
-    #                         except:
-    #                             pass
-    #                 if run == True:
-    #                     print("Команда не найдена")
-
-    #             elif args == 2:
-    #                 run = True
-    #                 for i in self.command_start.TwoArgs:
-    #                     if i["func_name"] == command:
-    #                         try:
-    #                             i["func"](spliter[0])
-    #                             run = False
-    #                         except:
-    #                             pass
-    #                 if run == True:
-    #                     print("Команда не найдена")
-    #         else:
-    #             print("неизвестный запрос")
 
 
-console_th = threading.Thread(target=console_start, name="console")
-console_th.start()
-
-
-def StartLog():
-    console.print(
-        "[bold green]Hello. Thank You for using PyWIN Core [/] [red]II[/]",
-        justify="center",
-    )
-    console.print(
-        "[blue bold] System need time to connect dependencies and make the first start[/]",
-        justify="center",
-    )
-    console.print(
-        "// Please wait... , [red]** don't turn off PyWIN Core **[/] ", justify="center"
-    )
+# def StartLog():
+#     console.print(
+#         "[bold green]Hello. Thank You for using PyWIN Core [/] [red]II[/]",
+#         justify="center",
+#     )
+#     console.print(
+#         "[blue bold] System need time to connect dependencies and make the first start[/]",
+#         justify="center",
+#     )
+#     console.print(
+#         "// Please wait... , [red]** don't turn off PyWIN Core **[/] ", justify="center"
+#     )
     # for 2.0 update
     # deployer, builder GDPS server. need to fast
 
 
-def warning(message):
-    # if config.logger_warning:
-    console.print(
-        f"[bold yellow][WARNING][/bold yellow] - {formatted_date()} / {message}",
-    )
-
-
-def info(message):
-    # if config.logger_info:
-    console.print(
-        f"[bold green][INFO][/bold green] - {formatted_date()} / {message}",
-    )
-
-
-def error(message):
-    # if config.logger_error:
-    console.print(
-        f"[bold red][ERROR][/ bold red] - {formatted_date()} / {message}",
-    )
-
-
-def alert(message, plugin_name):
-    console.print(
-        f"[bold red]{plugin_name}[/ bold red] - {formatted_date()} / {message}",
-    )
+# def warning(message):
+#     # if config.logger_warning:
+#     console.print(
+#         f"[bold yellow][WARNING][/bold yellow] - {formatted_date()} / {message}",
+#     )
+#
+#
+# def info(message):
+#     # if config.logger_info:
+#     console.print(
+#         f"[bold green][INFO][/bold green] - {formatted_date()} / {message}",
+#     )
+#
+#
+# def error(message):
+#     # if config.logger_error:
+#     console.print(
+#         f"[bold red][ERROR][/ bold red] - {formatted_date()} / {message}",
+#     )
+#
+#
+# def alert(message, plugin_name):
+#     console.print(
+#         f"[bold red]{plugin_name}[/ bold red] - {formatted_date()} / {message}",
+#     )

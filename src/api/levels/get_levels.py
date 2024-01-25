@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 from src.errors import GenericError
 from src.schemas.levels.model import APILevelSchema
 from src.schemas.levels.service.get import GetLevel
-from src.services.levels import LevelService, LevelModel
 from src.schemas.levels.errors import LevelNotFoundError
 from src.errors import GenericError
 router = APIRouter(prefix="/levels", tags=["Levels"])

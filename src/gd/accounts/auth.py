@@ -4,7 +4,7 @@ from fastapi import Request, Form, Depends, APIRouter
 
 from src.services.user import UserService, UsersModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.utils.crypt import checkValidGJP2byName
+from src.depends.context import Context
 from src.schemas.users.errors import *
 from fastapi.responses import PlainTextResponse
 
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/accounts", tags=["Auth"])
     response_class=PlainTextResponse,
 )
 async def register_account(
+        context: Context,
         request: Request,
         userName: str = Form(),
         password: str = Form(),
@@ -28,7 +29,7 @@ async def register_account(
     """
     try:
         await UserService().register_user(
-            userName=userName, password=password, mail=email, ip=request.client.host
+            userName=userName, password=password, mail=email, ip=request.client.host, ctx=context
         )
         return PlainTextResponse("1", 200)
 
@@ -42,6 +43,7 @@ async def register_account(
 
 @router.post("/loginGJAccount.php")
 async def login(
+        context: Context,
         userName: str = Form(),
         gjp2: str = Form()
 ) -> PlainTextResponse:
@@ -50,7 +52,7 @@ async def login(
      Return userid or error code
     """
     try:
-        user: UsersModel = await UserService.login_user(userName, gjp2)
+        user: UsersModel = await UserService.login_user(context, userName, gjp2)
         return f"{user.id},{user.id}"
 
     # Validate errors

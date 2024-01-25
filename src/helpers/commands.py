@@ -1,7 +1,5 @@
 from src.helpers.rate import Difficulty
 from src.objects.levelObject import LevelObject
-from logger import info
-import inspect
 
 
 class Commands:

@@ -10,7 +10,8 @@ from datetime import timedelta
 
 from config import big_chest, small_chest
 from config import system
-from src.utils.crypt import xor_cipher, base64_encode, base64_decode, checkValidGJP2
+from src.utils.crypt import xor_cipher, base64_encode, base64_decode
+from src.utils.security import checkValidGJP2
 import random
 from src.models import ChestsModel
 router = APIRouter()

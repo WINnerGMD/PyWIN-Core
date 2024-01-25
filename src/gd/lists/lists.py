@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import PlainTextResponse
-from src.utils.crypt import checkValidGJP2
+from src.utils.security import checkValidGJP2
 from src.schemas.list.service.post import UploadList
 from src.services.lists import ListService
 from config import system

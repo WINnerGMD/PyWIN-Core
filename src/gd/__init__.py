@@ -1,15 +1,15 @@
 from fastapi import FastAPI
 from config import system
 
-from .rate.rate_levels import router as router_rate
+
 from .accounts import init_accounts
 from .comments import init_comments
 from .levels import router as router_levels
 from .misc.likes import router as router_likes
 from .music.musix import router as router_music
 from .rewards.chest import router as router_chest
-from .scores.scores import router as router_scores
 from .lists.lists import router as router_lists
+from .scores.scores import router as router_scores
 from plugins.origins import router as router_origins
 
 
@@ -21,7 +21,7 @@ def init_routers(gd: FastAPI) -> None:
     gd.include_router(router_likes)
     gd.include_router(router_music)
     gd.include_router(router_scores)
-    gd.include_router(router_rate)
+    # gd.include_router(router_rate)
     gd.include_router(router_chest)
     gd.include_router(router_lists)
 

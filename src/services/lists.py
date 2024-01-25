@@ -1,7 +1,7 @@
 from src.schemas.list.service.post import UploadList
 from src.schemas.list.service.get import GetList
-from src.depends.lists import ListRepository, ListModel
-from src.depends.user import UsersRepository, UsersModel
+from src.depends.lists import ListModel
+from src.depends.user import UsersModel
 from src.helpers.rate import Difficulty, Rate
 from sqlalchemy import select
 class ListService:

@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Form, Depends
+from fastapi import APIRouter, Form
 from fastapi.responses import PlainTextResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from logger import info
 from src.objects.levelObject import LevelObject
 from src.services.levels import LevelService
 

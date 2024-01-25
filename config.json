@@ -1,9 +1,9 @@
 {
     "database": {
         "host": "localhost",
-        "port": 5433,
+        "port": 3306,
         "user": "root",
-        "password": "root",
+        "password": "",
         "database": "pywinbd"
     },
     "redis": {

@@ -1,13 +1,9 @@
-from fastapi import APIRouter, Form, Request, Depends
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import system
 from src.models import UsersModel
-from src.objects.userObject import UserObject
-from src.services.user import UserService
-from src.utils.crypt import bcrypt_hash, checkValidGJP2
+from src.utils.crypt import bcrypt_hash
 
 router = APIRouter(
     prefix="", tags=["User Management"], default_response_class=PlainTextResponse
