@@ -1,7 +1,7 @@
-from src.repositories.database_repo import SQLAlchemyRepo
+from src.repositories.database import SQLAlchemyRepo
 from src.models.user import UsersModel
 
 """For easy import"""
 
 
-UsersRepository = SQLAlchemyRepo(UsersModel)
+# UsersRepository = SQLAlchemyRepo(UsersModel)

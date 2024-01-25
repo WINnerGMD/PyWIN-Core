@@ -1,21 +1,18 @@
 import datetime
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import PlainTextResponse, HTMLResponse
+from fastapi.responses import PlainTextResponse
 from fastapi_events.dispatcher import dispatch
 
-from cache import cache
-from config import system, redis
 from events import Events
-from logger import error
 from src.helpers.rate import Difficulty
 from src.objects.levelObject import LevelGroup, LevelObject
-from src.depends.level import LevelsRepository
+from src.depends.context import Context
 from src.objects.schemas import UploadLevel
 from src.schemas.levels.service.get import GetLevel
 from src.services.daily import DailyService
 from src.services.levels import LevelService
-from src.utils.crypt import checkValidGJP2
+from src.utils.security import checkValidGJP2
 from src.schemas.levels.errors import *
 router = APIRouter(tags=["Levels"])
 
@@ -61,7 +58,7 @@ async def upload_level(
             gameVersion=gameVersion,
         )
         service = await LevelService().upload_level(data=SystemObj)
-        dispatch(Events.NewLevel, LevelObject(service))
+        # dispatch(Events.NewLevel, LevelObject(service))
         if service["status"] == "ok":
             print("its okey")
             return service["level"].id
@@ -79,7 +76,7 @@ async def upload_level(
 #     key="get_levels:{str}/{diff}/{demonFilter}{type}/{len}/{featured}/{epic}/{gauntlet}/{page}",
 # )
 async def get_level(
-        req: Request,
+        context: Context,
         str: str = Form(default=None),
         page: int = Form(default=None),
         type: int = Form(default=None),
@@ -93,75 +90,80 @@ async def get_level(
         song: int = Form(default=None),
         gauntlet: int = Form(default=None),
         customSong: int = Form(default=None),
+
 ):
-    if str is not None:
-        if "," in str:
-            result = await LevelService.get_levels_group(db=db, levels=str.split(","))
-            is_gauntlet = False
+    async with context:
+        if str is not None:
+            if "," in str:
+                result = await LevelService.get_levels_group(db=db, levels=str.split(","))
+                is_gauntlet = False
+                page = 0
+                return await LevelGroup(service=result).GDGet_level(
+                    page=page, is_gauntlet=is_gauntlet
+                )
+        if diff not in ["-", None]:
+            difficulty = Difficulty(int(diff))
+        else:
+            difficulty = None
+        if epic == 1 or featured == 1:
+            if epic == 1 and featured == 1:
+                rate = (int(epic), int(featured))
+            else:
+                if epic == 1 and featured != 1:
+                    rate = 2
+                if epic != 1 and featured == 1:
+                    rate = 1
+        else:
+            rate = 0
+        scheme = GetLevel(
+            lenght=len if len != "-" else None,
+            string=str,
+            searchType=type,
+            accountID=accountID,
+            difficulty=difficulty,
+            demonFilter=demonFilter,
+            page=page,
+            rate=rate,
+            coins=coins,
+            song=song,
+            customSong=customSong,
+            gauntlet=gauntlet,
+        )
+        if gauntlet != None:
+            result = await LevelService.get_gauntlets_levels(indexpack=gauntlet)
             page = 0
-            return await LevelGroup(service=result).GDGet_level(
+            is_gauntlet = True
+        else:
+            try:
+                result = await context.services.levels.test_get_levels(scheme)
+            except LevelNotFoundError:
+                return PlainTextResponse("-1", 200)
+
+        page = page
+        is_gauntlet = False
+        return await LevelGroup(service=result).GDGet_level(
                 page=page, is_gauntlet=is_gauntlet
             )
-    if diff not in ["-", None]:
-        difficulty = Difficulty(int(diff))
-    else:
-        difficulty = None
-    if epic == 1 or featured == 1:
-        if epic == 1 and featured == 1:
-            rate = (int(epic), int(featured))
-        else:
-            if epic == 1 and featured != 1:
-                rate = 2
-            if epic != 1 and featured == 1:
-                rate = 1
-    else:
-        rate = 0
-    scheme = GetLevel(
-        lenght=len if len != "-" else None,
-        string=str,
-        searchType=type,
-        accountID=accountID,
-        difficulty=difficulty,
-        demonFilter=demonFilter,
-        page=page,
-        rate=rate,
-        coins=coins,
-        song=song,
-        customSong=customSong,
-        gauntlet=gauntlet,
-    )
-    if gauntlet != None:
-        result = await LevelService.get_gauntlets_levels(indexpack=gauntlet)
-        page = 0
-        is_gauntlet = True
-    else:
-        try:
-            result = await LevelService().test_get_levels(scheme)
-        except LevelNotFoundError:
-            return PlainTextResponse("-1", 200)
-
-    page = page
-    is_gauntlet = False
-    return await LevelGroup(service=result).GDGet_level(
-            page=page, is_gauntlet=is_gauntlet
-        )
 
 
 
 @router.post("/downloadGJLevel22.php")
 # @cache(ttl=f"{redis.ttl}s", key="download_levels:{levelID}")
-async def level_download(levelID: int = Form()):
-    if int(levelID) < 0:  # daily & weekly
-        service = await LevelsRepository().find_byid(32)
-        is_featured = True
-    else:
-        service = await LevelsRepository.find_byid(levelID)
-        is_featured = False
+async def level_download(
+        ctx: Context,
+        levelID: int = Form()):
+    async with ctx:
+        if int(levelID) < 0:  # daily & weekly
+            level = await ctx.database.levels.find_byid(32)
+            is_featured = True
+        else:
+            level = await ctx.services.levels.get_level_buid(levelID)
+            is_featured = False
 
-    object_level = await LevelObject(service=service).GDDownload_level(
-        is_featured=is_featured
-            )
-    return object_level
+        object_level = await level.GDDownload_level(
+            is_featured=is_featured
+                )
+        return object_level
 
 
 

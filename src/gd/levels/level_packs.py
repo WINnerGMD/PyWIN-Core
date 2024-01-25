@@ -7,15 +7,15 @@ from src.models import GauntletsModel
 from src.services.levels import LevelService
 from src.utils.gdform import gd_dict_str
 from src.utils.crypt import return_hash
-from src.depends.gauntlets import GauntletsRepository
+from src.depends.context import Context
 import numpy
 
 router = APIRouter(tags=["Packs"])
 
 
 @router.post("/getGJGauntlets21.php")
-async def gauntlets():
-    gauntlets = await GauntletsRepository.find_all()
+async def gauntlets(ctx:Context):
+    gauntlets = await G.find_all()
     response = ""
     hash_string = ""
     for gn in numpy.arange(gauntlets):

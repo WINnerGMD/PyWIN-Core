@@ -3,32 +3,36 @@ import numpy as np
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.helpers.rate import Difficulty, Rate
+from src.interfaces import UserInterface
 from src.models import ActionsModel, LevelModel, UsersModel
 from src.utils.crypt import xor_cipher, base64_encode, sha1_hash
 from src.utils.gdform import gd_dict_str
 from config import system
-from src.depends.level import LevelsRepository
+from typing import TYPE_CHECKING
 
 # from services.comments import CommentsService
 # from services.user import UserService
 
+if TYPE_CHECKING:
+    import src.abstract.context as abc
+
 
 class LevelObject:
-    def __init__(self, service: LevelModel):
+    def __init__(self, service: LevelModel, ctx: 'abc.AbstractContext'):
         self.service = service
-        pass
+        self.ctx = ctx
 
     def __str__(self) -> str:
         return str(self.service)
 
     async def user_rate(self, difficulty: Difficulty, stars: int, accountID: int):
         if (
-            await self.db.execute(
-                select(ActionsModel).filter(
-                    ActionsModel.accountID == accountID,
-                    ActionsModel.level == self.service["database"].id,
+                await self.db.execute(
+                    select(ActionsModel).filter(
+                        ActionsModel.accountID == accountID,
+                        ActionsModel.level == self.service["database"].id,
+                    )
                 )
-            )
         ).scalars().first() is not None:
             return {
                 "status": "error",
@@ -87,7 +91,7 @@ class LevelObject:
         return {"status": "error"}
 
     async def rate(
-        self, difficulty: Difficulty = None, stars: int = None, rate: Rate = None
+            self, difficulty: Difficulty = None, stars: int = None, rate: Rate = None
     ):
         try:
             if difficulty is not None:
@@ -142,13 +146,13 @@ class LevelObject:
     async def like(self, accountID: int):
         try:
             if (
-                await self.db.execute(
-                    select(ActionsModel).filter(
-                        ActionsModel.valueID == self.service["database"].id,
-                        ActionsModel.accountID == accountID,
-                        ActionsModel.actionName == "Like",
+                    await self.db.execute(
+                        select(ActionsModel).filter(
+                            ActionsModel.valueID == self.service["database"].id,
+                            ActionsModel.accountID == accountID,
+                            ActionsModel.actionName == "Like",
+                        )
                     )
-                )
             ).scalars().first() is None:
                 query = (
                     update(LevelsModel)
@@ -164,13 +168,13 @@ class LevelObject:
     async def dislike(self, accountID: int):
         try:
             if (
-                await self.db.execute(
-                    select(ActionsModel).filter(
-                        ActionsModel.valueID == self.service["database"].id,
-                        ActionsModel.accountID == accountID,
-                        ActionsModel.actionName == "Like",
+                    await self.db.execute(
+                        select(ActionsModel).filter(
+                            ActionsModel.valueID == self.service["database"].id,
+                            ActionsModel.accountID == accountID,
+                            ActionsModel.actionName == "Like",
+                        )
                     )
-                )
             ).scalars().first() is None:
                 query = (
                     update(LevelsModel)
@@ -182,7 +186,6 @@ class LevelObject:
             return {"status": "ok"}
         except Exception as e:
             return {"status": "error", "details": e}
-
 
     @staticmethod
     async def downloadLevelHash1(level):
@@ -208,7 +211,7 @@ class LevelObject:
     #     return comment_string + "#5705:2:10"
 
     async def GDDownload_level(self, is_featured: bool):
-        level = self.service
+        level = self.service.first()
         # info(f"Level download '{row.name}'")
         featured_id = 0
         if is_featured:
@@ -249,17 +252,17 @@ class LevelObject:
             user_info = f"#{level.authorID}:{level.authorName}:{level.authorID}"
             level_str.update({41: 6})
             answer = (
-                "#".join(
-                    (
-                        gd_dict_str(level_str),
-                        await self.downloadLevelHash1(level.LevelString),
-                        await sha1_hash(
-                            f'{level.authorID},{level.stars},{0},{level.id},{level.user_coins},{"1" if level.rate == 1 else "0"},{level.password},{featured_id}',
-                            "xI25fpAapCQg",
-                        ),
+                    "#".join(
+                        (
+                            gd_dict_str(level_str),
+                            await self.downloadLevelHash1(level.LevelString),
+                            await sha1_hash(
+                                f'{level.authorID},{level.stars},{0},{level.id},{level.user_coins},{"1" if level.rate == 1 else "0"},{level.password},{featured_id}',
+                                "xI25fpAapCQg",
+                            ),
+                        )
                     )
-                )
-                + user_info
+                    + user_info
             )
         else:
             answer = "#".join(
@@ -272,7 +275,7 @@ class LevelObject:
                     ),
                 )
             )
-        await LevelsRepository.update(level.id, {"downloads": level.downloads + 1})
+        await self.ctx.database.levels.update(level.id, {"downloads": level.downloads + 1})
         return answer
 
 
@@ -286,60 +289,12 @@ class LevelGroup:
         levelData = np.array([])
         userString = ""
         for row in self.service['database']:
-            feature = 0
-            epic = 0
-
-            match row.rate:
-                case 1:
-                    feature = 1
-                case 2:
-                    epic = 1
-                case 3:
-                    epic = 2
-                case 4:
-                    epic = 3
             # Fuck Robtop
             levelsDataHash += (
-                str(row.id)[0] + str(row.id)[-1] + str(row.stars) + str(row.user_coins)
+                    str(row.id)[0] + str(row.id)[-1] + str(row.stars) + str(row.user_coins)
             )
-            Level = gd_dict_str(
-                {
-                    1: row.id,
-                    2: row.name,
-                    3: row.desc,
-                    5: row.version,
-                    6: row.authorID,
-                    8: 10,
-                    9: row.difficulty * 10 if row.difficulty != -3 else 0,
-                    10: row.downloads,
-                    12: row.AudioTrack,
-                    13: row.gameVersion,
-                    14: row.likes,
-                    15: row.lenght,
-                    17: 0,
-                    18: row.stars,
-                    19: feature,
-                    25: 1 if row.difficulty == -3 else 0,
-                    27: 0,
-                    28: 0,
-                    29: 0,
-                    30: row.original,
-                    31: row.two_players,
-                    35: row.song_id,
-                    37: row.coins,
-                    38: row.user_coins,
-                    39: 1,
-                    42: epic,
-                    43: 0,
-                    44: 1 if is_gauntlet == True else 0,
-                    45: row.objects,
-                    47: 2
-                }
-            )
-
+            Level = gd_dict_str(interface := UserInterface(row, is_gauntlet))
             levelData = numpy.append(levelData, Level)
             userString += f"{row.authorID}:{row.authorName}:{row.authorID}|"
         levelstr = "|".join(levelData)
         return f"{levelstr}#{userString}##{self.service['count']}:{page * system.page}:{system.page}#{await sha1_hash(levelsDataHash, 'xI25fpAapCQg')}"
-
-

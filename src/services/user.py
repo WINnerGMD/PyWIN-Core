@@ -1,59 +1,68 @@
-from sqlalchemy import Update, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
-from logger import error
 from src.objects.schemas import UpdateStats
-from src.services.perms import PermissionService
 from src.models import UsersModel, MessagesModel
-from src.utils.crypt import bcrypt_hash, sha1_hash
-from src.depends.user import UsersRepository
+from typing import TYPE_CHECKING
 from src.schemas.users.errors import *
 from src.schemas.errors import SQLAlchemyNotFound
+from src.objects.userObject import UserObject
 from typing import Any
+
+if TYPE_CHECKING:
+    import src.abstract.context as abc
 
 
 class UserService:
+
+    def __init__(self, ctx: 'abc.AbstractContext'):
+        self.ctx = ctx
+
     @staticmethod
     async def register_user(
-            userName: str, password: str, mail: str, ip: str
+            userName: str, password: str, mail: str, ip: str,
     ) -> None:
-        request = select(UsersModel).filter(UsersModel.userName == userName)
-        request2 = select(UsersModel).filter(UsersModel.mail == mail)
-        if await UsersRepository().findfirst_bySTMT(request) is not None:
-            raise UsernameIsAlreadyInUseError
+        async with ctx:
+            request = UsersModel.userName == userName
+            request2 = UsersModel.mail == mail
+            if (await ctx.database.users.find_byfield(request)).first() is not None:
+                raise UsernameIsAlreadyInUseError
 
-        elif await UsersRepository().findfirst_bySTMT(request2) is not None:
-            raise EmailIsAlreadyInUseError
-
-        else:
-            passhash = await sha1_hash(password, "mI29fmAnxgTs")
-            if system.auto_verified:
-                db_user = UsersModel(
-                    userName=userName,
-                    passhash=passhash,
-                    mail=mail,
-                    ip=ip,
-                    verified=True
-                )
+            elif (await ctx.database.users.find_byfield(request2)).first() is not None:
+                raise EmailIsAlreadyInUseError
 
             else:
-                db_user = UsersModel(
-                    userName=userName,
-                    passhash=passhash,
-                    mail=mail,
-                    ip=ip,
-                )
-            await UsersRepository().add_one(db_user)
+                passhash = await sha1_hash(password, "mI29fmAnxgTs")
+                if system.auto_verified:
+                    db_user = UsersModel(
+                        userName=userName,
+                        passhash=passhash,
+                        mail=mail,
+                        ip=ip,
+                        verified=True
+                    )
 
-    @staticmethod
-    async def get_user_byid(id: int):
-        try:
-            user = await UsersRepository.find_byid(id)
-            return user
+                else:
+                    db_user = UsersModel(
+                        userName=userName,
+                        passhash=passhash,
+                        mail=mail,
+                        ip=ip,
+                    )
+                ctx.console.alert("SUKA")
+                await ctx.database.users.add_one(db_user)
+                await ctx.commit()
 
-        except SQLAlchemyNotFound:
-            raise UserNotFoundError
+    async def get_user_byid(self, id: int) -> UserObject:
+        async with self.ctx:
+            try:
+                user = UserObject(await self.ctx.database.users.find_byid(id))
+
+                return user
+
+            except SQLAlchemyNotFound:
+                raise UserNotFoundError
 
     @staticmethod
     async def upload_message(db: AsyncSession, authorID, recipientID, subject, body):
@@ -69,17 +78,16 @@ class UserService:
             error(ex)
             return "-1"
 
-    @staticmethod
-    async def update_user(data: UpdateStats):
-        result = UsersRepository().update(data.id, data.dict(exclude_unset=True))
+    async def update_user(self, data: UpdateStats):
+        result = await self.ctx.database.users.update(data.id, data.dict(exclude_unset=True))
         return result
 
     @staticmethod
-    async def login_user(userName: str, password: str) -> Any:
+    async def login_user(ctx: 'abc.AbstractContext', userName: str, password: str) -> Any:
         """
         Logic of user login
         """
-        user = (await UsersRepository.find_byfield(UsersModel.userName == userName)).scalars().first()
+        user = (await ctx.database.users.find_byfield(UsersModel.userName == userName)).first()
         if user is None:
             raise InvalidCreditionalsError
         else:

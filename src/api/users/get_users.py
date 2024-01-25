@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
-from src.services.user import UserService
-from logger import info
+
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

@@ -1,14 +1,10 @@
-from datetime import datetime
+from fastapi import APIRouter, Form, HTTPException
 
-from fastapi import APIRouter, Form, Depends, HTTPException
-from fastapi.responses import PlainTextResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from config import system
 from src.objects.schemas import UploadPost
 from src.services.comments import PostCommentsService
-from src.utils.crypt import checkValidGJP2
+from src.utils.security import checkValidGJP2
 from src.utils.gdform import formatted_date
+from src.depends.context import Context
 
 router = APIRouter(tags=["Posts"])
 
@@ -17,16 +13,17 @@ router = APIRouter(tags=["Posts"])
     "/uploadGJAccComment20.php",
 )
 async def upload_post(
+    ctx: Context,
     accountID: int = Form(),
     comment: str = Form(),
     gjp2: str = Form(),
 ):
     timestamp = formatted_date()
-    if await checkValidGJP2(id=accountID, gjp2=gjp2):
+    if await checkValidGJP2(ctx, id=accountID, gjp2=gjp2):
         post_object = UploadPost(
             accountID=accountID, content=comment, timestamp=timestamp
         )
-        await PostCommentsService().upload_post(data=post_object)
+        await PostCommentsService(ctx).upload_post(data=post_object)
         return "1"
     else:
         raise HTTPException(401, "удачи!!!")

@@ -4,16 +4,19 @@ from types import FunctionType
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.models
-from src.depends.comments import CommentsModel, CommentsRepository
 from config import system
 from src.helpers.commands import Commands
 from src.helpers.rate import Difficulty
-from src.models import CommentsModel, LevelModel, PostsModel
+from src.models import CommentsModel
 from src.objects.schemas import UploadComments, UploadPost
 from src.services.user import UserService
 from src.utils.crypt import base64_decode
-from src.depends.posts import PostsModel, PostsRepository
+from src.depends.posts import PostsModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import src.abstract.context as abc
+
 
 def methods(cls):
     result = []
@@ -27,11 +30,14 @@ command_list = methods(Commands)
 
 
 class CommentsService:
-    @staticmethod
-    async def get_comments(level_id, page: int):
+
+    def __init__(self, ctx: 'abc.AbstractContext'):
+        self.ctx = ctx
+
+    async def get_comments(self, level_id, page: int):
         comments = (
             (
-                await CommentsRepository.find_bySTMT(
+                await self.ctx.database.comments.find_bySTMT(
                     select(CommentsModel)
                     .filter(CommentsModel.levelID == level_id)
                     .order_by(CommentsModel.id.desc())
@@ -39,12 +45,11 @@ class CommentsService:
                     .offset(system.page * page)
                 )
             )
-            .scalars()
             .all()
         )
         count = len(
             (
-                await CommentsRepository.find_byfield(CommentsModel.levelID == level_id)
+                await self.ctx.database.comments.find_byfield(CommentsModel.levelID == level_id)
             )
             .scalars()
             .all()
@@ -54,8 +59,7 @@ class CommentsService:
         else:
             return {"status": "error", "details": "comments not found"}
 
-    @classmethod
-    async def upload_comments(cls, data: UploadComments) -> dict:
+    async def upload_comments(self, data: UploadComments) -> dict:
         try:
             content = base64_decode(data.comment)
             print(content)
@@ -76,14 +80,15 @@ class CommentsService:
                         (await UserService().get_user_byid(data.accountID))
                     )["database"].userName,
                 )
-                await CommentsRepository.add_one(db_comment)
+                await ctx.database.comments.add_one(db_comment)
+                await ctx.commit()
                 return {"status": "ok", "type": "comment", "data": db_comment}
         except Exception as e:
             return {"status": "error", "details": e}
 
     @staticmethod
     async def commands_handler(
-        data: str, levelID: int, authorID: int, db: AsyncSession
+            data: str, levelID: int, authorID: int, db: AsyncSession
     ) -> bool:
         data = data.split(" ")
         name = data[0]
@@ -189,38 +194,42 @@ class CommentsService:
 
 
 class PostCommentsService:
-    @staticmethod
-    async def upload_post(data: UploadPost):
-        db_post = PostsModel(
-            accountID=data.accountID, content=data.content, timestamp=data.timestamp
-        )
 
-        await PostsRepository.add_one(db_post)
-        return db_post
+    def __init__(self, ctx: 'abc.AbstractContext'):
+        self.ctx = ctx
 
-    @staticmethod
-    async def delete_post(postID, db: AsyncSession):
+    async def upload_post(self, data: UploadPost):
+        async with self.ctx:
+            db_post = PostsModel(
+                accountID=data.accountID, content=data.content, timestamp=data.timestamp
+            )
+            self.ctx.console.info("Uploading post")
+            await self.ctx.database.posts.add_one(db_post)
+            await self.ctx.commit()
+            return db_post
+
+    async def delete_post(self, postID):
         db_level = (
             (await db.execute(select(PostsModel).filter(PostsModel.id == postID)))
             .scalars()
             .first()
         )
+        await self.ctx.database.posts.find_byid(postID)
         await db.delete(db_level)
         await db.commit()
 
-    @staticmethod
-    async def get_post(usrid: int, page: int):
+    async def get_post(self, usrid: int, page: int):
         offset = int(page) * 10
         stmt = select(PostsModel).filter(PostsModel.accountID == usrid)
         count = len(
-            (await PostsRepository.find_bySTMT(stmt)).scalars().all()
+            (await self.ctx.database.posts.find_bySTMT(stmt)).all()
         )
         stmt2 = select(PostsModel).filter(PostsModel.accountID == usrid).limit(10).offset(offset).order_by(
             PostsModel.id.desc()
         )
         return {
             "database": (
-                (await PostsRepository.find_bySTMT(stmt2)).scalars().all()
+                (await self.ctx.database.posts.find_bySTMT(stmt2)).all()
             ),
             "count": count,
         }

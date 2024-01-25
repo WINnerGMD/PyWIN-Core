@@ -2,7 +2,6 @@ import bcrypt
 import base64
 import itertools
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.depends.user import UsersRepository, UsersModel
 from hashlib import sha1
 
 
@@ -31,37 +30,8 @@ async def sha1_hash(data, salt) -> str:
     return hashed_string
 
 
-async def checkValidGJP2(id: int, gjp2: str) -> bool:
-    """
-    Check Geometry Dash Password 2
-    """
-
-    try:
-        user = await UsersRepository.find_byid(id)
-        if user.passhash == gjp2:
-            return True
-        else:
-            return False
-    except:
-        return False
 
 
-async def checkValidGJP2byName(name: str, gjp2: str) -> bool:
-    """
-      Check Geometry Dash Password 2
-      """
-
-    try:
-        user: UsersModel = await UsersRepository().find_byfield(UsersModel.userName == name)
-        if user is not None:
-            if user.passhash == gjp2:
-                return True
-            else:
-                return False
-        else:
-            raise Exception("user not found")
-    except:
-        return False
 
 
 def return_hash(string: str, salt: str) -> str:

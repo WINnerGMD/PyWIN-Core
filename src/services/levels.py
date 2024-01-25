@@ -1,149 +1,111 @@
-import numpy
-from sqlalchemy import select
+from sqlalchemy import select, func, and_, or_, case
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 import numpy as np
 from src.helpers.rate import Difficulty, Rate
 from src.objects.schemas import UploadLevel
 from src.schemas.levels.service.get import GetLevel
-from src.depends.user import UsersRepository
 from src.models import LevelModel, GauntletsModel, MapPacksModel
 from src.utils.gdform import formatted_date
 from config import system
-from src.depends.level import LevelsRepository
 from src.schemas.levels.errors import *
+from src.objects.levelObject import LevelObject
+from typing import TYPE_CHECKING
+from src.schemas.errors import SQLAlchemyNotFound
+
+if TYPE_CHECKING:
+    import src.abstract.context as abc
+    import src.objects as objects
 
 
 class LevelService:
-    @staticmethod
-    async def upload_level(data: UploadLevel):
-        AuthorObj = await UsersRepository().find_byid(data.accountID)
-        upload_time = formatted_date()
-        db_lvl = LevelModel(
-            name=data.levelName,
-            desc=data.levelDesc,
-            version=data.levelVersion,
-            authorID=data.accountID,
-            authorName=AuthorObj.userName,
-            gameVersion=data.gameVersion,
-            AudioTrack=data.audioTrack,
-            lenght=data.levelLength,
-            coins=data.coins,
-            user_coins=0,
-            original=data.original,
-            two_players=data.twoPlayer,
-            song_id=data.songID,
-            is_ldm=data.ldm,
-            password=data.password,
-            upload_date=upload_time,
-            LevelString=data.levelString,
-        )
-        await LevelsRepository.add_one(db_lvl)
 
-        return {"status": "ok", "level": db_lvl}
+    def __init__(self, ctx: 'abc.AbstractContext'):
+        self.ctx = ctx
+
+    async def upload_level(self, data: UploadLevel):
+        async with self.ctx:
+            AuthorObj = await self.ctx.database.users.find_byid(data.accountID)
+            upload_time = formatted_date()
+            db_lvl = LevelModel(
+                name=data.levelName,
+                desc=data.levelDesc,
+                version=data.levelVersion,
+                authorID=data.accountID,
+                authorName=AuthorObj.userName,
+                gameVersion=data.gameVersion,
+                AudioTrack=data.audioTrack,
+                lenght=data.levelLength,
+                coins=data.coins,
+                user_coins=0,
+                original=data.original,
+                two_players=data.twoPlayer,
+                song_id=data.songID,
+                is_ldm=data.ldm,
+                password=data.password,
+                upload_date=upload_time,
+                LevelString=data.levelString,
+            )
+            await self.ctx.database.levels.add_one(db_lvl)
+            await self.ctx.commit()
+            return {"status": "ok", "level": db_lvl}
 
     # except Exception as e:
     #     return {"status": "error", "details": e}
 
+    async def test_get_levels(self, data: GetLevel):
+        async with self.ctx:
+            page = data.page * system.page if data.page is not None else 0
 
-    @staticmethod
-    async def test_get_levels(data: GetLevel):
-            if data.page is not None:
-                page = data.page * system.page
-            else:
-                page = 0
+            difficulty_mapping = {
+                1: Difficulty.easy_Demon.value,
+                2: Difficulty.medium_Demon.value,
+                3: Difficulty.hard_Demon.value,
+                4: Difficulty.insane_Demon.value,
+                5: Difficulty.extreme_Demon.value
+            }
 
-            if (difficulty := data.difficulty) == -1:
-                difficulty = 0
-            elif difficulty == -2:
-                match data.demonFilter:
-                    case 1:
-                        difficulty = Difficulty.easy_Demon.value
-                    case 2:
-                        difficulty = Difficulty.medium_Demon.value
-                    case 3:
-                        difficulty = Difficulty.hard_Demon.value
-                    case 4:
-                        difficulty = Difficulty.insane_Demon.value
-                    case 5:
-                        difficulty = Difficulty.extreme_Demon.value
-
-            "fuck"
-            result = select(LevelModel)
-
-            if data.difficulty != None:
-                match data.difficulty.value:
-                    case -1:
-                        result = result.filter(LevelModel.difficulty == 0)
-                    case -2:
-                        match data.demonFilter:
-                            case 1:
-                                difficulty = Difficulty.easy_Demon.value
-                                result = result.filter(
-                                    LevelModel.difficulty == difficulty
-                                )
-                            case 2:
-                                difficulty = Difficulty.medium_Demon.value
-                                result = result.filter(
-                                    LevelModel.difficulty == difficulty
-                                )
-                            case 3:
-                                difficulty = Difficulty.hard_Demon.value
-                                result = result.filter(
-                                    LevelModel.difficulty == difficulty
-                                )
-                            case 4:
-                                difficulty = Difficulty.insane_Demon.value
-                                result = result.filter(
-                                    LevelModel.difficulty == difficulty
-                                )
-                            case 5:
-                                difficulty = Difficulty.extremeDemon.value
-                                result = result.filter(
-                                    LevelModel.difficulty == difficulty
-                                )
-                            case _:
-                                result = result.filter(LevelModel.difficulty > 5)
+            query = select(LevelModel)
+            if data.difficulty is not None:
+                match data.difficulty:
+                    case Difficulty.gd_na:
+                        query = query.where(LevelModel.difficulty == 0)
+                    case Difficulty.gd_demon:
+                        query = query.where(LevelModel.difficulty == difficulty_mapping.get(data.demonFilter, 6))
                     case _:
-                        result = result.filter(
-                            LevelModel.difficulty == Difficulty(data.difficulty).value
-                        )
-            match data.rate:
-                case Rate.NoRate:
-                    result = result.filter(LevelModel.rate >= 0)
-                case Rate.Feature:
-                    result = result.filter(LevelModel.rate == 1)
-                case Rate.Epic:
-                    result = result.filter(LevelModel.rate == 2)
-                case tuple:
-                    result = result.filter(LevelModel.rate > 0)
+                        query = query.where(LevelModel.difficulty == Difficulty(data.difficulty).value)
+
+            if isinstance(data.rate, tuple):
+                query = query.where(LevelModel.rate > 0)
+            elif data.rate == Rate.NoRate:
+                query = query.where(LevelModel.rate >= 0)
+            elif data.rate in [Rate.Feature, Rate.Epic]:
+                query = query.where(LevelModel.rate == data.rate)
 
             match data.searchType:
                 case 0:
-                    result = result.filter(
-                        LevelModel.name.like(f"%{data.string}%")
-                    ).order_by(
-                        LevelModel.likes.desc(),
-                        LevelModel.downloads.desc(),
-                    )
+                    query = query.where(LevelModel.name.like(f"%{data.string}%"))
                 case 2:
-                    result = result.order_by(
-                        LevelModel.likes.desc(),
-                        LevelModel.downloads.desc(),
-                    )
+                    query = query.order_by(LevelModel.likes.desc(), LevelModel.downloads.desc())
                 case 4:
-                    result = result.order_by(LevelModel.id.desc())
+                    query = query.order_by(LevelModel.id.desc())
                 case 5:
-                    result = result.filter(LevelModel.authorID == data.string)
+                    query = query.where(LevelModel.authorID == data.string)
                 case 6:
-                    result = result.filter(LevelModel.rate == 1)
+                    query = query.where(LevelModel.rate == 1)
                 case 11:
-                    result = result.filter(LevelModel.stars > 0)
+                    query = query.where(LevelModel.stars > 0)
                 case 16:
-                    result = result.filter(LevelModel.rate >= 1)
+                    query = query.where(LevelModel.rate >= 1)
 
-            count = len(await LevelsRepository.find_all())
-            database = np.array((await LevelsRepository.find_bySTMT(result.offset(page).limit(system.page))).scalars().all())
-            if database.size is not 0:
+            if data.lenght is not None:
+                query = query.where(LevelModel.length == data.length)
+
+            count = await self.ctx.database.levels.count()
+            database = await self.ctx.database.levels.find_bySTMT(query.offset(page).limit(system.page))
+            database = np.array(database.all()) if database else np.array([])
+
+            if database.size:
                 return {"status": "ok", "database": database, "count": count}
             else:
                 raise LevelNotFoundError
@@ -184,13 +146,12 @@ class LevelService:
         database = (await db.execute(query.limit(10).offset(page * 10))).scalars().all()
         return {"database": database, "count": count}
 
-    @staticmethod
-    async def get_level_buid(levelID):
-        levels = await LevelsRepository().find_byfield(LevelModel.id == levelID)
-        if levels is not None:
-            return {"status": "ok", "database": levels}
-        else:
-            return {"status": "error", "details": "level not found"}
+    async def get_level_buid(self, levelID: int) -> LevelObject:
+        try:
+            levels = LevelObject(await self.ctx.database.levels.find_byfield(LevelModel.id == levelID), self.ctx)
+            return levels
+        except SQLAlchemyError as e:
+            raise LevelNotFoundError
 
     @staticmethod
     async def get_total_levels(db: AsyncSession):
