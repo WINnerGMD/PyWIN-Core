@@ -1,0 +1,37 @@
+version: "3.7"
+services:
+  db:
+      image: postgres
+      restart: always
+      environment:
+        POSTGRES_USER: AbstractUser
+        POSTGRES_PASSWORD: AbstractPass
+        POSTGRES_DB: AbstractGDPS
+  redis:
+    image: redis:7
+    container_name: redis_app
+    restart: always
+    command: redis-server
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - ${REDIS_DIR}:/data
+
+  app:
+    image: pywincore:latest
+    container_name: fastapi_app
+    ports:
+      - "${GDPS_PORT}:${GDPS_PORT}"
+    depends_on:
+      - db
+      - redis
+    volumes:
+          - ${GDPS_DIR}:/data
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
