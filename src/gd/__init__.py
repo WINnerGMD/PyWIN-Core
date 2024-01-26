@@ -8,11 +8,9 @@ from .music.musix import router as router_music
 from .rewards.chest import router as router_chest
 from .lists.lists import router as router_lists
 from .scores.scores import router as router_scores
-from plugins.origins import router as router_origins
 
 
 def init_routers(gd: FastAPI) -> None:
-    gd.include_router(router_origins)
     gd.include_router(init_accounts())
     gd.include_router(router_levels)
     gd.include_router(init_comments())

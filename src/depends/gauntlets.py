@@ -1,5 +1,5 @@
-from src.repositories.database import SQLAlchemyRepo
-from src.models.gauntlets import GauntletsModel
+from ..repositories.database import SQLAlchemyRepo
+from ..models.gauntlets import GauntletsModel
 """For easy import"""
 
 

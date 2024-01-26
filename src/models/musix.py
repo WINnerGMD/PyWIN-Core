@@ -1,4 +1,4 @@
-from src.database import Base
+from .. database import Base
 
 
 class MusixModel(Base):

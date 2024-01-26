@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.schemas.scores.get import Leaderboard
+from ...schemas.scores.get import Leaderboard
 router = APIRouter(prefix="/scores", tags=["Scores"])
 
 

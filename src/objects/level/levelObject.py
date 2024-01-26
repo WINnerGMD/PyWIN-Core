@@ -1,11 +1,11 @@
 import numpy
 
-from src.interfaces import UserInterface
-from src.objects.GDObject import GDObject
+from ... interfaces import UserInterface
+from ... objects.GDObject import GDObject
 import numpy as np
-from src.models import LevelModel
-from src.utils.crypt import sha1_hash
-from src.utils.gdform import gd_dict_str
+from ... models import LevelModel
+from ... utils.crypt import sha1_hash
+from ... utils.gdform import gd_dict_str
 
 
 class LevelObject(GDObject):

@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Type
-from src.repositories.database import AbstractSQLAlchemy
-import src.services as services
+from ..repositories.database import AbstractSQLAlchemy
+from ...src import services as services
 from .logger import AbstractConsole
 
 

@@ -1,5 +1,5 @@
-from src.repositories.database import SQLAlchemyRepo
-from src.models.dailychests import ChestsModel
+from ..repositories.database import SQLAlchemyRepo
+from ..models.dailychests import ChestsModel
 
 """For easy import"""
 

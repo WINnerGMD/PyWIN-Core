@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from .api import init_api
-from .gd import init_gd
-from src.database import Base, engine
+from . api import init_api
+from . gd import init_gd
+from . database import Base, engine
 
 
 def init_migrations(app: FastAPI) -> None:

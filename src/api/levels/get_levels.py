@@ -2,11 +2,11 @@ import numpy
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.errors import GenericError
-from src.schemas.levels.model import APILevelSchema
-from src.schemas.levels.service.get import GetLevel
-from src.schemas.levels.errors import LevelNotFoundError
-from src.errors import GenericError
+from ... errors import GenericError
+from ... schemas.levels.model import APILevelSchema
+from ... schemas.levels.service.get import GetLevel
+from ... schemas.levels.errors import LevelNotFoundError
+from ... errors import GenericError
 router = APIRouter(prefix="/levels", tags=["Levels"])
 
 

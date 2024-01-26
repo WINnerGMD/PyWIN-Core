@@ -1,3 +1,3 @@
-from src.repositories.console import ConsoleRepository
+from ..repositories.console import ConsoleRepository
 
 Console = ConsoleRepository()

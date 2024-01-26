@@ -2,6 +2,7 @@ import json
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
+from .depends.logs import Console
 
 load_dotenv(".env")
 
@@ -50,7 +51,7 @@ class Redis(BaseModel):
 
 def parse_config():
     try:
-        with open("./config.json", "r") as config:
+        with open(os.path.join(os.path.dirname(__file__), "config.json"), "r") as config:
             json_object = json.load(config)
             if json_object["use_env"]:
                 parsedb = {
@@ -97,12 +98,15 @@ def parse_config():
                 database = Database(**json_object["database"])
                 system = System(**json_object["system"])
                 redis = Redis(**json_object["redis"])
-                return {"database": database, "system": system, "redis": redis, "small_chest": chest_small, "big_chest": chest_big}
+                return {"database": database, "system": system, "redis": redis, "small_chest": chest_small,
+                        "big_chest": chest_big}
     except KeyError as ex:
         print(ex)
 
     except FileNotFoundError as ex:
         print(ex)
+    except Exception as ex:
+        print("ex")
 
 
 conf = parse_config()
@@ -112,3 +116,48 @@ system = conf["system"]
 redis = conf["redis"]
 small_chest = conf["small_chest"]
 big_chest = conf["big_chest"]
+
+
+# class ConfigEdit():
+#     __slots__ = ("database", "system", "redis", "social")
+#
+#     def __init__(self):
+#         pass
+#
+#     def __enter__(self):
+#         with open(os.path.join(os.path.dirname(__file__), "config.json"), "a") as file:
+#             self.file = file
+#             self.config = json.loads(file.read())
+#         return self
+#
+#     def __setattr__(self, key, value):
+#         try:
+#             self.config[key] = value
+#         except Exception as ex:
+#             pass
+#
+#     def __getattr__(self, key: str) -> int | str:
+#         print("suka")
+#         try:
+#             return self.config[key]
+#         except Exception as ex:
+#             pass
+#
+#     def __exit__(self, exc_type, exc_val, exc_tb):
+#         if exc_type is None:
+#             self.write(self.config)
+#         else:
+#             Console.alert("Error on config editing")
+#
+#     @staticmethod
+#     def open() -> dict:
+#         with open(os.path.join(os.path.dirname(__file__), "config.json"), "r") as file:
+#             json_data = json.loads(file.read())
+#             Console.info(f"Opened config file")
+#         return json_data
+#
+#     @staticmethod
+#     def write(config: dict) -> None:
+#         with open(os.path.join(os.path.dirname(__file__), "config.json"), "w") as file:
+#             Console.info(f"Edited config file")
+#             file.write(json.dumps(config, indent=4))

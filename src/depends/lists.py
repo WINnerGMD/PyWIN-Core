@@ -1,5 +1,5 @@
-from src.repositories.database import SQLAlchemyRepo
-from src.models.lists import ListModel
+from .. repositories.database import SQLAlchemyRepo
+from .. models.lists import ListModel
 
 """For easy import"""
 
