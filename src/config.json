@@ -1,0 +1,83 @@
+{
+    "database": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "gdps_suka",
+        "password": "suka",
+        "database": "pywinbd"
+    },
+    "redis": {
+        "port": 6379,
+        "ttl": 10
+    },
+    "logger": {
+        "info": true,
+        "warning": true,
+        "error": true
+    },
+    "social": {
+        "GDPS_name": "suka"
+    },
+    "system": {
+        "pluginloader": true,
+        "auto_verified": true,
+        "use_asade": true,
+        "debug": true,
+        "default_role": 1,
+        "page": 5,
+        "demonRate": 0,
+        "leaderboards_limit": 5,
+        "lang": "en",
+        "path": "/winnertestss"
+    },
+    "json:api": {
+        "isWorked": true,
+        "path": "/v2"
+    },
+    "gd:api": {
+        "isWorked": true,
+        "path": "/database"
+    },
+    "musix": {
+        "use_musix": false,
+        "musix_token": "",
+        "asade_connect": false
+    },
+    "chests": {
+        "small": {
+            "max_mana": 100,
+            "min_mana": 20,
+            "max_diamonds": 1,
+            "min_diamonds": 0,
+            "shards": {
+                "fire": true,
+                "ice": true,
+                "poison": true,
+                "shadow": true,
+                "lava": true
+            }
+        },
+        "big": {
+            "max_mana": 500,
+            "min_mana": 50,
+            "max_diamonds": 3,
+            "min_diamonds": 0,
+            "shards": {
+                "fire": true,
+                "ice": true,
+                "poison": true,
+                "shadow": true,
+                "lava": true
+            }
+        }
+    },
+    "asade": {
+        "token": "...",
+        "verifed_users": 1
+    },
+    "danger": {
+        "default-salt": ""
+    },
+    "use_env": false,
+    "db": "MySQL"
+}
