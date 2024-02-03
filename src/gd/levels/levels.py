@@ -4,7 +4,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import PlainTextResponse
 from fastapi_events.dispatcher import dispatch
 
-from events import Events
+from .... events import Events
 from ... helpers.rate import Difficulty
 from ... objects.levelObject import LevelGroup, LevelObject
 from ... depends.context import Context
