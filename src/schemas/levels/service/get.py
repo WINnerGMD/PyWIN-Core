@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from src.helpers.rate import Difficulty, Rate
-
+from src.objects.level.levelObject import LevelObject
 
 class GetLevel(BaseModel):
     lenght: int | None
@@ -15,3 +15,8 @@ class GetLevel(BaseModel):
     coins: int | None
     song: int | None
     customSong: int | None
+
+
+class GetLevelResponse(BaseModel):
+    database: str
+    count: int

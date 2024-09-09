@@ -15,10 +15,10 @@ class LevelObject(GDObject):
         self.database = database
         self.count = count
 
-    def __len__(self) -> str:
+    def __len__(self) -> int:
         return self.database.lenght
 
-    async def render(self, is_gauntlet: bool = False):
+    async def render(self, page: int, is_gauntlet: bool = False):
         levelsDataHash = ""
         levelData = np.array([])
         userString = ""

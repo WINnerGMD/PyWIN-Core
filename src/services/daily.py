@@ -1,11 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models import FeaturedLevelsModel
-
+from src.abstract.context import AbstractContext
 
 class DailyService:
-    @staticmethod
-    async def getCountDailyLevels(db: AsyncSession) -> int:
+    
+    def __init__(self, ctx: AbstractContext):
+        self.ctx = ctx
+    async def getCountDailyLevels(self) -> int:
         """Total count of Daily levels"""
 
         models = (

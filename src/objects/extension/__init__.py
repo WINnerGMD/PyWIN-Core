@@ -2,3 +2,5 @@
 now i hard-learning C because I want to write high-quality code right away"""
 
 """Аnd prepare the PyWIN loader for the first start (for C compilation)"""
+
+# TODO: Cython
