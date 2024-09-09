@@ -77,6 +77,7 @@ async def updateGJUserScore22(
     color2: int = Form(),
     color3: int = Form()
 ):
+    print(stars)
     async with context:
         if await checkValidGJP2(ctx=context, id=accountID, gjp2=gjp2):
             iconkit = {

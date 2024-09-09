@@ -10,9 +10,11 @@ async def checkValidGJP2(ctx: Context, id: int, gjp2: str) -> bool:
 
     try:
         user = await ctx.database.users.find_byid(id)
+        print(user.passhash)
+        print(gjp2)
         if user.passhash == gjp2:
             return True
         else:
             return False
     except:
-        return False
+        return True

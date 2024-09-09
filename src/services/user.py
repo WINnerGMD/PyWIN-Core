@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from src.schemas.users.errors import *
 from src.schemas.errors import SQLAlchemyNotFound
 from src.objects.userObject import UserObject
+from src.utils.crypt import sha1_hash
 from typing import Any
 
 if TYPE_CHECKING:
@@ -19,17 +20,17 @@ class UserService:
     def __init__(self, ctx: 'abc.AbstractContext'):
         self.ctx = ctx
 
-    @staticmethod
+
     async def register_user(
-            userName: str, password: str, mail: str, ip: str,
+            self, userName: str, password: str, mail: str, ip: str,
     ) -> None:
-        async with ctx:
+        async with self.ctx:
             request = UsersModel.userName == userName
             request2 = UsersModel.mail == mail
-            if (await ctx.database.users.find_byfield(request)).first() is not None:
+            if (await self.ctx.database.users.find_byfield(request)).first() is not None:
                 raise UsernameIsAlreadyInUseError
 
-            elif (await ctx.database.users.find_byfield(request2)).first() is not None:
+            elif (await self.ctx.database.users.find_byfield(request2)).first() is not None:
                 raise EmailIsAlreadyInUseError
 
             else:
@@ -50,9 +51,9 @@ class UserService:
                         mail=mail,
                         ip=ip,
                     )
-                ctx.console.alert("SUKA")
-                await ctx.database.users.add_one(db_user)
-                await ctx.commit()
+                self.ctx.console.alert("SUKA")
+                await self.ctx.database.users.add_one(db_user)
+                await self.ctx.commit()
 
     async def get_user_byid(self, id: int) -> UserObject:
         async with self.ctx:
@@ -79,25 +80,28 @@ class UserService:
             return "-1"
 
     async def update_user(self, data: UpdateStats):
+        print(data)
+        print(data.dict(exclude_unset=True))
         result = await self.ctx.database.users.update(data.id, data.dict(exclude_unset=True))
+        print(result)
         return result
 
-    @staticmethod
-    async def login_user(ctx: 'abc.AbstractContext', userName: str, password: str) -> Any:
+    async def login_user(self, userName: str, password: str) -> Any:
         """
         Logic of user login
         """
-        user = (await ctx.database.users.find_byfield(UsersModel.userName == userName)).first()
-        if user is None:
-            raise InvalidCreditionalsError
-        else:
-            if user.passhash == password:
-                if user.verified:
-                    return user
-                else:
-                    raise AccountIsDisabledError
-            else:
+        async with self.ctx:
+            user = (await self.ctx.database.users.find_byfield(UsersModel.userName == userName)).first()
+            if user is None:
                 raise InvalidCreditionalsError
+            else:
+                if user.passhash == password:
+                    if user.verified:
+                        return user
+                    else:
+                        raise AccountIsDisabledError
+                else:
+                    raise InvalidCreditionalsError
 
     @staticmethod
     async def get_users_byName(name, db: AsyncSession):

@@ -24,6 +24,7 @@ async def chest(
     rewardType: int = Form(default=0),
     # gjp: str = Form(),
     device: str = Form(..., alias="udid"),
+    context: ,
 ):
         resultchk = xor_cipher(base64_decode(chk[5:]), "59182")
 

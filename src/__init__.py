@@ -15,7 +15,7 @@ def init_migrations(app: FastAPI) -> None:
 
 
 def init_apis(app: FastAPI) -> None:
-    app.mount("/winnertestss", init_gd())
+    app.mount("/winners", init_gd())
     app.mount("/v2", init_api())
 
 

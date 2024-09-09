@@ -1,3 +1,5 @@
+from errno import ECHILD
+
 from sqlalchemy import select, func, and_, or_, case
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,38 +24,42 @@ class LevelService:
 
     def __init__(self, ctx: 'abc.AbstractContext'):
         self.ctx = ctx
-
-    async def upload_level(self, data: UploadLevel):
-        async with self.ctx:
-            AuthorObj = await self.ctx.database.users.find_byid(data.accountID)
-            upload_time = formatted_date()
-            db_lvl = LevelModel(
-                name=data.levelName,
-                desc=data.levelDesc,
-                version=data.levelVersion,
-                authorID=data.accountID,
-                authorName=AuthorObj.userName,
-                gameVersion=data.gameVersion,
-                AudioTrack=data.audioTrack,
-                lenght=data.levelLength,
-                coins=data.coins,
-                user_coins=0,
-                original=data.original,
-                two_players=data.twoPlayer,
-                song_id=data.songID,
-                is_ldm=data.ldm,
-                password=data.password,
-                upload_date=upload_time,
-                LevelString=data.levelString,
-            )
-            await self.ctx.database.levels.add_one(db_lvl)
-            await self.ctx.commit()
-            return {"status": "ok", "level": db_lvl}
-
-    # except Exception as e:
-    #     return {"status": "error", "details": e}
+    async def upload_level(self, data: UploadLevel, gjp: str):
+        try:
+            async with self.ctx:
+                if (await self.ctx.database.users.find_byid(data.accountID)).passhash == gjp:
+                    AuthorObj = await self.ctx.database.users.find_byid(data.accountID)
+                    upload_time = formatted_date()
+                    db_lvl = LevelModel(
+                            name=data.levelName,
+                            desc=data.levelDesc,
+                            version=data.levelVersion,
+                            authorID=data.accountID,
+                            authorName=AuthorObj.userName,
+                            gameVersion=data.gameVersion,
+                            AudioTrack=data.audioTrack,
+                            lenght=data.levelLength,
+                            coins=data.coins,
+                            user_coins=0,
+                            original=data.original,
+                            two_players=data.twoPlayer,
+                            song_id=data.songID,
+                            is_ldm=data.ldm,
+                            password=data.password,
+                            upload_date=upload_time,
+                            LevelString=data.levelString,
+                        )
+                    await self.ctx.database.levels.add_one(db_lvl)
+                    await self.ctx.commit()
+                    return {"status": "ok", "level": db_lvl}
+        except Exception as ex:
+            print(ex)
 
     async def test_get_levels(self, data: GetLevel):
+        """
+        :param GetLevelSchema:
+        Service
+        """
         async with self.ctx:
             page = data.page * system.page if data.page is not None else 0
 
@@ -171,3 +177,5 @@ class LevelService:
         )
         await db.delete(db_level)
         await db.commit()
+
+

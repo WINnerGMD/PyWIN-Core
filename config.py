@@ -52,6 +52,7 @@ def parse_config():
     try:
         with open("./config.json", "r") as config:
             json_object = json.load(config)
+            print(json_object["use_env"])
             if json_object["use_env"]:
                 parsedb = {
                     "host": os.environ.get("POSTGRES_HOST"),
@@ -97,6 +98,7 @@ def parse_config():
                 database = Database(**json_object["database"])
                 system = System(**json_object["system"])
                 redis = Redis(**json_object["redis"])
+                print(system)
                 return {"database": database, "system": system, "redis": redis, "small_chest": chest_small, "big_chest": chest_big}
     except KeyError as ex:
         print(ex)
@@ -112,3 +114,5 @@ system = conf["system"]
 redis = conf["redis"]
 small_chest = conf["small_chest"]
 big_chest = conf["big_chest"]
+
+print(system)

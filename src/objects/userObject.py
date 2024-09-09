@@ -13,7 +13,10 @@ if TYPE_CHECKING:
 class UserObject:
     def __init__(self, service: UsersModel):
         self.service = service
-
+    def __repr__(self):
+        return "hi repr"
+    def __str__(self):
+        return "hi str"
     async def request_access(self):
         return self.service["permissions"].typeMod
 
@@ -101,7 +104,9 @@ class UserGroup:
     async def GDGetUserGroup(self):
         users_string = []
         count = 1
-        for user in self.service["database"]:
+        for place in self.service.leaders:
+            user = place.user
+            print(user)
             iconkit = user.iconkits
             users_string.append(
                 gd_dict_str(

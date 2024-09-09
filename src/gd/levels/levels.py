@@ -12,13 +12,13 @@ from src.objects.schemas import UploadLevel
 from src.schemas.levels.service.get import GetLevel
 from src.services.daily import DailyService
 from src.services.levels import LevelService
-from src.utils.security import checkValidGJP2
 from src.schemas.levels.errors import *
 router = APIRouter(tags=["Levels"])
 
 
 @router.post("/uploadGJLevel21.php")
 async def upload_level(
+        context: Context,
         levelString: str = Form(),
         accountID: int = Form(),
         levelName: str = Form(),
@@ -37,38 +37,31 @@ async def upload_level(
         gameVersion: int = Form(),
         gjp2: str = Form(),
 ):
-
-    if await checkValidGJP2(accountID, gjp2=gjp2):
-        SystemObj = UploadLevel(
-            levelString=levelString,
-            accountID=accountID,
-            levelName=levelName,
-            levelDesc=levelDesc,
-            levelVersion=levelVersion,
-            levelLength=levelLength,
-            audioTrack=audioTrack,
-            password=password,
-            original=original,
-            twoPlayer=twoPlayer,
-            songID=songID,
-            objects=objects,
-            coins=coins,
-            requestedStars=requestedStars,
-            ldm=ldm,
-            gameVersion=gameVersion,
-        )
-        service = await LevelService().upload_level(data=SystemObj)
-        # dispatch(Events.NewLevel, LevelObject(service))
-        if service["status"] == "ok":
-            print("its okey")
-            return service["level"].id
-        else:
-            error(service["details"])
-            return "-1"
+    SystemObj = UploadLevel(
+                levelString=levelString,
+                accountID=accountID,
+                levelName=levelName,
+                levelDesc=levelDesc,
+                levelVersion=levelVersion,
+                levelLength=levelLength,
+                audioTrack=audioTrack,
+                password=password,
+                original=original,
+                twoPlayer=twoPlayer,
+                songID=songID,
+                objects=objects,
+                coins=coins,
+                requestedStars=requestedStars,
+                ldm=ldm,
+                gameVersion=gameVersion,
+    )
+    service = await LevelService(context).upload_level(data=SystemObj, gjp=gjp2)
+    if service["status"] == "ok":
+        print("its okey")
+        return str(service["level"].id)
     else:
-        print("ups")
+        error(service["details"])
         return "-1"
-
 
 @router.post("/getGJLevels21.php")
 # @cache(

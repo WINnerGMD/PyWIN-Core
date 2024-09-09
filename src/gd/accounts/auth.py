@@ -28,8 +28,8 @@ async def register_account(
      Return status code
     """
     try:
-        await UserService().register_user(
-            userName=userName, password=password, mail=email, ip=request.client.host, ctx=context
+        await UserService(ctx=context).register_user(
+            userName=userName, password=password, mail=email, ip=request.client.host
         )
         return PlainTextResponse("1", 200)
 
@@ -52,7 +52,7 @@ async def login(
      Return userid or error code
     """
     try:
-        user: UsersModel = await UserService.login_user(context, userName, gjp2)
+        user: UsersModel = await UserService(ctx=context).login_user(userName, gjp2)
         return f"{user.id},{user.id}"
 
     # Validate errors

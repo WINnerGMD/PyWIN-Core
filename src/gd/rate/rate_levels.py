@@ -9,7 +9,7 @@ from src.helpers.rate import Difficulty
 router = APIRouter(tags=["rate"], prefix="")
 
 
-@router.post(f"{system.path}/suggestGJStars20.php", response_class=PlainTextResponse)
+@router.post(f"/suggestGJStars20.php", response_class=PlainTextResponse)
 async def suggestGJStars(
     accountID: int = Form(),
     gjp: str = Form(),
@@ -46,7 +46,7 @@ async def suggestGJStars(
                 return "-1"
 
 
-@router.post(f"{system.path}/rateGJStars211.php", response_class=PlainTextResponse)
+@router.post(f"/rateGJStars211.php", response_class=PlainTextResponse)
 async def rate_stars(
     gjp: str = Form(),
     stars: int = Form(),

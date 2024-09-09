@@ -3,7 +3,7 @@
         "host": "localhost",
         "port": 3306,
         "user": "root",
-        "password": "",
+        "password": "root",
         "database": "pywinbd"
     },
     "redis": {
@@ -28,7 +28,7 @@
         "demonRate": 0,
         "leaderboards_limit": 5,
         "lang": "en",
-        "path": "/winnertestss"
+        "path": "/winners"
     },
     "json:api": {
         "isWorked": true,
