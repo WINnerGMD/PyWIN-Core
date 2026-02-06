@@ -167,7 +167,7 @@ async def level_download(
 
 
 
-@router.post("}/deleteGJLevelUser20.php")
+@router.post("/deleteGJLevelUser20.php")
 async def level_delete(
         accountID: int = Form(),
         gjp: str = Form(),

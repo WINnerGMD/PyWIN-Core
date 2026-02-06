@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from sqlalchemy import insert, select, update, func
+from sqlalchemy import insert, select, update, delete, func
 from sqlalchemy.engine import ScalarResult
 from src.schemas.errors import SQLAlchemyNotFound
 from src.abstract.database import AbstractSQLAlchemy
@@ -31,18 +31,9 @@ class SQLAlchemyRepo[T](AbstractSQLAlchemy):
         return model
 
     async def find_all(self) -> list[T]:
-        """
-        Method for get all items from DB
-
-        Return sqlalchemy model
-        """
         stmt = select(self.model)
         res = await self.session.execute(stmt)
-        result = res.scalars().all()
-        if result == []:
-            return result
-        else:
-            raise SQLAlchemyNotFound
+        return list(res.scalars().all())
 
     async def find_byid(self, id: int) -> T:
         """
@@ -97,10 +88,5 @@ class SQLAlchemyRepo[T](AbstractSQLAlchemy):
         await self.session.execute(stmt)
 
     async def delete(self, id: int) -> None:
-        """
-        Method to delete one item
-
-        Return none
-        """
-        stmt = select(self.model).filter(self.model.id == id)
-        await self.session.delete(stmt)
+        stmt = delete(self.model).where(self.model.id == id)
+        await self.session.execute(stmt)

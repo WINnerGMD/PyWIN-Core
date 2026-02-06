@@ -7,16 +7,21 @@
         "database": "pywinbd"
     },
     "redis": {
+        "enabled": true,
         "port": 6379,
         "ttl": 10
+    },
+    "security": {
+        "hash_algorithm": "bcrypt",
+        "bcrypt_rounds": 12
     },
     "logger": {
         "info": true,
         "warning": true,
-        "error": true  
+        "error": true
     },
     "social": {
-        "GDPS_name": "GDCloud" 
+        "GDPS_name": "GDCloud"
     },
     "system": {
         "pluginloader": true,
@@ -69,17 +74,14 @@
                 "shadow": true,
                 "lava": true
             }
-
         }
     },
     "asade": {
         "token": "...",
         "verifed_users": 1
     },
-
     "danger": {
         "default-salt": ""
-
     },
     "use_env": false,
     "db": "MySQL"

@@ -44,8 +44,14 @@ class System(BaseModel):
 
 
 class Redis(BaseModel):
+    enabled: bool
     port: int
     ttl: int
+
+
+class Security(BaseModel):
+    hash_algorithm: str
+    bcrypt_rounds: int
 
 
 def parse_config():
@@ -97,7 +103,7 @@ def parse_config():
                 database = Database(**json_object["database"])
                 system = System(**json_object["system"])
                 redis = Redis(**json_object["redis"])
-                return {"database": database, "system": system, "redis": redis, "small_chest": chest_small, "big_chest": chest_big}
+                return {"database": database, "system": system, "redis": redis, "small_chest": chest_small, "big_chest": chest_big, "security": Security(**json_object["security"])}
     except KeyError as ex:
         print(ex)
 
@@ -112,3 +118,4 @@ system = conf["system"]
 redis = conf["redis"]
 small_chest = conf["small_chest"]
 big_chest = conf["big_chest"]
+security = conf["security"]

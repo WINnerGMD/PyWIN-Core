@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import system
@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from src.schemas.users.errors import *
 from src.schemas.errors import SQLAlchemyNotFound
 from src.objects.userObject import UserObject
+from src.utils.hashing import hash_password, verify_password
 from typing import Any
 
 if TYPE_CHECKING:
@@ -21,38 +22,31 @@ class UserService:
 
     @staticmethod
     async def register_user(
-            userName: str, password: str, mail: str, ip: str,
+            ctx: 'abc.AbstractContext',
+            userName: str, 
+            password: str, 
+            mail: str, 
+            ip: str,
     ) -> None:
-        async with ctx:
-            request = UsersModel.userName == userName
-            request2 = UsersModel.mail == mail
-            if (await ctx.database.users.find_byfield(request)).first() is not None:
-                raise UsernameIsAlreadyInUseError
+        request = UsersModel.userName == userName
+        request2 = UsersModel.mail == mail
+        if (await ctx.database.users.find_byfield(request)).first() is not None:
+            raise UsernameIsAlreadyInUseError
 
-            elif (await ctx.database.users.find_byfield(request2)).first() is not None:
-                raise EmailIsAlreadyInUseError
+        elif (await ctx.database.users.find_byfield(request2)).first() is not None:
+            raise EmailIsAlreadyInUseError
 
-            else:
-                passhash = await sha1_hash(password, "mI29fmAnxgTs")
-                if system.auto_verified:
-                    db_user = UsersModel(
-                        userName=userName,
-                        passhash=passhash,
-                        mail=mail,
-                        ip=ip,
-                        verified=True
-                    )
-
-                else:
-                    db_user = UsersModel(
-                        userName=userName,
-                        passhash=passhash,
-                        mail=mail,
-                        ip=ip,
-                    )
-                ctx.console.alert("SUKA")
-                await ctx.database.users.add_one(db_user)
-                await ctx.commit()
+        else:
+            passhash = hash_password(password)
+            db_user = UsersModel(
+                userName=userName,
+                passhash=passhash,
+                mail=mail,
+                ip=ip,
+                verified=system.auto_verified
+            )
+            await ctx.database.users.add_one(db_user)
+            await ctx.commit()
 
     async def get_user_byid(self, id: int) -> UserObject:
         async with self.ctx:
@@ -84,20 +78,14 @@ class UserService:
 
     @staticmethod
     async def login_user(ctx: 'abc.AbstractContext', userName: str, password: str) -> Any:
-        """
-        Logic of user login
-        """
         user = (await ctx.database.users.find_byfield(UsersModel.userName == userName)).first()
         if user is None:
             raise InvalidCreditionalsError
-        else:
-            if user.passhash == password:
-                if user.verified:
-                    return user
-                else:
-                    raise AccountIsDisabledError
-            else:
-                raise InvalidCreditionalsError
+        if not verify_password(password, user.passhash):
+            raise InvalidCreditionalsError
+        if not user.verified:
+            raise AccountIsDisabledError
+        return user
 
     @staticmethod
     async def get_users_byName(name, db: AsyncSession):
@@ -107,10 +95,6 @@ class UserService:
         return {"database": result, "count": count}
 
     @staticmethod
-    async def get_total_users(db: AsyncSession):
-        try:
-            query = select(UsersModel)
-            total = len((await db.execute(query)).scalars().all())
-            return {"status": "ok", "count": total}
-        except Exception as e:
-            return {"status": "error", "details": e}
+    async def get_total_users(ctx: 'abc.AbstractContext') -> dict:
+        count = await ctx.database.users.count()
+        return {"status": "ok", "count": count}
